@@ -606,7 +606,7 @@ subClientDrag(SubClient *c,
 
   switch(direction)
     {
-      case SUB_GRAB_DIRECTION_UP:
+      case SUB_GRAB_DIRECTION_UP: /* {{{ */
         if(SUB_DRAG_RESIZE == mode)
           {
             c->geom.y      -= c->inch;
@@ -616,24 +616,24 @@ subClientDrag(SubClient *c,
 
         ClientSnap(c, s, &c->geom);
         ClientBounds(c, &(s->geom), &c->geom);
-        break;
-      case SUB_GRAB_DIRECTION_RIGHT:
+        break; /* }}} */
+      case SUB_GRAB_DIRECTION_RIGHT: /* {{{ */
         if(SUB_DRAG_RESIZE == mode)
           c->geom.width += c->incw;
         else c->geom.x += subtle->step;
 
         ClientSnap(c, s, &c->geom);
         ClientBounds(c, &(s->geom), &c->geom);
-        break;
-      case SUB_GRAB_DIRECTION_DOWN:
+        break; /* }}} */
+      case SUB_GRAB_DIRECTION_DOWN: /* {{{ */
         if(SUB_DRAG_RESIZE == mode)
           c->geom.height += c->inch;
         else c->geom.y += subtle->step;
 
         ClientSnap(c, s, &c->geom);
         ClientBounds(c, &(s->geom), &c->geom);
-        break;
-      case SUB_GRAB_DIRECTION_LEFT:
+        break; /* }}} */
+      case SUB_GRAB_DIRECTION_LEFT: /* {{{ */
         if(SUB_DRAG_RESIZE == mode)
           {
             c->geom.x     -= c->incw;
@@ -643,7 +643,7 @@ subClientDrag(SubClient *c,
 
         ClientSnap(c, s, &c->geom);
         ClientBounds(c, &(s->geom), &c->geom);
-        break;
+        break; /* }}}*/
       default: /* {{{ */
         ClientMask(&geom);
 
