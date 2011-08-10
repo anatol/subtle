@@ -73,7 +73,8 @@ WindowCall(VALUE data)
 {
   VALUE *rargs = (VALUE *)data;
 
-  return rb_funcall(rargs[0], rargs[1], rargs[2], rargs[3], rargs[4]);
+  return 1 == rargs[2] ? rb_funcall(rargs[0], rargs[1], rargs[2], rargs[3], rargs[4]) :
+    rb_funcall(rargs[0], rargs[1], rargs[2], rargs[3], rargs[4], rargs[5]);
 } /* }}} */
 
 /* WindowExpose {{{ */
@@ -126,6 +127,149 @@ WindowDefine(VALUE self,
         }
       else rb_raise(rb_eArgError, "Wrong number of arguments (%d for %d)",
         arity, argc);
+    }
+
+  return Qnil;
+} /* }}} */
+
+#if 0
+/* WindowFind {{{ */
+static XPointer *
+WindowFind(Window win,
+  XContext id)
+{
+  XPointer *data = NULL;
+
+  return XCNOENT != XFindContext(display, win, id, (XPointer *)&data) ? data : NULL;
+} /* }}} */
+#endif
+
+/* WindowGrab {{{ */
+static VALUE
+WindowGrab(VALUE self,
+  VALUE keyboard_proc,
+  VALUE pointer_proc)
+{
+  SubtlextWindow *w = NULL;
+
+  /* Check ruby object */
+  rb_check_frozen(self);
+  rb_need_block();
+
+  Data_Get_Struct(self, SubtlextWindow, w);
+  if(w && rb_block_given_p())
+    {
+      XEvent ev;
+      int loop = True, state = 0;
+      char buf[32] = { 0 };
+      unsigned long *focus = NULL, mask = 0;
+      VALUE result = Qnil, rargs[5] = { Qnil }, sym = Qnil;
+      KeySym keysym;
+
+      /* Add grabs */
+      if(RTEST(keyboard_proc))
+        {
+          mask |= KeyPressMask;
+
+          XGrabKeyboard(display, ROOT, True, GrabModeAsync,
+            GrabModeAsync, CurrentTime);
+          XSetInputFocus(display, w->win, RevertToPointerRoot, CurrentTime);
+        }
+      if(RTEST(pointer_proc))
+        {
+          mask |= ButtonPressMask;
+
+          XGrabPointer(display, w->win, True, ButtonPressMask, GrabModeAsync,
+            GrabModeAsync, None, None, CurrentTime);
+        }
+
+      XSelectInput(display, w->win, mask);
+      XMapRaised(display, w->win);
+      XFlush(display);
+
+      while(loop)
+        {
+          XMaskEvent(display, mask, &ev);
+          switch(ev.type)
+            {
+              case KeyPress: /* {{{ */
+                XLookupString(&ev.xkey, buf, sizeof(buf), &keysym, NULL);
+
+                /* Skip modifier keys */
+                if(IsModifierKey(keysym)) continue;
+
+                /* Translate syms to something meaningful */
+                switch(keysym)
+                  {
+                    /* Arrow keys */
+                    case XK_KP_Left:
+                    case XK_Left:      sym = CHAR2SYM("left");      break;
+                    case XK_KP_Right:
+                    case XK_Right:     sym = CHAR2SYM("right");     break;
+                    case XK_KP_Up:
+                    case XK_Up:        sym = CHAR2SYM("up");        break;
+                    case XK_KP_Down:
+                    case XK_Down:      sym = CHAR2SYM("down");      break;
+
+                    /* Input */
+                    case XK_KP_Enter:
+                    case XK_Return:    sym = CHAR2SYM("return");    break;
+                    case XK_Escape:    sym = CHAR2SYM("escape");    break;
+                    case XK_BackSpace: sym = CHAR2SYM("backspace"); break;
+                    case XK_Tab:       sym = CHAR2SYM("tab");       break;
+                    case XK_space:     sym = CHAR2SYM("space");     break;
+                    default:           sym = CHAR2SYM(buf);
+                  }
+
+                /* Wrap up data */
+                rargs[0] = keyboard_proc;
+                rargs[1] = rb_intern("call");
+                rargs[2] = 1;
+                rargs[3] = sym;
+
+                /* Carefully call listen proc */
+                result = rb_protect(WindowCall, (VALUE)&rargs, &state);
+                if(state) subSubtlextBacktrace();
+
+                /* End event loop? */
+                if(Qtrue != result || state) loop = False;
+                break; /* }}} */
+              case ButtonPress: /* {{{ */
+                /* Wrap up data */
+                rargs[0] = pointer_proc;
+                rargs[1] = rb_intern("call");
+                rargs[2] = 2;
+                rargs[3] = INT2FIX(ev.xbutton.x);
+                rargs[4] = INT2FIX(ev.xbutton.y);
+
+                /* Carefully call listen proc */
+                result = rb_protect(WindowCall, (VALUE)&rargs, &state);
+                if(state) subSubtlextBacktrace();
+
+                /* End event loop? */
+                if(Qtrue != result || state) loop = False;
+                break; /* }}} */
+              default: break;
+            }
+        }
+
+      /* Remove grabs */
+      if(RTEST(keyboard_proc))
+        {
+          XSelectInput(display, w->win, NoEventMask);
+          XUngrabKeyboard(display, CurrentTime);
+        }
+      if(pointer_proc) XUngrabPointer(display, CurrentTime);
+
+      /* Restore logical focus */
+      if((focus = (unsigned long *)subSharedPropertyGet(display,
+          DefaultRootWindow(display), XA_WINDOW,
+          XInternAtom(display, "_NET_ACTIVE_WINDOW", False), NULL)))
+        {
+          XSetInputFocus(display, *focus, RevertToPointerRoot, CurrentTime);
+
+          free(focus);
+        }
     }
 
   return Qnil;
@@ -982,7 +1126,8 @@ subWindowRead(int argc,
 /*
  * call-seq: grab_keys(&block) -> nil
  *
- * Grab key events and pass them to the block.
+ * Grab key press events and pass them to the block until the
+ * return value of the block isn't <b>true</b> or an error occured.
  *
  *  grab_keys do |key|
  *    case key
@@ -995,103 +1140,17 @@ subWindowRead(int argc,
 VALUE
 subWindowGrabKeys(VALUE self)
 {
-  SubtlextWindow *w = NULL;
-
-  /* Check ruby object */
-  rb_check_frozen(self);
   rb_need_block();
 
-  Data_Get_Struct(self, SubtlextWindow, w);
-  if(w && rb_block_given_p())
-    {
-      XEvent ev;
-      int loop = True, state = 0;
-      char buf[32] = { 0 };
-      unsigned long *focus = NULL;
-      VALUE p = rb_block_proc(), result = Qnil, rargs[4] = { Qnil }, sym = Qnil;
-      KeySym keysym;
-
-      /* Grab and set focus */
-      XGrabKeyboard(display, DefaultRootWindow(display), True,
-        GrabModeAsync, GrabModeAsync, CurrentTime);
-      XMapRaised(display, w->win);
-      XSetInputFocus(display, w->win, RevertToPointerRoot, CurrentTime);
-      XSelectInput(display, w->win, KeyPressMask);
-      XFlush(display);
-
-      while(loop)
-        {
-          XMaskEvent(display, KeyPressMask, &ev);
-          switch(ev.type)
-            {
-              case KeyPress: /* {{{ */
-                XLookupString(&ev.xkey, buf, sizeof(buf), &keysym, NULL);
-
-                /* Skip modifier keys */
-                if(IsModifierKey(keysym)) continue;
-
-                /* Translate syms to something meaningful */
-                switch(keysym)
-                  {
-                    /* Arrow keys */
-                    case XK_KP_Left:
-                    case XK_Left:      sym = CHAR2SYM("left");      break;
-                    case XK_KP_Right:
-                    case XK_Right:     sym = CHAR2SYM("right");     break;
-                    case XK_KP_Up:
-                    case XK_Up:        sym = CHAR2SYM("up");        break;
-                    case XK_KP_Down:
-                    case XK_Down:      sym = CHAR2SYM("down");      break;
-
-                    /* Input */
-                    case XK_KP_Enter:
-                    case XK_Return:    sym = CHAR2SYM("return");    break;
-                    case XK_Escape:    sym = CHAR2SYM("escape");    break;
-                    case XK_BackSpace: sym = CHAR2SYM("backspace"); break;
-                    case XK_Tab:       sym = CHAR2SYM("tab");       break;
-                    case XK_space:     sym = CHAR2SYM("space");     break;
-                    default:           sym = CHAR2SYM(buf);
-                  }
-
-                /* Wrap up data */
-                rargs[0] = p;
-                rargs[1] = rb_intern("call");
-                rargs[2] = 1;
-                rargs[3] = sym;
-
-                /* Carefully call listen proc */
-                result = rb_protect(WindowCall, (VALUE)&rargs, &state);
-                if(state) subSubtlextBacktrace();
-
-                /* End event loop? */
-                if(Qtrue != result || state) loop = False;
-                break; /* }}} */
-              default: break;
-            }
-        }
-
-      XSelectInput(display, w->win, NoEventMask);
-      XUngrabKeyboard(display, CurrentTime);
-
-      /* Restore logical focus */
-      if((focus = (unsigned long *)subSharedPropertyGet(display,
-          DefaultRootWindow(display), XA_WINDOW,
-          XInternAtom(display, "_NET_ACTIVE_WINDOW", False), NULL)))
-        {
-          XSetInputFocus(display, *focus, RevertToPointerRoot, CurrentTime);
-
-          free(focus);
-        }
-    }
-
-  return Qnil;
+  return WindowGrab(self, rb_block_proc(), Qnil);
 } /* }}} */
 
-/* subWindowGrabMouse {{{ */
+/* subWindowGrabPointer {{{ */
 /*
- * call-seq: grab_mouse(&block) -> nil
+ * call-seq: grab_pointer(&block) -> nil
  *
- * Grab mouse events and pass them to the block.
+ * Grab pointer button press events and pass them to the block until
+ * the return value of the block isn't <b>true</b> or an error occured.
  *
  *  grab_mouse do |x, y, button|
  *    p "x=#{x}, y=#{y}, button=#{button}"
@@ -1100,20 +1159,11 @@ subWindowGrabKeys(VALUE self)
  */
 
 VALUE
-subWindowGrabMouse(VALUE self)
+subWindowGrabPointer(VALUE self)
 {
-  SubtlextWindow *w = NULL;
-
-  /* Check ruby object */
-  rb_check_frozen(self);
   rb_need_block();
-  Data_Get_Struct(self, SubtlextWindow, w);
-  if(w && rb_block_given_p())
-    {
-      rb_raise(rb_eNotImpError, "Not implemented yet");
-    }
 
-  return Qnil;
+  return WindowGrab(self, Qnil, rb_block_proc());
 } /* }}} */
 
 /* subWindowClear {{{ */

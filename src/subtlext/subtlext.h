@@ -291,7 +291,7 @@ VALUE subWindowGeometryWriter(VALUE self, VALUE value);           ///< Set geome
 VALUE subWindowWrite(VALUE self, VALUE x, VALUE y, VALUE text);   ///< Write text
 VALUE subWindowRead(int argc, VALUE *argv, VALUE self);           ///< Read text
 VALUE subWindowGrabKeys(VALUE self);                              ///< Grab key events
-VALUE subWindowGrabMouse(VALUE self);                             ///< Grab mouse events
+VALUE subWindowGrabPointer(VALUE self);                           ///< Grab pointer events
 VALUE subWindowClear(int argc, VALUE *argv, VALUE self);          ///< Clear area or window
 VALUE subWindowRedraw(VALUE self);                                ///< Redraw window
 VALUE subWindowCompletion(VALUE self);                            ///< Add completion proc

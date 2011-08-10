@@ -2160,7 +2160,7 @@ Init_subtlext(void)
   rb_define_method(window, "write",         subWindowWrite,             3);
   rb_define_method(window, "read",          subWindowRead,             -1);
   rb_define_method(window, "grab_keys",     subWindowGrabKeys,          0);
-  rb_define_method(window, "grab_mouse",    subWindowGrabMouse,         0);
+  rb_define_method(window, "grab_pointer",  subWindowGrabPointer,       0);
   rb_define_method(window, "clear",         subWindowClear,            -1);
   rb_define_method(window, "redraw",        subWindowRedraw,            0);
   rb_define_method(window, "completion",    subWindowCompletion,        0);
