@@ -290,8 +290,12 @@ VALUE subWindowGeometryReader(VALUE self);                        ///< Get geome
 VALUE subWindowGeometryWriter(VALUE self, VALUE value);           ///< Set geometry
 VALUE subWindowWrite(VALUE self, VALUE x, VALUE y, VALUE text);   ///< Write text
 VALUE subWindowRead(int argc, VALUE *argv, VALUE self);           ///< Read text
-VALUE subWindowGrabKeys(VALUE self);                              ///< Grab key events
-VALUE subWindowGrabPointer(VALUE self);                           ///< Grab pointer events
+VALUE subWindowOn(int argc, VALUE *argv, VALUE self);             ///< Add event handler
+VALUE subWindowDrawPoint(int argc, VALUE *argv, VALUE self);      ///< Draw a point
+VALUE subWindowDrawLine(int argc, VALUE *argv, VALUE self);       ///< Draw a line
+VALUE subWindowDrawRect(int argc, VALUE *argv, VALUE self);       ///< Draw a rect
+VALUE subWindowDrawText(int arcg, VALUE *argv, VALUE self);       ///< Draw text
+VALUE subWindowDrawIcon(int arcg, VALUE *argv, VALUE self);       ///< Draw icon
 VALUE subWindowClear(int argc, VALUE *argv, VALUE self);          ///< Clear area or window
 VALUE subWindowRedraw(VALUE self);                                ///< Redraw window
 VALUE subWindowCompletion(VALUE self);                            ///< Add completion proc

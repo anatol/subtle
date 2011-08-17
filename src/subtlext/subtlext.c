@@ -2159,8 +2159,12 @@ Init_subtlext(void)
   rb_define_method(window, "border_size=",  subWindowBorderSizeWriter,  1);
   rb_define_method(window, "write",         subWindowWrite,             3);
   rb_define_method(window, "read",          subWindowRead,             -1);
-  rb_define_method(window, "grab_keys",     subWindowGrabKeys,          0);
-  rb_define_method(window, "grab_pointer",  subWindowGrabPointer,       0);
+  rb_define_method(window, "on",            subWindowOn,               -1);
+  rb_define_method(window, "draw_point",    subWindowDrawPoint,        -1);
+  rb_define_method(window, "draw_line",     subWindowDrawLine,         -1);
+  rb_define_method(window, "draw_rect",     subWindowDrawRect,         -1);
+  rb_define_method(window, "draw_text",     subWindowDrawText,         -1);
+  rb_define_method(window, "draw_icon",     subWindowDrawIcon,         -1);
   rb_define_method(window, "clear",         subWindowClear,            -1);
   rb_define_method(window, "redraw",        subWindowRedraw,            0);
   rb_define_method(window, "completion",    subWindowCompletion,        0);
@@ -2178,8 +2182,7 @@ Init_subtlext(void)
   rb_define_alias(rb_singleton_class(window), "configure", "new");
 
   /* Aliases */
-  rb_define_alias(window, "click",  "send_button");
-  rb_define_alias(window, "listen", "grab_keys");
+  rb_define_alias(window, "click", "send_button");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker
