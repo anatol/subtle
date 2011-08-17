@@ -559,29 +559,34 @@ SubtlextSendModifier(unsigned long state,
   int press)
 {
   /* Send modifier press/release events */
-  if(state & ShiftMask)
+  if(state & ShiftMask) ///< Shift key
     {
       XTestFakeKeyEvent(display, XKeysymToKeycode(display, XK_Shift_L),
         press, CurrentTime);
     }
-  else if(state & ControlMask)
+  else if(state & ControlMask) ///< Ctrl key
     {
       XTestFakeKeyEvent(display, XKeysymToKeycode(display, XK_Control_L),
         press, CurrentTime);
     }
-  else if(state & Mod1Mask)
+  else if(state & Mod1Mask) ///< Alt key
     {
       XTestFakeKeyEvent(display, XKeysymToKeycode(display, XK_Alt_L),
         press, CurrentTime);
     }
-  else if(state & Mod3Mask)
+  else if(state & Mod3Mask) /// Mod key<
     {
       XTestFakeKeyEvent(display, XKeysymToKeycode(display, XK_Meta_L),
         press, CurrentTime);
     }
-  else if(state & Mod4Mask)
+  else if(state & Mod4Mask) ///< Super key
     {
       XTestFakeKeyEvent(display, XKeysymToKeycode(display, XK_Super_L),
+        press, CurrentTime);
+    }
+  else if(state & Mod5Mask) ///< Alt Gr key
+    {
+      XTestFakeKeyEvent(display, XKeysymToKeycode(display, XK_ISO_Level3_Shift),
         press, CurrentTime);
     }
 } /* }}} */

@@ -1028,6 +1028,7 @@ subSharedParseKey(Display *disp,
           case XK_A: *state |= Mod1Mask;    break;
           case XK_M: *state |= Mod3Mask;    break;
           case XK_W: *state |= Mod4Mask;    break;
+          case XK_G: *state |= Mod5Mask;    break;
 
           /* Mouse */
           case XK_Pointer_Button1:
