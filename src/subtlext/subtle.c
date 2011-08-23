@@ -284,8 +284,8 @@ subSubtleSingColors(VALUE self)
   const char *names[] = {
     "title_fg",            "title_bg",             "title_bo_top",
     "title_bo_right",      "title_bo_bottom",      "title_bo_left",
-    "view_fg",             "view_bg",              "view_bo_top",
-    "view_bo_right",       "view_bo_bottom",       "view_bo_left",
+    "views_fg",            "views_bg",             "views_bo_top",
+    "views_bo_right",      "views_bo_bottom",      "views_bo_left",
     "focus_fg",            "focus_bg",             "focus_bo_top",
     "focus_bo_right",      "focus_bo_bottom",      "focus_bo_left",
     "urgent_fg",           "urgent_bg",            "urgent_bo_top",
