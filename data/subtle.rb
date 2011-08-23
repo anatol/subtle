@@ -287,11 +287,13 @@ gravity :gimp_dock,      [  90,   0,  10, 100 ]
 #
 # ==== Mouse buttons
 #
-# [*B1*] = Button1 (Left mouse button)
-# [*B2*] = Button2 (Middle mouse button)
-# [*B3*] = Button3 (Right mouse button)
-# [*B4*] = Button4 (Mouse wheel up)
-# [*B5*] = Button5 (Mouse wheel down)
+# [*B1*]  = Button1 (Left mouse button)
+# [*B2*]  = Button2 (Middle mouse button)
+# [*B3*]  = Button3 (Right mouse button)
+# [*B4*]  = Button4 (Mouse wheel up)
+# [*B5*]  = Button5 (Mouse wheel down)
+# [*...*]
+# [*B20*] = Button20 (Are you sure that this is a mouse and not a keyboard?)
 #
 # ==== Modifiers
 #
@@ -300,6 +302,7 @@ gravity :gimp_dock,      [  90,   0,  10, 100 ]
 # [*M*] = Meta key
 # [*S*] = Shift key
 # [*W*] = Super (Windows) key
+# [*G*] = Alt Gr
 #
 # === Action
 #
