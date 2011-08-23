@@ -996,19 +996,25 @@ subSharedParseKey(Display *disp,
 
   while(tok)
     {
-      /* Get key sym and modifier */
+      /* Find key sym and modifier */
       if(NoSymbol == ((sym = XStringToKeysym(tok))))
         {
-          const char *buttons[] = { "B1", "B2", "B3", "B4", "B5" };
+          char button[4] = { 0 };
 
-          /* Check mouse buttons */
-          for(i = 0; i < LENGTH(buttons); i++)
-            if(!strncmp(tok, buttons[i], 2))
-              {
-                sym = XK_Pointer_Button1 + i; ///< @todo Implementation independent?
+          /* Check if it is a mouse button */
+          for(i = 1; i <= 20; i++)
+            {
+              snprintf(button, sizeof(button), "B%d", i);
 
-                break;
-              }
+              if(0 == strcmp(tok, button))
+                {
+                  *mouse = True;
+                  *code  = XK_Pointer_Button1 + i - 1; ///< @todo Implementation independent?
+                  sym    = XK_Pointer_Button1;
+
+                  break;
+                }
+            }
 
           /* Check if there's still no symbol */
           if(NoSymbol == sym)
@@ -1030,15 +1036,8 @@ subSharedParseKey(Display *disp,
           case XK_W: *state |= Mod4Mask;    break;
           case XK_G: *state |= Mod5Mask;    break;
 
-          /* Mouse */
-          case XK_Pointer_Button1:
-          case XK_Pointer_Button2:
-          case XK_Pointer_Button3:
-          case XK_Pointer_Button4:
-          case XK_Pointer_Button5:
-            *mouse = True;
-            *code  = sym;
-            break;
+          case XK_Pointer_Button1:          break;
+
           default:
             *mouse = False;
             *code  = XKeysymToKeycode(disp, sym);
