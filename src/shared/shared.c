@@ -996,39 +996,40 @@ subSharedParseKey(Display *disp,
 
   while(tok)
     {
-      /* Find key sym and modifier */
-      if(NoSymbol == ((sym = XStringToKeysym(tok))))
+      /* Eval keysyms */
+      switch((sym = XStringToKeysym(tok)))
         {
-          char button[4] = { 0 };
+          /* Unknown keys */
+          case NoSymbol:
+              {
+                char button[4] = { 0 };
 
-          /* Check if it is a mouse button */
-          for(i = 1; i <= 20; i++)
-            {
-              snprintf(button, sizeof(button), "B%d", i);
+                /* Check if it is a mouse button */
+                for(i = 1; i <= 20; i++)
+                  {
+                    snprintf(button, sizeof(button), "B%d", i);
 
-              if(0 == strcmp(tok, button))
-                {
-                  *mouse = True;
-                  *code  = XK_Pointer_Button1 + i - 1; ///< @todo Implementation independent?
-                  sym    = XK_Pointer_Button1;
+                    if(0 == strcmp(tok, button))
+                      {
+                        *mouse = True;
+                        *code  = XK_Pointer_Button1 + i - 1; ///< FIXME: Implementation independent?
+                        sym    = XK_Pointer_Button1;
 
-                  break;
-                }
-            }
+                        break;
+                      }
+                  }
 
-          /* Check if there's still no symbol */
-          if(NoSymbol == sym)
-            {
-              free(tokens);
+                /* Check if a symbol was found */
+                if(NoSymbol == sym)
+                  {
+                    free(tokens);
 
-              return sym;
-            }
-        }
+                    return sym;
+                  }
+              }
+            break;
 
-      /* Modifier mappings */
-      switch(sym)
-        {
-          /* Keys */
+          /* Modifier keys */
           case XK_S: *state |= ShiftMask;   break;
           case XK_C: *state |= ControlMask; break;
           case XK_A: *state |= Mod1Mask;    break;
@@ -1036,8 +1037,7 @@ subSharedParseKey(Display *disp,
           case XK_W: *state |= Mod4Mask;    break;
           case XK_G: *state |= Mod5Mask;    break;
 
-          case XK_Pointer_Button1:          break;
-
+          /* Normal keys */
           default:
             *mouse = False;
             *code  = XKeysymToKeycode(disp, sym);
