@@ -297,12 +297,12 @@ gravity :gimp_dock,      [  90,   0,  10, 100 ]
 #
 # ==== Modifiers
 #
-# [*A*] = Alt key
+# [*A*] = Alt key (Mod1)
 # [*C*] = Control key
-# [*M*] = Meta key
+# [*M*] = Meta key (Mod3)
 # [*S*] = Shift key
-# [*W*] = Super (Windows) key
-# [*G*] = Alt Gr
+# [*W*] = Super/Windows key (Mod4)
+# [*G*] = Alt Gr (Mod5)
 #
 # === Action
 #
