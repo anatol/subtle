@@ -535,10 +535,15 @@ EventGrab(XEvent *ev)
       /* Break chain on end or invalid link */
       if(!chain || (g && !g->keys))
         {
-          free(subtle->panels.keychain.keychain->keys);
-          subtle->panels.keychain.keychain->keys = NULL;
-          subtle->panels.keychain.keychain->len  = 0;
-          subtle->keychain                       = NULL;
+          /* Update panel if in use */
+          if(subtle->panels.keychain.keychain)
+            {
+              free(subtle->panels.keychain.keychain->keys);
+              subtle->panels.keychain.keychain->keys = NULL;
+              subtle->panels.keychain.keychain->len  = 0;
+            }
+
+          subtle->keychain = NULL;
 
           subScreenUpdate();
           subScreenRender();
