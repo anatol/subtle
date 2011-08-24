@@ -157,6 +157,9 @@ module Subtle # {{{
 
             Subtle::Sur::Client.new.uninstall(args,
               @version, @use_tags, @reload)
+          when "unpack"
+            Subtle::Sur::Client.new.unpack(args,
+              @version, @use_tags)
           when "update"
             Subtle::Sur::Client.new.update(@repo)
           when "upgrade"
@@ -244,6 +247,16 @@ module Subtle # {{{
                  "Examples:\n" \
                  "sur test -C user=name -C pass=pass sublet.rb\n" \
                  "sur test sublet.rb\n"
+          when "unpack"
+            puts "Usage: sur unpack NAME [OPTIONS]\n\n" \
+                 "Unpack sublet to current path\n\n" \
+                 "Options:\n" \
+                 "  -t, --tags                Include tags in search\n" \
+                 "  -v, --version VERSION     Search for a specific version\n" \
+                 "  -h, --help                Show this help and exit\n\n" \
+                 "Examples:\n" \
+                 "sur unpack clock\n" \
+                 "sur unpack clock -v 0.3\n"
           when "uninstall"
             puts "Usage: sur uninstall NAME [OPTIONS]\n\n" \
                  "Uninstall a sublet by given name and optionally by given version\n\n" \
@@ -294,6 +307,7 @@ module Subtle # {{{
                  "  submit FILE                             Submit a sublet to SUR\n" \
                  "  template FILE                           Create a new sublet template in current dir\n" \
                  "  uninstall NAME [-R|-t|-v VERSION|-h]    Uninstall a sublet\n" \
+                 "  unpack NAME [-t|-v VERSION|-h]          Unpack a sublet\n" \
                  "  update [-l|-r|-h]                       Update local/remote sublet cache\n" \
                  "  upgrade [-R|-y|-h]                      Upgrade all installed sublets\n" \
                  "  version                                 Show version info and exit\n"

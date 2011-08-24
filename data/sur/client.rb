@@ -19,12 +19,6 @@ require "archive/tar/minitar"
 
 require "subtle/sur/specification"
 
-# FIXME: Different class paths
-module Sur
-  class Specification < Subtle::Sur::Specification
-  end
-end
-
 module Subtle # {{{
   module Sur # {{{
     # Client class for interaction with the user
@@ -81,8 +75,8 @@ module Subtle # {{{
         @path_sublets = File.join(xdg_data_home,  "sublets")
 
         # Create folders
-        [ xdg_cache_home, xdg_data_home, @path_icons, @path_specs,
-            @path_sublets ].each do |p|
+        [ xdg_cache_home, xdg_data_home, @path_icons,
+            @path_specs, @path_sublets ].each do |p|
           FileUtils.mkdir_p([ p ]) unless(File.exist?(p))
         end
       end # }}}
@@ -290,7 +284,6 @@ module Subtle # {{{
         end
       end # }}}
 
-
       ## Sur::Client::info {{{
       # Show info for installed sublets if any
       #
@@ -367,7 +360,7 @@ module Subtle # {{{
 
           # Check dependencies
           spec = specs.first
-          raise "Couldn't install sublet `#{name}'" unless(spec.satisfied?)
+          next unless(spec.satisfied?)
 
           # Download and install sublet
           unless((temp = download(spec)).nil?)
@@ -546,7 +539,7 @@ module Subtle # {{{
             upload(file)
             build_remote(true)
           else
-            spec.validate()
+            spec.validate
           end
         else
           raise "Couldn't find file `#{file}'"
@@ -603,7 +596,8 @@ module Subtle # {{{
             # Uninstall specification
             puts ">>>>>> Uninstalling specification `#{spec.to_s}.spec'"
             FileUtils.remove_file(
-              File.join(@path_specs, spec.to_s + ".spec"), true
+              File.join(@path_specs, spec.to_s + ".spec"),
+              true
             )
 
             puts ">>> Uninstalled sublet #{spec.to_s}"
@@ -616,6 +610,45 @@ module Subtle # {{{
         build_local(true)
 
         reload_sublets if(reload)
+      end # }}}
+
+      ## Sur::Client::unpack {{{
+      # Unpack sublet to current path
+      #
+      # @param [Array]   names     Names of Sublets
+      # @param [String]  version   Version of the Sublet
+      # @param [Bool]    use_tags  Use tags
+      #
+      # @raise [String] Unpack error
+      # @since 0.0
+      #
+      # @example
+      #   Sur::Client.new.unpack("sublet")
+      #   => nil
+
+      def unpack(names, version = nil, use_tags = false)
+        build_remote
+
+        # Install all sublets
+        names.each do |name|
+          # Check if sublet is installed
+          if((specs = search(name, @cache_remote, version, use_tags)) and
+              !specs.empty?)
+            spec = specs.first
+
+            # Download and unpack sublet
+            unless((temp = download(spec)).nil?)
+              base  = File.join(Dir.pwd, spec.to_str)
+              icons = File.join(base, "icons")
+
+              FileUtils.mkdir_p([ icons ])
+
+              install_sublet(temp.path, base, icons, base)
+            end
+          end
+        end
+
+        build_local(true)
       end # }}}
 
       ## Sur::Client::update {{{
@@ -803,7 +836,8 @@ module Subtle # {{{
         end
       end # }}}
 
-      def search(query, repo, version = nil, use_regex = false, use_tags = false) # {{{
+      def search(query, repo, version = nil, # {{{
+          use_regex = false, use_tags = false)
         results = []
 
         # Search in repo
@@ -850,7 +884,7 @@ module Subtle # {{{
               spec.path = file
               @cache_local.push(spec)
             else
-              spec.validate()
+              spec.validate
             end
           rescue
             puts ">>> WARNING: Couldn't parse specification `#{file}'"
@@ -1145,7 +1179,8 @@ EOF
         end
       end # }}}
 
-      def install_sublet(sublet) # {{{
+      def install_sublet(sublet, specs = @path_specs, # {{{
+          icons = @path_icons, sublets = @path_sublets)
         spec = Sur::Specification.extract_spec(sublet)
 
         # Validate spec
@@ -1156,13 +1191,13 @@ EOF
                 case(File.extname(entry.full_name))
                   when ".spec" then
                     puts ">>>>>> Installing specification `#{spec.to_s}.spec'"
-                    path = File.join(@path_specs, spec.to_s + ".spec")
-                  when ".xbm" then
+                    path = File.join(specs, spec.to_s + ".spec")
+                  when ".xbm", ".xpm" then
                     puts ">>>>>> Installing icon `#{entry.full_name}'"
-                    path = File.join(@path_icons, entry.full_name)
+                    path = File.join(icons, entry.full_name)
                   else
                     puts ">>>>>> Installing file `#{entry.full_name}'"
-                    path = File.join(@path_sublets, entry.full_name)
+                    path = File.join(sublets, entry.full_name)
                 end
 
                 # Install file
