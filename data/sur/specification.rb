@@ -280,7 +280,7 @@ EOF
       ## Subtle::Sur::Specification::validate {{{
       # Check if a specification is valid
       #
-      # @raise [String] Validity error
+      # @raise [String] Validation error
       # @since 0.1
       #
       # @example
@@ -332,7 +332,8 @@ EOF
       #   => true
 
       def satisfied?
-        satisfied = true
+        satisfied_version = true
+        satisfied_deps    = true
         missing   = []
 
         # Check subtlext version
@@ -340,39 +341,53 @@ EOF
           begin
             require "subtle/subtlext"
 
-            # Check version
+            # Check subtlext version
             major_have, minor_have, teeny_have = Subtlext::VERSION.split(".").map(&:to_i)
             major_need, minor_need, teeny_need = @required_version.split(".").map(&:to_i)
 
             if(major_need > major_have or minor_need > minor_have or
                teeny_need.nil? or teeny_have.nil? or teeny_need > teeny_have)
-              puts ">>> ERROR: Need at least subtle >= #{@required_version}"
-
-              satisfied = false
+              satisfied_version = false
             end
           rescue => err
-            puts ">>> ERROR: Failed checking version of subtlext"
+            puts ">>> ERROR: Couldn't verify version of subtle"
 
-            satisfied = false
+            satisfied_version = false
           end
         end
 
-        # Just try to load the gem and catch errors
+        # Check gem dependencies
         @dependencies.each do |k, v|
           begin
             gem(k, v)
           rescue Gem::LoadError
-            missing.push("%s (%s)" % [ k, v])
+            # Try to load it
+            begin
+              require k
 
-            satisfied = false
+              puts ">>> WARNING: Couldn't verify version of `#{k}' with rubygems"
+            rescue LoadError
+              missing.push("%s (%s)" % [ k, v])
+
+              satisfied_deps = false
+            end
           end
         end
 
-        unless(missing.empty?)
-          puts ">>> ERROR: Following gems are missing: #{missing.join(", ")}"
+        # Dump errors
+        unless(satisfied_version or satisfied_deps)
+          puts ">>> ERROR: Couldn't install `#{@name}' due to unsatisfied requirements."
+
+          unless(satisfied_version)
+            puts "           Subtle >=#{@required_version} (found: #{Subtlext::VERSION}) is required."
+          end
+
+          unless(missing.empty?)
+            puts "           Following gems are missing: #{missing.join(", ")}"
+          end
         end
 
-        satisfied
+        satisfied_version and satisfied_deps
       end # }}}
 
       ## Subtle::Sur::Specification::to_str {{{
