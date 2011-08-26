@@ -603,6 +603,11 @@ EventGrab(XEvent *ev)
                 {
                   snprintf(buf + pos, sizeof(buf) - pos, "%s", "W-");
                   pos += 2;
+                }
+              if(state & Mod5Mask)
+                {
+                  snprintf(buf + pos, sizeof(buf) - pos, "%s", "G-");
+                  pos += 2;
                 } /* }}} */
 
               /* Assemble chain string */
