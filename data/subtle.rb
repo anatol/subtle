@@ -111,6 +111,14 @@ end
 # If no background color is given no color will be set. This will ensure a
 # custom background pixmap won't be overwritten.
 #
+# Following properties are available for most the styles:
+#
+# [*foreground*] Foreground text color
+# [*background*] Background color
+# [*margin*]     Outer spacing
+# [*border*]     Border color and size
+# [*padding*]    Inner spacing
+#
 # === Link
 #
 # http://subforge.org/projects/subtle/wiki/Styles
@@ -118,6 +126,7 @@ end
 # Style for all style elements
 style :all do
   background  "#202020"
+  icon        "#757575"
   border      "#303030", 0
   padding     0, 3
 end
