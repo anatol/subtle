@@ -25,8 +25,7 @@ StyleInheritSides(SubSides *s1,
 /* StyleInherit {{{ */
 static void
 StyleInherit(SubStyle *s1,
-  SubStyle *s2,
-  int sanitize)
+  SubStyle *s2)
 {
   assert(s1 && s2);
 
@@ -39,15 +38,12 @@ StyleInherit(SubStyle *s1,
   if(-1 == s1->bottom) s1->bottom = s2->bottom;
   if(-1 == s1->left)   s1->left   = s2->left;
 
-  /* Sanitize icon */
-  if(sanitize && -1 == s1->icon) s1->icon = s1->fg;
-
   /* Inherit unset border, padding and margin */
   StyleInheritSides(&s1->border,  &s2->border);
   StyleInheritSides(&s1->padding, &s2->padding);
   StyleInheritSides(&s1->margin,  &s2->margin);
 
-  /* Check styles */
+  /* Check nested styles */
   if(s1->styles)
     {
       int i;
@@ -57,7 +53,10 @@ StyleInherit(SubStyle *s1,
         {
           SubStyle *style = STYLE(s1->styles->data[i]);
 
-          StyleInherit(style, s1, True);
+          StyleInherit(style, s1);
+
+          /* Sanitize icon */
+          if(-1 == style->icon) style->icon = style->fg;
         }
     }
 } /* }}} */
@@ -194,10 +193,10 @@ void
 subStyleInheritance(void)
 {
   /* Inherit styles */
-  StyleInherit(&subtle->styles.views,     &subtle->styles.all, False);
-  StyleInherit(&subtle->styles.title,     &subtle->styles.all, False);
-  StyleInherit(&subtle->styles.sublets,   &subtle->styles.all, False);
-  StyleInherit(&subtle->styles.separator, &subtle->styles.all, False);
+  StyleInherit(&subtle->styles.views,     &subtle->styles.all);
+  StyleInherit(&subtle->styles.title,     &subtle->styles.all);
+  StyleInherit(&subtle->styles.sublets,   &subtle->styles.all);
+  StyleInherit(&subtle->styles.separator, &subtle->styles.all);
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker
