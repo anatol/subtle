@@ -69,9 +69,9 @@ PanelSeparator(int type,
     strlen(subtle->separator.string));
 } /* }}} */
 
-/* PanelModes {{{ */
+/* PanelClientModes {{{ */
 void
-PanelModes(SubClient *c,
+PanelClientModes(SubClient *c,
   char *buf,
   int *width)
 {
@@ -114,33 +114,43 @@ PanelModes(SubClient *c,
 } /* }}} */
 
 /* PanelViewStyle {{{ */
-static SubStyle *
+static void
 PanelViewStyle(SubView *v,
-  int focus)
+  int idx,
+  int focus,
+  SubStyle *s)
 {
-  SubStyle *s = &subtle->styles.views, *style = NULL;
-
   /* Select style */
   if(subtle->styles.views.styles)
     {
-      /* Pick supported state */
-      if(subtle->urgent_tags & v->tags && subtle->styles.urgent)
-        s = subtle->styles.urgent;
-      else if(focus && subtle->styles.focus)
-        s = subtle->styles.focus;
-      else if(subtle->client_tags & v->tags &&
-          subtle->styles.occupied)
-        s = subtle->styles.occupied;
-      else if(subtle->styles.unoccupied)
-        s = subtle->styles.unoccupied;
+      SubStyle *style = &subtle->styles.views;
 
-      /* Pick custom state */
-      if((style = subArrayGet(subtle->styles.views.styles,
-          v->style)))
-        s = style;
+      /* Pick base style */
+      if(!(style = subArrayGet(subtle->styles.views.styles, v->style)))
+        {
+          if(subtle->styles.focus && focus)
+            style = subtle->styles.focus;
+          else if(subtle->styles.occupied &&
+              subtle->client_tags & v->tags)
+            style = subtle->styles.occupied;
+          else if(subtle->styles.unoccupied)
+            style = subtle->styles.unoccupied;
+        }
+
+      subStyleMerge(s, style);
+
+      /* Apply modifiers */
+      if(subtle->styles.urgent && subtle->urgent_tags & v->tags)
+        subStyleMerge(s, subtle->styles.urgent);
+
+      if(subtle->styles.visible)
+        {
+          if(subtle->visible_views & (1L << (idx + 1)))
+            subStyleMerge(s, subtle->styles.visible);
+        }
+
     }
-
-  return s;
+  else subStyleMerge(s, &subtle->styles.views);
 } /* }}} */
 
 /* Public */
@@ -245,7 +255,7 @@ subPanelUpdate(SubPanel *p)
                     char buf[5] = { 0 };
                     int width = 0, len = strlen(c->name);
 
-                    PanelModes(c, buf, &width);
+                    PanelClientModes(c, buf, &width);
 
                     /* Font offset, panel border and padding */
                     p->width = subSharedTextWidth(subtle->dpy,
@@ -267,19 +277,32 @@ subPanelUpdate(SubPanel *p)
         if(0 < subtle->views->ndata)
           {
             int i;
+            SubStyle s = { -1, .border = { -1 }, .padding = { -1 }, .margin = { -1 }};
 
             /* Update for each view */
             for(i = 0; i < subtle->views->ndata; i++)
               {
                 SubView *v = VIEW(subtle->views->data[i]);
-                SubStyle *s = PanelViewStyle(v, (p->screen->vid == i));
 
-                /* Check dynamic views */
+                /* Skip dynamic views */
                 if(v->flags & SUB_VIEW_DYNAMIC &&
                     !(subtle->client_tags & v->tags))
                   continue;
 
-                p->width += MAX(s->min, v->width) + STYLE_WIDTH((*s));
+                PanelViewStyle(v, i, (p->screen->vid == i), &s);
+
+                /* Update view width */
+                if(v->flags & SUB_VIEW_ICON_ONLY)
+                  v->width = v->icon->width + STYLE_WIDTH((s));
+                else
+                  {
+                    v->width = subSharedTextWidth(subtle->dpy, subtle->font,
+                      v->name, strlen(v->name), NULL, NULL, True) +
+                      STYLE_WIDTH((s)) + (v->icon ? v->icon->width + 3 : 0);
+                  }
+
+                /* Ensure min width */
+                p->width += MAX(s.min, v->width);
               }
           }
         break; /* }}} */
@@ -361,7 +384,7 @@ subPanelRender(SubPanel *p,
 
                 DEAD(c);
 
-                PanelModes(c, buf, &width);
+                PanelClientModes(c, buf, &width);
 
                 /* Set window background and border*/
                 PanelRect(drawable, p->x, p->width, s);
@@ -386,36 +409,38 @@ subPanelRender(SubPanel *p,
         if(0 < subtle->views->ndata)
           {
             int i, vx = p->x;
+            SubStyle s = { -1, .border = { -1 }, .padding = { -1 }, .margin = { -1 }};
 
             /* View buttons */
             for(i = 0; i < subtle->views->ndata; i++)
               {
                 int x = 0;
                 SubView *v = VIEW(subtle->views->data[i]);
-                SubStyle *s = PanelViewStyle(v, (p->screen->vid == i));
 
-                /* Check dynamic views */
+                /* Skip dynamic views */
                 if(v->flags & SUB_VIEW_DYNAMIC &&
                     !(subtle->client_tags & v->tags))
                   continue;
 
-                /* Set window background and border*/
-                PanelRect(drawable, vx, v->width + STYLE_WIDTH((*s)), s);
+                PanelViewStyle(v, i, (p->screen->vid == i), &s);
 
-                x += STYLE_LEFT((*s));
+                /* Set window background and border*/
+                PanelRect(drawable, vx, v->width, &s);
+
+                x += STYLE_LEFT((s));
 
                 /* Draw view icon and/or text */
                 if(v->flags & SUB_VIEW_ICON)
                   {
                     int y = 0, icony = 0;
 
-                    y     = subtle->font->y + STYLE_TOP((*s));
-                    icony = v->icon->height > y ? s->margin.top :
+                    y     = subtle->font->y + STYLE_TOP((s));
+                    icony = v->icon->height > y ? s.margin.top :
                       y - v->icon->height;
 
                     subSharedTextIconDraw(subtle->dpy, subtle->gcs.draw,
                       drawable, vx + x, icony, v->icon->width,
-                      v->icon->height, s->icon, s->bg, v->icon->pixmap,
+                      v->icon->height, s.icon, s.bg, v->icon->pixmap,
                       v->icon->bitmap);
                   }
 
@@ -425,10 +450,10 @@ subPanelRender(SubPanel *p,
 
                     subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
                       subtle->font, drawable, vx + x, subtle->font->y +
-                      STYLE_TOP((*s)), s->fg, s->bg, v->name, strlen(v->name));
+                      STYLE_TOP((s)), s.fg, s.bg, v->name, strlen(v->name));
                   }
 
-                vx += v->width + STYLE_WIDTH((*s));
+                vx += v->width;
               }
           }
         break; /* }}} */
@@ -536,23 +561,21 @@ subPanelAction(SubArray *panels,
                     for(j = 0; j < subtle->views->ndata; j++)
                       {
                         SubView *v = VIEW(subtle->views->data[j]);
-                        SubStyle *s = PanelViewStyle(v, (p->screen->vid == i));
-                        int swidth = v->width + STYLE_WIDTH((*s)); ///< Get width with style
 
-                        /* Check dynamic views */
+                        /* Skip dynamic views */
                         if(v->flags & SUB_VIEW_DYNAMIC &&
                             !(subtle->client_tags & v->tags))
                           continue;
 
                         /* Check if x is in view rect */
-                        if(x >= vx && x <= vx + swidth)
+                        if(x >= vx && x <= vx + v->width)
                           {
                             subViewSwitch(v, -1, False);
 
                             break;
                           }
 
-                        vx += swidth;
+                        vx += v->width;
                       }
                   }
                 break; /* }}} */
