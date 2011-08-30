@@ -32,8 +32,6 @@ subViewNew(char *name,
   v->flags = SUB_TYPE_VIEW;
   v->style = -1;
   v->name  = strdup(name);
-  v->width = subSharedTextWidth(subtle->dpy, subtle->font,
-    v->name, strlen(v->name), NULL, NULL, True);
 
   /* Tags */
   if(tags && strncmp("", tags, 1))
