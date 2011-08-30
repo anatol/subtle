@@ -1252,9 +1252,9 @@ RubyForeachMatcher(VALUE key,
   return ST_CONTINUE;
 } /* }}} */
 
-/* RubyForeachState {{{ */
+/* RubyForeachStyle {{{ */
 static int
-RubyForeachState(VALUE key,
+RubyForeachStyle(VALUE key,
   VALUE value,
   VALUE data)
 {
@@ -1267,14 +1267,19 @@ RubyForeachState(VALUE key,
   style->name = strdup(SYM2CHAR(key));
   RubyEvalStyle(key, style, rb_iv_get(value, "@params"));
 
-  /* Translate flags */
-  if(CHAR2SYM("urgent")          == key) subtle->styles.urgent     = style;
-  else if(CHAR2SYM("occupied")   == key) subtle->styles.occupied   = style;
-  else if(CHAR2SYM("unoccupied") == key) subtle->styles.unoccupied = style;
-  else if(CHAR2SYM("focus")      == key) subtle->styles.focus      = style;
+  /* Special styles for views */
+  if(&subtle->styles.views == s)
+    {
+      if(CHAR2SYM("urgent")          == key) subtle->styles.urgent     = style;
+      else if(CHAR2SYM("occupied")   == key) subtle->styles.occupied   = style;
+      else if(CHAR2SYM("unoccupied") == key) subtle->styles.unoccupied = style;
+      else if(CHAR2SYM("focus")      == key) subtle->styles.focus      = style;
+      else if(CHAR2SYM("visible")    == key) subtle->styles.visible    = style;
+    }
 
   /* Finally add style */
-  subStylePush(s, style);
+  if(!s->styles) s->styles = subArrayNew();
+  subArrayPush(s->styles, (void *)style);
 
   return ST_CONTINUE;
 } /* }}} */
@@ -2225,12 +2230,6 @@ RubyConfigView(int argc,
 
                   RubyIconToIcon(icon, v->icon);
 
-                  /* Set view width */
-                  if(v->flags & SUB_VIEW_ICON_ONLY)
-                    v->width  = v->icon->width;
-                  else
-                    v->width += v->icon->width + 3;
-
                   rb_ary_push(shelter, icon); ///< Protect from GC
                 }
               else v->flags &= ~SUB_VIEW_ICON_ONLY;
@@ -2425,39 +2424,6 @@ RubyConfigStyle(VALUE self,
       else if(CHAR2SYM("separator") == name) s = &subtle->styles.separator;
       else if(CHAR2SYM("clients")   == name) s = &subtle->styles.clients;
       else if(CHAR2SYM("subtle")    == name) s = &subtle->styles.subtle;
-      /* FIXME: Deprecated */
-      else if(CHAR2SYM("urgent") == name)
-        {
-          s = subtle->styles.urgent = subStyleNew();
-          subStylePush(&subtle->styles.views, s);
-
-          subSharedLogDeprecated("The `urgent' style is deprecated. "
-            "Please use the `urgent' state instead.\n");
-        }
-      else if(CHAR2SYM("occupied") == name)
-        {
-          s = subtle->styles.occupied = subStyleNew();
-          subStylePush(&subtle->styles.views, s);
-
-          subSharedLogDeprecated("The `occupied' style is deprecated. "
-            "Please use the `occupied' state instead.\n");
-        }
-      else if(CHAR2SYM("unoccupied") == name)
-        {
-          s = subtle->styles.unoccupied = subStyleNew();
-          subStylePush(&subtle->styles.views, s);
-
-          subSharedLogDeprecated("The `unoccupied' style is deprecated. "
-            "Please use the `unoccupied' state instead.\n");
-        }
-      else if(CHAR2SYM("focus") == name)
-        {
-          s = subtle->styles.focus = subStyleNew();
-          subStylePush(&subtle->styles.views, s);
-
-          subSharedLogDeprecated("The `focus' style is deprecated. "
-            "Please use the `focus' state instead.\n");
-        }
       else
         {
           subSharedLogWarn("Unknown style name `:%s'\n", SYM2CHAR(name));
@@ -2477,7 +2443,7 @@ RubyConfigStyle(VALUE self,
 
       /* Eval styles */
       if(T_HASH == rb_type((styles = rb_iv_get(options, "@styles"))))
-        rb_hash_foreach(styles, RubyForeachState, (VALUE)s);
+        rb_hash_foreach(styles, RubyForeachStyle, (VALUE)s);
 
     }
   else rb_raise(rb_eArgError, "Unknown value type for style");
