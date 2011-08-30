@@ -74,13 +74,7 @@ ScreenClear(SubScreen *s,
   XSetForeground(subtle->dpy, subtle->gcs.draw, col);
   XFillRectangle(subtle->dpy, s->drawable, subtle->gcs.draw,
     0, 0, s->base.width, subtle->ph);
-} /* }}} */
 
-/* ScreenCopy {{{ */
-static void
-ScreenCopy(SubScreen *s,
-  Window panel)
-{
    /* Draw stipple on panels */
   if(s->flags & SUB_SCREEN_STIPPLE)
     {
@@ -92,10 +86,6 @@ ScreenCopy(SubScreen *s,
       XFillRectangle(subtle->dpy, s->drawable, subtle->gcs.stipple,
         0, 0, s->base.width, subtle->ph);
     }
-
-  /* Swap buffer */
-  XCopyArea(subtle->dpy, s->drawable, panel, subtle->gcs.draw,
-    0, 0, s->base.width, subtle->ph, 0, 0);
 } /* }}} */
 
 /* Public */
@@ -553,7 +543,9 @@ subScreenRender(void)
           if(p->flags & SUB_PANEL_HIDDEN) continue;
           if(panel != s->panel2 && p->flags & SUB_PANEL_BOTTOM)
             {
-              ScreenCopy(s, panel);
+              XCopyArea(subtle->dpy, s->drawable, panel, subtle->gcs.draw,
+                0, 0, s->base.width, subtle->ph, 0, 0);
+
               ScreenClear(s, subtle->styles.subtle.bottom);
               panel = s->panel2;
             }
@@ -561,7 +553,8 @@ subScreenRender(void)
           subPanelRender(p, s->drawable);
         }
 
-      ScreenCopy(s, panel);
+      XCopyArea(subtle->dpy, s->drawable, panel, subtle->gcs.draw,
+        0, 0, s->base.width, subtle->ph, 0, 0);
     }
 
   XSync(subtle->dpy, False); ///< Sync before going on
