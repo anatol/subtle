@@ -591,7 +591,7 @@ typedef struct subsubtle_t /* {{{ */
   int                  ph, step, snap;                            ///< Subtle properties
   int                  visible_tags, visible_views;               ///< Subtle visible tags and views
   int                  client_tags, urgent_tags;                  ///< Subtle clients and urgent tags
-  unsigned long        gravity;                                   ///< Subtle gravity
+  unsigned long        gravity;                                   ///< Subtle default gravity
 
   Display              *dpy;                                      ///< Subtle Xorg display
 
@@ -637,7 +637,7 @@ typedef struct subsubtle_t /* {{{ */
   {
     struct substyle_t all, views, title, sublets,
                       separator, clients, subtle,
-                      *urgent, *occupied, *unoccupied, *focus; ///< For faster access
+                      *urgent, *occupied, *unoccupied, *focus, *visible; ///< For faster access
   } styles;                                                       ///< Subtle styles
 
   struct
@@ -829,9 +829,9 @@ void subScreenKill(SubScreen *s);                                 ///< Kill scre
 
 /* style.c {{{ */
 SubStyle *subStyleNew(void);                                      ///< Create new style
-void subStylePush(SubStyle *s1, SubStyle *s2);                    ///< Append style
 SubStyle *subStyleFind(SubStyle *s, char *name, int *idx);        ///< Find state
 void subStyleReset(SubStyle *s, int val);                         ///< Reset style values to given val
+void subStyleMerge(SubStyle *s1, SubStyle *s2);                   ///< Merge style values
 void subStyleKill(SubStyle *s);                                   ///< Kill style
 void subStyleInheritance(void);                                   ///< Inherit values
 /* }}} */

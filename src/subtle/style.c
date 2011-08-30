@@ -14,12 +14,13 @@
 /* StyleInheritSides {{{ */
 static void
 StyleInheritSides(SubSides *s1,
-  SubSides *s2)
+  SubSides *s2,
+  int merge)
 {
-  if(-1 == s1->top)    s1->top    = s2->top;
-  if(-1 == s1->right)  s1->right  = s2->right;
-  if(-1 == s1->bottom) s1->bottom = s2->bottom;
-  if(-1 == s1->left)   s1->left   = s2->left;
+  if(-1 == s1->top    || (merge && -1 != s2->top))    s1->top    = s2->top;
+  if(-1 == s1->right  || (merge && -1 != s2->right))  s1->right  = s2->right;
+  if(-1 == s1->bottom || (merge && -1 != s2->bottom)) s1->bottom = s2->bottom;
+  if(-1 == s1->left   || (merge && -1 != s2->left))   s1->left   = s2->left;
 } /* }}} */
 
 /* StyleInherit {{{ */
@@ -29,7 +30,7 @@ StyleInherit(SubStyle *s1,
 {
   assert(s1 && s2);
 
-  /* Inherit nset colors */
+  /* Inherit unset colors */
   if(-1 == s1->fg)     s1->fg     = s2->fg;
   if(-1 == s1->bg)     s1->bg     = s2->bg;
   if(-1 == s1->icon)   s1->icon   = s2->icon;
@@ -39,9 +40,9 @@ StyleInherit(SubStyle *s1,
   if(-1 == s1->left)   s1->left   = s2->left;
 
   /* Inherit unset border, padding and margin */
-  StyleInheritSides(&s1->border,  &s2->border);
-  StyleInheritSides(&s1->padding, &s2->padding);
-  StyleInheritSides(&s1->margin,  &s2->margin);
+  StyleInheritSides(&s1->border,  &s2->border,  False);
+  StyleInheritSides(&s1->padding, &s2->padding, False);
+  StyleInheritSides(&s1->margin,  &s2->margin,  False);
 
   /* Check nested styles */
   if(s1->styles)
@@ -52,6 +53,11 @@ StyleInherit(SubStyle *s1,
       for(i = 0; i < s1->styles->ndata; i++)
         {
           SubStyle *style = STYLE(s1->styles->data[i]);
+
+          /* Don't inherit values, these styles are just
+           * added to the selected view styles */
+          if(subtle->styles.urgent == style ||
+            subtle->styles.visible == style) continue;
 
           StyleInherit(style, s1);
 
@@ -83,22 +89,6 @@ subStyleNew(void)
   subSharedLogDebugSubtle("new=style\n");
 
   return s;
-} /* }}} */
-
- /** subStylePush {{{
-  * @brief Push style state
-  * @param[in]  s1  A #SubStyle
-  * @param[in]  s2  A #SubStyle
-  **/
-
-void
-subStylePush(SubStyle *s1,
-  SubStyle *s2)
-{
-  assert(s1 && s2);
-
-  if(!s1->styles) s1->styles = subArrayNew();
-  subArrayPush(s1->styles, (void *)s2);
 } /* }}} */
 
  /** subStyleFind {{{
@@ -164,6 +154,33 @@ subStyleReset(SubStyle *s,
   /* Remove states */
   if(s->styles) subArrayKill(s->styles, True);
   s->styles = NULL;
+} /* }}} */
+
+ /** subStyleMerge {{{
+  * @brief Merge styles
+  * @param[inout]  s1  Style to assign values to
+  * @param[in]     s2  Style to copy values from
+  **/
+
+void
+subStyleMerge(SubStyle *s1,
+  SubStyle *s2)
+{
+  assert(s1 && s2);
+
+  /* Merge set colors */
+  if(-1 != s2->fg)     s1->fg     = s2->fg;
+  if(-1 != s2->bg)     s1->bg     = s2->bg;
+  if(-1 != s2->icon)   s1->icon   = s2->icon;
+  if(-1 != s2->top)    s1->top    = s2->top;
+  if(-1 != s2->right)  s1->right  = s2->right;
+  if(-1 != s2->bottom) s1->bottom = s2->bottom;
+  if(-1 != s2->left)   s1->left   = s2->left;
+
+  /* Merge set border, padding and margin */
+  StyleInheritSides(&s1->border,  &s2->border,  True);
+  StyleInheritSides(&s1->padding, &s2->padding, True);
+  StyleInheritSides(&s1->margin,  &s2->margin,  True);
 } /* }}} */
 
  /** subStyleKill {{{
