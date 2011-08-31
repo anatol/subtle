@@ -153,6 +153,19 @@ PanelViewStyle(SubView *v,
   else subStyleMerge(s, &subtle->styles.views);
 } /* }}} */
 
+/* PanelSubletStyle {{{ */
+static SubStyle *
+PanelSubletStyle(SubPanel *p)
+{
+  SubStyle *s = NULL;
+
+  /* Pick sublet style */
+  if(subtle->styles.sublets.styles)
+    s = subArrayGet(s->styles, p->sublet->style);
+
+  return s ? s : &subtle->styles.sublets;
+} /* }}} */
+
 /* Public */
 
  /** subPanelNew {{{
@@ -226,11 +239,7 @@ subPanelUpdate(SubPanel *p)
         break; /* }}} */
       case SUB_PANEL_SUBLET: /* {{{ */
           {
-            SubStyle *s = &subtle->styles.sublets, *style = NULL;
-
-            /* Select style */
-            if(s->styles && (style = subArrayGet(s->styles, p->sublet->style)))
-              s = style;
+            SubStyle *s = PanelSubletStyle(p);
 
             /* Ensure min width */
             p->width = MAX(s->min, p->sublet->width);
@@ -355,11 +364,7 @@ subPanelRender(SubPanel *p,
         break; /* }}} */
       case SUB_PANEL_SUBLET: /* {{{ */
           {
-            SubStyle *s = &subtle->styles.sublets, *style = NULL;
-
-            /* Select style */
-            if(s->styles && (style = subArrayGet(s->styles, p->sublet->style)))
-              s = style;
+            SubStyle *s = PanelSubletStyle(p);
 
             /* Set window background and border*/
             PanelRect(drawable, p->x, p->width, s);
@@ -584,6 +589,28 @@ subPanelAction(SubArray *panels,
     }
 } /* }}} */
 
+ /** subPanelGeometry {{{
+  * @brief Get geometry of panel for given style
+  * @param[in]     p     A #SubPanel
+  * @param[in]     s     A #SubStyle
+  * @param[inout]  geom  A #XRectangle
+  **/
+
+void
+subPanelGeometry(SubPanel *p,
+  SubStyle *s,
+  XRectangle *geom)
+{
+  assert(p && s && geom);
+
+  /* Calculate panel geometry without style values */
+  geom->x      = p->x + STYLE_LEFT((*s));
+  geom->y      = p->flags & SUB_PANEL_BOTTOM ?
+    p->screen->geom.y + p->screen->geom.height - subtle->ph : subtle->ph;
+  geom->width  = 0 == p->width ? 1 : p->width - STYLE_WIDTH((*s));
+  geom->height = subtle->ph - STYLE_HEIGHT((*s));
+} /* }}} */
+
  /** subPanelPublish {{{
   * @brief Publish panels
   **/
@@ -592,13 +619,15 @@ void
 subPanelPublish(void)
 {
   int i = 0, j = 0, idx = 0;
-  char **names = NULL;
+  char **sublets = NULL, buf[30] = { 0 };
+  XRectangle geom = { 0 };
 
   /* Alloc space */
-  names = (char **)subSharedMemoryAlloc(subtle->sublets->ndata,
+  sublets = (char **)subSharedMemoryAlloc(subtle->sublets->ndata,
     sizeof(char *));
 
-  /* Find sublet in panels */
+  /* We need to publish sublets here, because we cannot rely
+   * on the sublets array which is reordered on every update */
   for(i = 0; i < subtle->screens->ndata; i++)
     {
       SubScreen *s = SCREEN(subtle->screens->data[i]);
@@ -611,20 +640,34 @@ subPanelPublish(void)
 
               /* Include sublets, exclude shallow copies */
               if(p->flags & SUB_PANEL_SUBLET && !(p->flags & SUB_PANEL_COPY))
-                names[idx++] = p->sublet->name;
+                {
+                  subPanelGeometry(p, PanelSubletStyle(p), &geom);
+
+                  /* Add gravity to list */
+                  snprintf(buf, sizeof(buf), "%dx%d+%d+%d#%s", geom.x,
+                    geom.y, geom.width, geom.height, p->sublet->name);
+
+                  sublets[idx] = (char *)subSharedMemoryAlloc(strlen(buf) + 1,
+                    sizeof(char));
+                  strncpy(sublets[idx++], buf, strlen(buf));
+                }
             }
         }
     }
 
-  /* EWMH: Sublet list and windows */
+  /* EWMH: Sublet list and geometries */
   subSharedPropertySetStrings(subtle->dpy, ROOT,
-    subEwmhGet(SUB_EWMH_SUBTLE_SUBLET_LIST), names, subtle->sublets->ndata);
+    subEwmhGet(SUB_EWMH_SUBTLE_SUBLET_LIST), sublets, subtle->sublets->ndata);
+
+  /* Tidy up */
+  for(i = 0; i < subtle->sublets->ndata; i++)
+    free(sublets[i]);
 
   subSharedLogDebugSubtle("publish=panel, n=%d\n", subtle->sublets->ndata);
 
   XSync(subtle->dpy, False); ///< Sync all changes
 
-  free(names);
+  free(sublets);
 } /* }}} */
 
  /** subPanelKill {{{

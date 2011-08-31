@@ -795,6 +795,8 @@ void subPanelRender(SubPanel *p, Drawable drawable);              ///< Render pa
 int subPanelCompare(const void *a, const void *b);                ///< Compare two panels
 void subPanelAction(SubArray *panels, int type, int x, int y,
   int button, int bottom);                                        ///< Handle panel action
+void subPanelGeometry(SubPanel *p, SubStyle *s,
+  XRectangle *geom);                                              ///< Get panel geometry
 void subPanelPublish(void);                                       ///< Publish sublets
 void subPanelKill(SubPanel *p);                                   ///< Kill panel
 /* }}} */
