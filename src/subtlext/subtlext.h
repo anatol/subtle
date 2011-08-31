@@ -217,6 +217,8 @@ int subSubtlextFindString(char *prop_name, char *source,
   char **name, int flags);                                        ///< Find string id
 VALUE subSubtlextFindObjects(char *prop_name, char *class_name,
   char *source, int flags);                                       ///< Find objects
+VALUE subSubtlextFindObjectsGeometry(char *prop_name,
+  char *class_name, char *source, int flags, int many);           ///< Find objects with geometries
 /* }}} */
 
 /* tag.c {{{ */

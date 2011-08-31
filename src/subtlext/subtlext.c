@@ -1621,6 +1621,87 @@ subSubtlextFindObjects(char *prop_name,
   return ret;
 } /* }}} */
 
+ /** subSubtlextFindObjectsGeometry {{{
+  * @brief Find match in propery list and create objects
+  * @param[in]  prop_name   Property name
+  * @param[in]  class_name  Class name
+  * @param[in]  source      Regexp source
+  * @param[in]  flags       Match flags
+  * @param[in]  many        Return one or many
+  * @retval  Qnil    No match
+  * @retval  Object  One match
+  * @retval  Array   Multiple matches
+  **/
+
+VALUE
+subSubtlextFindObjectsGeometry(char *prop_name,
+  char *class_name,
+  char *source,
+  int flags,
+  int many)
+{
+  int nstrings = 0;
+  char **strings = NULL;
+  VALUE ret = many ? rb_ary_new() : Qnil;
+
+  subSubtlextConnect(NULL); ///< Implicit open connection
+
+  /* Get string list */
+  if((strings = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
+      XInternAtom(display, prop_name, False), &nstrings)))
+    {
+      int i, selid = -1;
+      XRectangle geometry = { 0 };
+      char buf[30] = { 0 };
+      VALUE klass_obj = Qnil, klass_geom = Qnil, meth = Qnil;
+      VALUE obj = Qnil, geom = Qnil;
+      regex_t *preg = NULL;
+
+      /* Fetch data */
+      klass_obj  = rb_const_get(mod, rb_intern(class_name));
+      klass_geom = rb_const_get(mod, rb_intern("Geometry"));
+      meth       = rb_intern("new");
+
+      /* Create if source is given */
+      if(source)
+        {
+          if(isdigit(source[0])) selid = atoi(source);
+          preg = subSharedRegexNew(source);
+        }
+
+      /* Create object list */
+      for(i = 0; i < nstrings; i++)
+        {
+          sscanf(strings[i], "%hdx%hd+%hd+%hd#%s", &geometry.x, &geometry.y,
+            &geometry.width, &geometry.height, buf);
+
+          /* Check if string matches */
+          if(!source || (source && (selid == i || (-1 == selid &&
+              ((flags & SUB_MATCH_EXACT && 0 == strcmp(source, buf)) ||
+              (preg && !(flags & SUB_MATCH_EXACT) &&
+                subSharedRegexMatch(preg, buf)))))))
+            {
+              /* Create new object and geometry */
+              obj  = rb_funcall(klass_obj, meth, 1, rb_str_new2(buf));
+              geom = rb_funcall(klass_geom, meth, 4, INT2FIX(geometry.x),
+                INT2FIX(geometry.y), INT2FIX(geometry.width),
+                INT2FIX(geometry.height));
+
+              rb_iv_set(obj, "@id",       INT2FIX(i));
+              rb_iv_set(obj, "@geometry", geom);
+
+              ret = subSubtlextOneOrMany(obj, ret);
+            }
+        }
+
+      if(preg) subSharedRegexKill(preg);
+      XFreeStringList(strings);
+    }
+  else rb_raise(rb_eStandardError, "Failed getting property list");
+
+  return ret;
+} /* }}} */
+
 /* Plugin */
 
 /* Init_subtlext {{{ */
@@ -1825,7 +1906,7 @@ Init_subtlext(void)
   rb_define_attr(gravity, "name",     1, 0);
 
   /* Geometry */
-  rb_define_attr(gravity, "geometry", 0, 0);
+  rb_define_attr(gravity, "geometry", 1, 0);
 
   /* Singleton methods */
   rb_define_singleton_method(gravity, "find", subGravitySingFind, 1);
@@ -1973,6 +2054,9 @@ Init_subtlext(void)
   /* Name of the sublet */
   rb_define_attr(sublet, "name", 1, 0);
 
+  /* Geometry */
+  rb_define_attr(sublet, "geometry", 1, 0);
+
   /* Singleton methods */
   rb_define_singleton_method(sublet, "find", subSubletSingFind, 1);
   rb_define_singleton_method(sublet, "all",  subSubletSingAll,  0);
@@ -1988,7 +2072,6 @@ Init_subtlext(void)
   rb_define_method(sublet, "update",     subSubletUpdate,         0);
   rb_define_method(sublet, "data",       subSubletDataReader,     0);
   rb_define_method(sublet, "data=",      subSubletDataWriter,     1);
-  rb_define_method(sublet, "geometry",   subSubletGeometryReader, 0);
   rb_define_method(sublet, "show",       subSubletVisibilityShow, 0);
   rb_define_method(sublet, "hide",       subSubletVisibilityHide, 0);
   rb_define_method(sublet, "to_str",     subSubletToString,       0);
