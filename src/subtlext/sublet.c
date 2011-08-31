@@ -66,14 +66,16 @@ subSubletSingFind(VALUE self,
           return parsed;
     }
 
-  return subSubtlextFindObjects("SUBTLE_SUBLET_LIST", "Sublet", buf, flags);
+  return subSubtlextFindObjectsGeometry("SUBTLE_SUBLET_LIST",
+    "Sublet", buf, flags, False);
 } /* }}} */
 
 /* subSubletSingAll {{{ */
 /*
  * call-seq: all -> Array
  *
- * Get an array of all running Sublets.
+ * Get an array of all Sublets based on the <code>SUBTLE_SUBLET_LIST</code>
+ * property list.
  *
  *  Subtlext::Sublet.all
  *  => [#<Subtlext::Sublet:xxx>, #<Subtlext::Sublet:xxx>]
@@ -85,34 +87,8 @@ subSubletSingFind(VALUE self,
 VALUE
 subSubletSingAll(VALUE self)
 {
-  int i, nsublets = 0;
-  char **sublets = NULL;
-  VALUE meth = Qnil, klass = Qnil, array = Qnil;
-
-  subSubtlextConnect(NULL); ///< Implicit open connection
-
-  /* Fetch data */
-  meth   = rb_intern("new");
-  klass  = rb_const_get(mod, rb_intern("Sublet"));
-  array  = rb_ary_new();
-
-  /* Check results */
-  if((sublets = subSharedPropertyGetStrings(display,
-      DefaultRootWindow(display), XInternAtom(display, "SUBTLE_SUBLET_LIST",
-      False), &nsublets)))
-    {
-      for(i = 0; i < nsublets; i++)
-        {
-          VALUE s = rb_funcall(klass, meth, 1, rb_str_new2(sublets[i]));
-
-          rb_iv_set(s, "@id", INT2FIX(i));
-          rb_ary_push(array, s);
-        }
-
-      XFreeStringList(sublets);
-    }
-
-  return array;
+  return subSubtlextFindObjectsGeometry("SUBTLE_SUBLET_LIST",
+    "Sublet", NULL, 0, True);
 } /* }}} */
 
 /* Class */
@@ -170,26 +146,18 @@ subSubletInit(VALUE self,
 VALUE
 subSubletUpdate(VALUE self)
 {
-  int id = -1;
-  VALUE name = Qnil;
+  VALUE id = Qnil;
+  SubMessageData data = { { 0, 0, 0, 0, 0 } };
 
   /* Check ruby object */
   rb_check_frozen(self);
-  GET_ATTR(self, "@name", name);
+  GET_ATTR(self, "@id", id);
 
-  /* Check results */
-  if(-1 != ((id = subSubtlextFindString("SUBTLE_SUBLET_LIST",
-      RSTRING_PTR(name), NULL, SUB_MATCH_EXACT))))
-    {
-      SubMessageData data = { { 0, 0, 0, 0, 0 } };
+  /* Send message */
+  data.l[0] = FIX2INT(id);
 
-      /* Send message */
-      data.l[0] = id;
-
-      subSharedMessage(display, DefaultRootWindow(display),
-        "SUBTLE_SUBLET_UPDATE", data, 32, True);
-    }
-  else rb_raise(rb_eStandardError, "Failed finding sublet");
+  subSharedMessage(display, DefaultRootWindow(display),
+    "SUBTLE_SUBLET_UPDATE", data, 32, True);
 
   return Qnil;
 } /* }}} */
@@ -315,52 +283,6 @@ subSubletVisibilityHide(VALUE self)
     "SUBTLE_SUBLET_FLAGS", data, 32, True);
 
   return Qnil;
-} /* }}} */
-
-/* subSubletGeometryReader {{{ */
-/*
- * call-seq: geometry -> Subtlext::Geometry
- *
- * Get Geometry of this Sublet
- *
- *  win.geometry
- *  => #<Subtlext::Geometry:xxx>
- */
-
-VALUE
-subSubletGeometryReader(VALUE self)
-{
-  int nwins = 0, wx = 0, wy = 0, px = 0, py = 0;
-  unsigned int wwidth = 0, wheight = 0, wbw = 0, wdepth = 0;
-  unsigned int pwidth = 0, pheight = 0, pbw = 0, pdepth = 0;
-  Window *wins = NULL, win = None, parent = None, wroot = None, proot = None;
-  VALUE id = Qnil;
-
- /* Check ruby object */
-  rb_check_frozen(self);
-  GET_ATTR(self, "@id", id);
-
-  /* Fetch data */
-  if((wins = subSubtlextWindowList("SUBTLE_SUBLET_WINDOWS", &nwins)))
-    {
-      win  = wins[id];
-
-      free(wins);
-    }
-
-  /* Get parent and geometries */
-  XGetGeometry(display, win, &wroot, &wx, &wy,
-    &wwidth, &wheight, &wbw, &wdepth);
-
-  XQueryTree(display, win, &wroot, &parent, &wins,
-    (unsigned int *)&nwins); ///< Get parent
-
-  XGetGeometry(display, parent, &proot, &px, &py,
-    &pwidth, &pheight, &pbw, &pdepth);
-
-  if(wins) XFree(wins);
-
-  return subGeometryInstantiate(px + wx, py + wy, wwidth, wheight);
 } /* }}} */
 
 /* subSubletToString {{{ */
