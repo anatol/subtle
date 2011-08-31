@@ -182,8 +182,8 @@ subClientSingSelect(VALUE self)
 
 /* subClientSingFind {{{ */
 /*
- * call-seq: find(value) -> Subtlext::Client or nil
- *           [value]     -> Subtlext::Client or nil
+ * call-seq: find(value) -> Subtlext::Client, Array or nil
+ *           [value]     -> Subtlext::Client, Array or nil
  *
  * Find Client by a given <i>value</i> which can be of following type:
  *
