@@ -208,7 +208,8 @@ void subSubtlextBacktrace(void);                                  ///< Print rub
 VALUE subSubtlextConcat(VALUE str1, VALUE str2);                  ///< Concat strings
 VALUE subSubtlextParse(VALUE value, char *buf,
   int len, int *flags);                                           ///< Parse arguments
-VALUE subSubtlextOneOrMany(VALUE obj, VALUE recent);              ///< Return one or many
+VALUE subSubtlextOneOrMany(VALUE value, VALUE prev);              ///< Return one or many
+VALUE subSubtlextManyToOne(VALUE value);                          ///< Return one from many
 Window *subSubtlextWindowList(char *prop_name, int *size);        ///< Get window list
 int subSubtlextWindowMatch(Window win, regex_t *preg,
   const char *source, char **name, int flags);                    ///< Match window

@@ -1264,41 +1264,63 @@ subSubtlextParse(VALUE value,
 
  /** subSubtlextOneOrMany {{{
   * @brief Return one value or many in an array
-  * @param[in]  obj    Object
-  * @param[in]  array  Array or recent object
+  * @param[in]  value  Current value
+  * @param[in]  prev   Previous value or array
   * @retval Object  Just one value
   * @retval Array   Many values
   **/
 
 VALUE
-subSubtlextOneOrMany(VALUE obj,
-  VALUE recent)
+subSubtlextOneOrMany(VALUE value,
+  VALUE prev)
 {
   VALUE ret = Qnil;
 
   /* Handle different value types */
-  switch(rb_type(recent))
+  switch(rb_type(prev))
     {
       case T_NIL:
-        ret = obj;
+        ret = value;
         break;
       case T_ARRAY:
         /* Just append */
-        rb_ary_push(recent, obj);
-        ret = recent;
+        rb_ary_push(prev, value);
+        ret = prev;
         break;
       case T_DATA:
       case T_OBJECT:
         {
           /* Create new array and add data */
-          VALUE ary = rb_ary_new();
+          ret = rb_ary_new();
 
-          rb_ary_push(ary, recent);
-          rb_ary_push(ary, obj);
-
-          ret = ary;
+          rb_ary_push(ret, prev);
+          rb_ary_push(ret, value);
         }
     }
+
+  return ret;
+} /* }}} */
+
+ /** subSubtlextManyToOne {{{
+  * @brief Return one value or nil from array or the value
+  * @param[in]  value  Given value
+  * @retval Object  Just one value
+  * @retval nil     Empty array
+  **/
+
+VALUE
+subSubtlextManyToOne(VALUE value)
+{
+  VALUE ret = Qnil;
+
+  /* Handle different value types */
+  if(T_ARRAY == rb_type(value))
+    {
+      /* Just fetch first */
+      if(0 < RARRAY_LEN(value))
+        ret = rb_ary_entry(value, 0);
+    }
+  else ret = value;
 
   return ret;
 } /* }}} */
