@@ -110,18 +110,38 @@ context 'Client' do
   end # }}}
 
   asserts 'Set/get gravity' do # {{{
-    # Check gravity
-    result1 = topic.gravity == Subtlext::Gravity[:center]
+    topic.gravity = 12
+
+    sleep 0.5
+
+    index = topic.gravity == Subtlext::Gravity[12]
+    topic.gravity = :center
+
+    sleep 0.5
+
+    sym = topic.gravity == Subtlext::Gravity[:center]
+    topic.gravity = "center"
+
+    sleep 0.5
+
+    string = topic.gravity == Subtlext::Gravity['center']
+    topic.gravity = Subtlext::Gravity[:center]
+
+    sleep 0.5
+
+    string = topic.gravity == Subtlext::Gravity[:center]
 
     # Set gravity on www view
     topic.toggle_stick
     topic.gravity = { :www => :left }
 
+    sleep 0.5
+
     # Jump to www vew and check gravity
     Subtlext::View[:www].jump
-    result2 = topic.gravity == Subtlext::Gravity[:left]
+    left = topic.gravity == Subtlext::Gravity[:left]
 
-    result1 and result2
+    index and sym and string and left
   end # }}}
 
   asserts 'Get Screen' do # {{{
