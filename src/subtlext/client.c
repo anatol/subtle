@@ -136,17 +136,18 @@ ClientGravity(VALUE key,
   /* Find gravity */
   if(RTEST(value))
     {
-      VALUE gravity = subGravitySingFind(Qnil, value);
+      /* Check if finder returned an array */
+      VALUE gravity = subSubtlextManyToOne(subGravitySingFind(Qnil, value));
 
-      data.l[1] = RTEST(gravity) ? FIX2INT(rb_iv_get(gravity, "@id")) : -1;
+      if(RTEST(gravity)) data.l[1] = FIX2INT(rb_iv_get(gravity, "@id"));
     }
 
   /* Find view id if any */
   if(RTEST(key))
     {
-      VALUE view = subViewSingFind(Qnil, key);
+      VALUE view = subSubtlextManyToOne(subViewSingFind(Qnil, key));
 
-      data.l[2] = RTEST(view) ? FIX2INT(rb_iv_get(view, "@id")) : -1;
+      if(RTEST(view)) data.l[2] = FIX2INT(rb_iv_get(view, "@id"));
     }
 
   /* Finally send */
@@ -1123,8 +1124,6 @@ VALUE
 subClientGravityWriter(VALUE self,
   VALUE value)
 {
-  VALUE gravity = Qnil;
-
   /* Check ruby object */
   rb_check_frozen(self);
 
@@ -1135,23 +1134,21 @@ subClientGravityWriter(VALUE self,
     {
       case T_FIXNUM:
       case T_SYMBOL:
+      case T_STRING: ClientGravity(Qnil, value, self); break;
       case T_OBJECT:
         if(rb_obj_is_instance_of(value,
-            rb_const_get(mod, rb_intern("Gravity"))) ||
-            RTEST(gravity = subGravitySingFind(Qnil, value)))
-          {
-            ClientGravity(Qnil, gravity, self);
-
-            rb_iv_set(self, "@gravity", gravity);
-          }
+            rb_const_get(mod, rb_intern("Gravity"))))
+          ClientGravity(Qnil, value, self);
         break;
       case T_HASH:
         rb_hash_foreach(value, ClientGravity, self);
-        rb_iv_set(self, "@gravity", Qnil); ///< Reset to update on demand
         break;
       default: rb_raise(rb_eArgError, "Unexpected value-type `%s'",
         rb_obj_classname(value));
     }
+
+  /* Reset gravity */
+  rb_iv_set(self, "@gravity", Qnil);
 
   return Qnil;
 } /* }}} */
