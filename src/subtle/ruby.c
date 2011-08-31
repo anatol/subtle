@@ -2917,23 +2917,22 @@ RubySubletGeometryReader(VALUE self)
   Data_Get_Struct(self, SubPanel, p);
   if(p)
     {
-      int y = subtle->ph, width = 0, bw = 0;
+      SubStyle *s = NULL;
+      XRectangle geom = { 0 };
       VALUE subtlext = Qnil, klass = Qnil;
 
-      /* Calculate bottom panel position */
-      if(p->flags & SUB_PANEL_BOTTOM)
-        y = p->screen->geom.y + p->screen->geom.height - subtle->ph;
+      /* Pick sublet style */
+      if(subtle->styles.sublets.styles)
+        s = subArrayGet(s->styles, p->sublet->style);
 
-      bw    = subtle->styles.sublets.border.left +
-        subtle->styles.sublets.border.right;
-      width = 0 == p->width ? 1 : p->width - bw;
+      subPanelGeometry(p, s ? s : &subtle->styles.sublets, &geom);
 
       /* Create geometry object */
       subtlext = rb_const_get(rb_mKernel, rb_intern("Subtlext"));
       klass    = rb_const_get(subtlext, rb_intern("Geometry"));
       geometry = rb_funcall(klass, rb_intern("new"), 4,
-        INT2FIX(p->x + bw), INT2FIX(y), INT2FIX(width),
-        INT2FIX(subtle->ph - bw));
+        INT2FIX(geom.x), INT2FIX(geom.y), INT2FIX(geom.width),
+        INT2FIX(geom.height));
     }
 
   return geometry;
@@ -3577,9 +3576,11 @@ subRubyReloadConfig(void)
 
   printf("Reloaded config\n");
 
+  /* Update screens and panels */
   subScreenConfigure();
   subScreenUpdate();
   subScreenRender();
+  subPanelPublish();
 
   /* Focus pointer window */
   XQueryPointer(subtle->dpy, ROOT, &root, &win, &rx, &ry, &x, &y, &mask);
@@ -3762,8 +3763,6 @@ subRubyLoadPanels(void)
 
       exit(-1);
     }
-
-  subPanelPublish();
 } /* }}} */
 
  /** subRubyLoadSublets {{{
