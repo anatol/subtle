@@ -21,73 +21,6 @@ GravityToRect(VALUE self,
   subGeometryToRect(geometry, r); ///< Get values
 } /* }}} */
 
-/* GravityFind {{{ */
-static VALUE
-GravityFind(char *source,
-  int flags)
-{
-  int ngravities = 0;
-  char **gravities = NULL;
-  VALUE ret = Qnil;
-
-  subSubtlextConnect(NULL); ///< Implicit open connection
-
-  /* Get gravity list */
-  if((gravities = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
-      XInternAtom(display, "SUBTLE_GRAVITY_LIST", False), &ngravities)))
-    {
-      int i, selid = -1;
-      XRectangle geometry = { 0 };
-      char buf[30] = { 0 };
-      VALUE klass_grav = Qnil, klass_geom = Qnil, meth = Qnil;
-      VALUE gravity = Qnil, geom = Qnil;
-      regex_t *preg = NULL;
-
-      /* Fetch data */
-      klass_grav = rb_const_get(mod, rb_intern("Gravity"));
-      klass_geom = rb_const_get(mod, rb_intern("Geometry"));
-      meth       = rb_intern("new");
-
-      /* Create if source is given */
-      if(source)
-        {
-          if(isdigit(source[0])) selid = atoi(source);
-          preg = subSharedRegexNew(source);
-        }
-
-      /* Create gravity list */
-      for(i = 0; i < ngravities; i++)
-        {
-          sscanf(gravities[i], "%hdx%hd+%hd+%hd#%s", &geometry.x, &geometry.y,
-            &geometry.width, &geometry.height, buf);
-
-          /* Check if gravity matches */
-          if(!source || (source && (selid == i || (-1 == selid &&
-              ((flags & SUB_MATCH_EXACT && 0 == strcmp(source, buf)) ||
-              (preg && !(flags & SUB_MATCH_EXACT) &&
-                subSharedRegexMatch(preg, buf)))))))
-            {
-              /* Create new gravity */
-              gravity = rb_funcall(klass_grav, meth, 1, rb_str_new2(buf));
-              geom    = rb_funcall(klass_geom, meth, 4, INT2FIX(geometry.x),
-                INT2FIX(geometry.y), INT2FIX(geometry.width),
-                INT2FIX(geometry.height));
-
-              rb_iv_set(gravity, "@id",       INT2FIX(i));
-              rb_iv_set(gravity, "@geometry", geom);
-
-              ret = subSubtlextOneOrMany(gravity, ret);
-            }
-        }
-
-      if(preg)    subSharedRegexKill(preg);
-      XFreeStringList(gravities);
-    }
-  else rb_raise(rb_eStandardError, "Failed getting gravity list");
-
-  return NIL_P(ret) ? rb_ary_new() : ret;
-} /* }}} */
-
 /* GravityFindId {{{ */
 static int
 GravityFindId(char *match,
@@ -195,12 +128,15 @@ subGravitySingFind(VALUE self,
           return parsed;
     }
 
-  return GravityFind(buf, flags);
+  return subSubtlextFindObjectsGeometry("SUBTLE_GRAVITY_LIST",
+    "Gravity", buf, flags, False);
 } /* }}} */
 
 /* subGravitySingAll {{{ */
 /*
- * Get an array of all Gravites based on the <code>SUBTLE_GRAVITIY_LIST</code>
+ * call-seq: all -> Array
+ *
+ * Get an array of all Gravities based on the <code>SUBTLE_GRAVITIY_LIST</code>
  * property list.
  *
  *  Subtlext::Gravity.all
@@ -213,7 +149,8 @@ subGravitySingFind(VALUE self,
 VALUE
 subGravitySingAll(VALUE self)
 {
-  return GravityFind(NULL, 0);
+  return subSubtlextFindObjectsGeometry("SUBTLE_GRAVITY_LIST",
+    "Gravity", NULL, 0, True);
 } /* }}} */
 
 /* Class */
