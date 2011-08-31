@@ -138,6 +138,7 @@ subGravityPublish(void)
 
   assert(0 < subtle->gravities->ndata);
 
+  /* Alloc space */
   gravities  = (char **)subSharedMemoryAlloc(subtle->gravities->ndata,
     sizeof(char *));
 

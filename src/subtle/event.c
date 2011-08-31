@@ -1736,10 +1736,11 @@ subEventLoop(void)
   char buf[BUFLEN];
 #endif /* HAVE_SYS_INOTIFY_H */
 
-  /* Update screens */
+  /* Update screens and panels */
   subScreenConfigure();
   subScreenUpdate();
   subScreenRender();
+  subPanelPublish();
 
   /* Add watches */
   subEventWatchAdd(ConnectionNumber(subtle->dpy));
@@ -1761,6 +1762,7 @@ subEventLoop(void)
   /* Hook: Start */
   subHookCall(SUB_HOOK_START, NULL);
 
+  /* Start main loop */
   while(subtle && subtle->flags & SUB_SUBTLE_RUN)
     {
       now = subSubtleTime();
