@@ -1183,34 +1183,32 @@ EOF
           icons = @path_icons, sublets = @path_sublets)
         spec = Sur::Specification.extract_spec(sublet)
 
-        # Validate spec
-        if(spec.satisfied?)
-          File.open(sublet, "rb") do |input|
-            Archive::Tar::Minitar::Input.open(input) do |tar|
-              tar.each do |entry|
-                case(File.extname(entry.full_name))
-                  when ".spec" then
-                    puts ">>>>>> Installing specification `#{spec.to_s}.spec'"
-                    path = File.join(specs, spec.to_s + ".spec")
-                  when ".xbm", ".xpm" then
-                    puts ">>>>>> Installing icon `#{entry.full_name}'"
-                    path = File.join(icons, entry.full_name)
-                  else
-                    puts ">>>>>> Installing file `#{entry.full_name}'"
-                    path = File.join(sublets, entry.full_name)
-                end
+        # Open sublet and install files
+        File.open(sublet, "rb") do |input|
+          Archive::Tar::Minitar::Input.open(input) do |tar|
+            tar.each do |entry|
+              case(File.extname(entry.full_name))
+                when ".spec" then
+                  puts ">>>>>> Installing specification `#{spec.to_s}.spec'"
+                  path = File.join(specs, spec.to_s + ".spec")
+                when ".xbm", ".xpm" then
+                  puts ">>>>>> Installing icon `#{entry.full_name}'"
+                  path = File.join(icons, entry.full_name)
+                else
+                  puts ">>>>>> Installing file `#{entry.full_name}'"
+                  path = File.join(sublets, entry.full_name)
+              end
 
-                # Install file
-                File.open(path, "w+") do |output|
-                  output.write(entry.read)
-                end
+              # Install file
+              File.open(path, "w+") do |output|
+                output.write(entry.read)
               end
             end
-
-            puts ">>> Installed sublet #{spec.to_str}"
-
-            show_notes(spec)
           end
+
+          puts ">>> Installed sublet #{spec.to_str}"
+
+          show_notes(spec)
         end
       end # }}}
 
