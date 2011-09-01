@@ -161,7 +161,7 @@ PanelSubletStyle(SubPanel *p)
 
   /* Pick sublet style */
   if(subtle->styles.sublets.styles)
-    s = subArrayGet(s->styles, p->sublet->style);
+    s = subArrayGet(subtle->styles.sublets.styles, p->sublet->style);
 
   return s ? s : &subtle->styles.sublets;
 } /* }}} */
