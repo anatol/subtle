@@ -51,7 +51,7 @@ IconSweep(SubtlextIcon *i)
   if(i)
     {
       /* Check if we can kill the pixmap here */
-      if(!(i->flags & ICON_FOREIGN))
+      if(!(i->flags & ICON_FOREIGN) && i->pixmap)
         XFreePixmap(display, i->pixmap);
 
       if(0 != i->gc) XFreeGC(display, i->gc);
