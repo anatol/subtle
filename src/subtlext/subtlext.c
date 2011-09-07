@@ -213,6 +213,9 @@ SubtlextTagFind(VALUE value)
       default: break;
     }
 
+  /* Check if tags were found */
+  if(0 == tags) rb_raise(rb_eStandardError, "Couldn't find tag");
+
   return tags;
 } /* }}} */
 
@@ -280,7 +283,8 @@ SubtlextTag(VALUE self,
             int i;
             VALUE entry = Qnil;
 
-            /* Collect tag ids */
+            /* Collect tags and raise if a tag wasn't found. Empty
+             * arrays reset tags and never enter this loop */
             for(i = 0; Qnil != (entry = rb_ary_entry(value, i)); ++i)
               data.l[1] |= SubtlextTagFind(entry);
           }
@@ -327,9 +331,14 @@ SubtlextTag(VALUE self,
 /*
  * call-seq: tags=(value) -> nil
  *
- * Set all tags of a window
+ * Set or remove all tags at once
  *
+ *  # Set new tags
  *  object.tags=([ #<Subtlext::Tag:xxx>, #<Subtlext::Tag:xxx> ])
+ *  => nil
+ *
+ *  # Remove all tags
+ *  object.tags=([])
  *  => nil
  */
 
