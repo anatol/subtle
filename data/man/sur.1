@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SUR" "1" "May 2011" "" ""
+.TH "SUR" "1" "September 2011" "" ""
 .
 .SH "NAME"
 \fBsur\fR \- subtle user repository
@@ -18,7 +18,10 @@ The main goal of \fBsur\fR is to help the user managing sublets and to have a ce
 .SH "COMMANDS"
 .
 .IP "\(bu" 4
-\fBsur\fR \fIannotate\fR NAME [\-v VERSION|\-h] Mark a sublet as to be reviewed
+\fBsur\fR \fIannotate\fR NAME [\-v VERSION|\-h]
+.
+.br
+Mark a sublet as to be reviewed
 .
 .IP "\(bu" 4
 \fBsur\fR \fIbuild\fR SPEC
@@ -31,6 +34,12 @@ Create a sublet package
 .
 .br
 Show available config settings of a sublet
+.
+.IP "\(bu" 4
+\fBsur\fR \fIfetch\fR NAME
+.
+.br
+Download sublet to current directory
 .
 .IP "\(bu" 4
 \fBsur\fR \fIhelp\fR
@@ -99,16 +108,22 @@ Submit a sublet to SUR
 Create a new sublet template in current dir
 .
 .IP "\(bu" 4
-\fBsur\fR \fItest\fR FILE
+\fBsur\fR \fItest\fR NAME [\-C VALUE|\-h]
 .
 .br
 Test given sublets for syntax and functionality
 .
 .IP "\(bu" 4
-\fBsur\fR \fIuninstall\fR NAME [\-t|\-v VERSION]
+\fBsur\fR \fIuninstall\fR NAME [\-t|\-v VERSION|\-h]
 .
 .br
 Uninstall a sublet
+.
+.IP "\(bu" 4
+\fBsur\fR \fIunpack\fR NAME [\-t|\-v VERSION|\-h]
+.
+.br
+Unpack a sublet in current directory
 .
 .IP "\(bu" 4
 \fBsur\fR \fIupdate\fR [\-l|\-r|\-h]
@@ -140,6 +155,18 @@ Delete sublet from server
 .
 .IP "\(bu" 4
 \fBannotate\fR NAME [\-v VERSION|\-h]
+.
+.br
+\fB\-v\fR, \fB\-\-version\fR VERSION Annotate a specific version
+.
+.br
+\fB\-h\fR, \fB\-\-help\fR Show this help and exit
+.
+.IP "\(bu" 4
+\fBfetch\fR NAME [\-t|\-v VERSION|\-h]
+.
+.br
+\fB\-t\fR, \fB\-\-tags\fR Include tags in search
 .
 .br
 \fB\-v\fR, \fB\-\-version\fR VERSION Annotate a specific version
@@ -196,13 +223,25 @@ Delete sublet from server
 \fB\-h\fR, \fB\-\-help\fR Show this help and exit
 .
 .IP "\(bu" 4
-\fBserver\fR [\-p PORT|\-h] \fB\-p\fR, \fB\-\-port\fR Select a specific port
+\fBserver\fR [\-p PORT|\-h]
+.
+.br
+\fB\-p\fR, \fB\-\-port\fR Select a specific port
 .
 .br
 \fB\-h\fR, \fB\-\-help\fR Show this help and exit
 .
 .IP "\(bu" 4
-\fBuninstall\fR NAME [\-t|\-v VERSION|\-h] \fB\-R\fR, \fB\-\-reload\fR Reload sublets after installing
+\fBtest\fR NAME [\-C VALUE|\-h]
+.
+.br
+\fB\-C\fR, \fB\-\-config VALUE\fR Add config value (can be used multiple times)
+.
+.br
+\fB\-h\fR, \fB\-\-help\fR Show this help and exit
+.
+.IP "\(bu" 4
+\fBunpack\fR NAME [\-t|\-v VERSION|\-h]
 .
 .br
 \fB\-t\fR, \fB\-\-tag\fR Search for a specific tag
@@ -214,7 +253,25 @@ Delete sublet from server
 \fB\-h\fR, \fB\-\-help\fR Show this help and exit
 .
 .IP "\(bu" 4
-\fBupdate\fR [\-l|\-r|\-h] \fB\-l\fR, \fB\-\-local\fR Select local repository (default)
+\fBuninstall\fR NAME [\-t|\-v VERSION|\-h]
+.
+.br
+\fB\-R\fR, \fB\-\-reload\fR Reload sublets after installing
+.
+.br
+\fB\-t\fR, \fB\-\-tag\fR Search for a specific tag
+.
+.br
+\fB\-v\fR, \fB\-\-version\fR VERSION Search for a specific version
+.
+.br
+\fB\-h\fR, \fB\-\-help\fR Show this help and exit
+.
+.IP "\(bu" 4
+\fBupdate\fR [\-l|\-r|\-h]
+.
+.br
+\fB\-l\fR, \fB\-\-local\fR Select local repository (default)
 .
 .br
 \fB\-r\fR, \fB\-\-remote\fR Select remote repository
@@ -223,7 +280,10 @@ Delete sublet from server
 \fB\-h\fR, \fB\-\-help\fR Show this help and exit
 .
 .IP "\(bu" 4
-\fBupgrade\fR [\-R|\-y|\-h] \fB\-R\fR, \fB\-\-reload\fR Reload sublets after upgrading
+\fBupgrade\fR [\-R|\-y|\-h]
+.
+.br
+\fB\-R\fR, \fB\-\-reload\fR Reload sublets after upgrading
 .
 .br
 \fB\-y\fR, \fB\-\-yes\fR Assume yes to questions
@@ -257,42 +317,6 @@ Name of the sublet
 .
 .IP
 \fBExample:\fR spec\.name = "Sublet"
-.
-.IP "\(bu" 4
-\fBauthors\fR
-.
-.br
-List of authors of the sublet in case there are more than one
-.
-.IP
-\fBExample:\fR spec\.authors = [ "You" ]
-.
-.IP "\(bu" 4
-\fBdate\fR
-.
-.br
-Date of creation
-.
-.IP
-\fBExample:\fR spec\.date = "Sat Sep 13 19:00 CET 2008"
-.
-.IP "\(bu" 4
-\fBcontact\fR
-.
-.br
-Contact mail address
-.
-.IP
-\fBExample:\fR spec\.contact = "your@mail\.com"
-.
-.IP "\(bu" 4
-\fBdescription\fR
-.
-.br
-Description of the sublet
-.
-.IP
-\fBExample:\fR spec\.description = "A shiny new sublet"
 .
 .IP "\(bu" 4
 \fBversion\fR
@@ -331,22 +355,123 @@ List of supplied icons
 \fBExample:\fR spec\.icons = [ "icon\.xbm" ]
 .
 .IP "\(bu" 4
-\fBsubtlext_version\fR
+\fBdescription\fR
 .
 .br
-Required version of subtlext
+Description of the sublet
 .
 .IP
-\fBExample:\fR spec\.subtlext_version = "0\.9\.10"
+\fBExample:\fR spec\.description = "A shiny new sublet"
 .
 .IP "\(bu" 4
-\fBsur_version\fR
+\fBnotes\fR
 .
 .br
-Required version of sur
+Longer description of the sublet
 .
 .IP
-\fBExample:\fR spec\.sur_version = "0\.2\.3"
+\fBExample:\fR spec\.notes = <<NOTES
+.
+.br
+"This sublet is just a dummy, have fun with it!"
+.
+.br
+NOTES
+.
+.IP "\(bu" 4
+\fBauthors\fR
+.
+.br
+List of authors of the sublet in case there are more than one
+.
+.IP
+\fBExample:\fR spec\.authors = [ "You" ]
+.
+.IP "\(bu" 4
+\fBcontact\fR
+.
+.br
+Contact mail address
+.
+.IP
+\fBExample:\fR spec\.contact = "your@mail\.com"
+.
+.IP "\(bu" 4
+\fBdate\fR
+.
+.br
+Date of creation
+.
+.IP
+\fBExample:\fR spec\.date = "Sat Sep 13 19:00 CET 2008"
+.
+.IP "\(bu" 4
+\fBconfig\fR
+.
+.br
+Description of config settings
+.
+.IP
+\fBExample:\fR spec\.config = [
+.
+.br
+{
+.
+.IP "" 4
+.
+.nf
+
+:name        => "format_string",
+:type        => "string",
+:description => "Format of the clock (man date)" },
+:def_value   => "Default value"
+.
+.fi
+.
+.IP "" 0
+.
+.IP
+}
+.
+.br
+]
+.
+.IP "\(bu" 4
+\fBgrabs\fR
+.
+.br
+Description of grabs
+.
+.IP
+\fBExample:\fR spec\.grabs = [
+.
+.br
+{
+.
+.IP "" 4
+.
+.nf
+
+:SubletTest => "Test grab",
+.
+.fi
+.
+.IP "" 0
+.
+.IP
+}
+.
+.br
+]
+.
+.IP "\(bu" 4
+\fBrequired_version\fR
+.
+.br
+Required version of subtle
+.
+.IP
+\fBExample:\fR spec\.required_version = "0\.9\.10"
 .
 .IP "\(bu" 4
 \fBadd_dependency(name, version)\fR
