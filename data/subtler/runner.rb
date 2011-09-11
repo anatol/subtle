@@ -150,6 +150,10 @@ module Subtle # {{{
         arg1 = ARGV.shift
         arg2 = ARGV.shift
 
+        # Convert window ids
+        arg1 = Integer(arg1) rescue arg1
+        arg2 = Integer(arg2) rescue arg1
+
         # Pipes?
         arg1 = ARGF.read.chop if("-" == arg1)
 
