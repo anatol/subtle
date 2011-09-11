@@ -30,6 +30,7 @@ module Subtle # {{{
         @mod    = nil
         @group  = nil
         @action = nil
+        @proc   = nil
 
         # Getopt options
         @opts = GetoptLong.new(
@@ -67,11 +68,12 @@ module Subtle # {{{
           [ "--lower",   "-L", GetoptLong::NO_ARGUMENT ],
 
           # Modifiers
-          [ "--reload",  "-r", GetoptLong::NO_ARGUMENT ],
-          [ "--restart", "-R", GetoptLong::NO_ARGUMENT ],
-          [ "--quit",    "-q", GetoptLong::NO_ARGUMENT ],
-          [ "--current", "-C", GetoptLong::NO_ARGUMENT ],
-          [ "--select",  "-X", GetoptLong::NO_ARGUMENT ],
+          [ "--reload",  "-r", GetoptLong::NO_ARGUMENT       ],
+          [ "--restart", "-R", GetoptLong::NO_ARGUMENT       ],
+          [ "--quit",    "-q", GetoptLong::NO_ARGUMENT       ],
+          [ "--current", "-C", GetoptLong::NO_ARGUMENT       ],
+          [ "--select",  "-X", GetoptLong::NO_ARGUMENT       ],
+          [ "--proc",    "-p", GetoptLong::REQUIRED_ARGUMENT ],
 
           # Other
           [ "--display", "-d", GetoptLong::NO_ARGUMENT ],
@@ -128,6 +130,8 @@ module Subtle # {{{
             when "--select"  then @mod = :select
 
             # Other
+            when "--proc"
+              @proc = Proc.new { |param| eval(arg) }
             when "--display"
               Subtlext::Subtle.display = ARGV.shift
             when "--help"
@@ -234,14 +238,22 @@ module Subtle # {{{
         end
       end # }}}
 
+      def call_or_print(value) # {{{
+        unless(@proc.nil?)
+          @proc.call(value)
+        else
+          printer(value)
+        end
+      end # }}}
+
       def handle_result(result) # {{{
         case result
           when Array
             result.each do |r|
-              printer(r)
+              call_or_print(r)
             end
           else
-            printer(result)
+            call_or_print(result)
         end
       end # }}}
 
@@ -290,8 +302,8 @@ module Subtle # {{{
               value.instance,
               value.klass
             ] # }}}
-          when Subtlext::Sublet
-            puts "%s" % [ value.name ]
+          when Subtlext::Sublet # {{{
+            puts "%s" % [ value.name ] # }}}
           when Subtlext::View # {{{
             puts "%2d %s %s" % [
               value.id,
