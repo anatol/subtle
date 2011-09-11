@@ -109,7 +109,7 @@ module Subtle # {{{
             when "--stick"   then @action = :toggle_stick
             when "--urgent"  then @action = :toggle_urgent
             when "--jump"    then @action = :jump
-            when "--list"    then @action = :all
+            when "--list"    then @action = :list
             when "--tag"     then @action = :tag
             when "--untag"   then @action = :untag
             when "--tags"    then @action = :tags
