@@ -24,9 +24,10 @@ context 'Client' do
   end # }}}
 
   asserts 'Get list' do # {{{
-    list = Subtlext::Client.all
+    list = Subtlext::Client.list
 
-    list.is_a? Array  and CLIENT_COUNT == list.size
+    list.is_a? Array  and CLIENT_COUNT == list.size and
+      Subtlext::Client.method(:all) == Subtlext::Client.method(:list)
   end # }}}
 
   asserts 'Finder' do # {{{

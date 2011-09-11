@@ -23,9 +23,10 @@ context 'Tag' do
   end # }}}
 
   asserts 'Get list' do # {{{
-    list = Subtlext::Tag.all
+    list = Subtlext::Tag.list
 
-    list.is_a? Array and TAG_COUNT == list.size
+    list.is_a? Array and TAG_COUNT == list.size and
+      Subtlext::Tag.method(:all) == Subtlext::Tag.method(:list)
   end # }}}
 
   asserts 'Finder' do # {{{

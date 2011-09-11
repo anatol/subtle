@@ -24,9 +24,10 @@ context 'Tray' do
   end # }}}
 
   asserts 'Get list' do # {{{
-    list = Subtlext::Tray.all
+    list = Subtlext::Tray.list
 
-    list.is_a? Array and TRAY_COUNT == list.size
+    list.is_a? Array and TRAY_COUNT == list.size and
+      Subtlext::Tray.method(:all) == Subtlext::Tray.method(:list)
   end # }}}
 
   asserts 'Finder' do # {{{

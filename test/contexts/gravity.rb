@@ -24,9 +24,10 @@ context 'Gravity' do
   end # }}}
 
   asserts 'Get list' do # {{{
-    list = Subtlext::Gravity.all
+    list = Subtlext::Gravity.list
 
-    list.is_a?(Array) and GRAVITY_COUNT == list.size
+    list.is_a?(Array) and GRAVITY_COUNT == list.size and
+      Subtlext::Gravity.method(:all) == Subtlext::Gravity.method(:list)
   end # }}}
 
   asserts 'Finder' do # {{{

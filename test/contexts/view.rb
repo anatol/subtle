@@ -24,9 +24,10 @@ context 'View' do
   end # }}}
 
   asserts 'Get list' do # {{{
-    list = Subtlext::View.all
+    list = Subtlext::View.list
 
-    list.is_a? Array and VIEW_COUNT == list.size
+    list.is_a? Array and VIEW_COUNT == list.size and
+      Subtlext::View.method(:all) == Subtlext::View.method(:list)
   end # }}}
 
   asserts 'Finder' do # {{{

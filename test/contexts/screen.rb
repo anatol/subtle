@@ -19,9 +19,10 @@ context "Screen" do
   end # }}}
 
   asserts("Get list") do # {{{
-    list = Subtlext::Screen.all
+    list = Subtlext::Screen.list
 
-    list.is_a?(Array) and 1 == list.size
+    list.is_a?(Array) and 1 == list.size and
+      Subtlext::Screen.method(:all) == Subtlext::Screen.method(:list)
   end # }}}
 
   asserts("Find and compare") do # {{{

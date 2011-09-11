@@ -23,9 +23,10 @@ context 'Sublet' do
   end # }}}
 
   asserts 'Get list' do # {{{
-    list = Subtlext::Sublet.all
+    list = Subtlext::Sublet.list
 
-    list.is_a?(Array) and SUBLET_COUNT == list.size
+    list.is_a?(Array) and SUBLET_COUNT == list.size and
+      Subtlext::Sublet.method(:all) == Subtlext::Sublet.method(:list)
   end # }}}
 
   asserts 'Finder' do # {{{
