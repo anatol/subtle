@@ -145,21 +145,21 @@ subScreenSingFind(VALUE self,
   return screen;
 } /* }}} */
 
-/* subScreenSingAll {{{ */
+/* subScreenSingList {{{ */
 /*
- * call-seq: all -> Array
+ * call-seq: list -> Array
  *
  * Get Array of all Screen
  *
- *  Subtlext::Screen.all
+ *  Subtlext::Screen.list
  *  => [#<Subtlext::Screen:xxx>, #<Subtlext::Screen:xxx>]
  *
- *  Subtlext::Screen.all
+ *  Subtlext::Screen.list
  *  => []
  */
 
 VALUE
-subScreenSingAll(VALUE self)
+subScreenSingList(VALUE self)
 {
   return ScreenList();
 } /* }}} */

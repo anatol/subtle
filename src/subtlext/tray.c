@@ -67,7 +67,7 @@ subTraySingFind(VALUE self,
     {
       case T_SYMBOL:
         if(CHAR2SYM("all") == parsed)
-          return subTraySingAll(Qnil);
+          return subTraySingList(Qnil);
         break;
       case T_OBJECT:
         if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("Tray"))))
@@ -111,22 +111,22 @@ subTraySingFind(VALUE self,
   return ret;
 } /* }}} */
 
-/* subTraySingAll {{{ */
+/* subTraySingList {{{ */
 /*
- * call-seq: all -> Array
+ * call-seq: list -> Array
  *
  * Get an array of all Trays based on <code>SUBTLE_TRAY_LIST</code>
  * property list.
  *
- *  Subtlext::Tray.all
+ *  Subtlext::Tray.list
  *  => [#<Subtlext::Tray:xxx>, #<Subtlext::Tray:xxx>]
  *
- *  Subtlext::Tray.all
+ *  Subtlext::Tray.list
  *  => []
  */
 
 VALUE
-subTraySingAll(VALUE self)
+subTraySingList(VALUE self)
 {
   int i, ntrays = 0;
   Window *trays = NULL;

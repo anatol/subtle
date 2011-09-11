@@ -121,7 +121,7 @@ subGravitySingFind(VALUE self,
     {
       case T_SYMBOL:
         if(CHAR2SYM("all") == parsed)
-          return subGravitySingAll(Qnil);
+          return subGravitySingList(Qnil);
         break;
       case T_OBJECT:
         if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("Gravity"))))
@@ -132,22 +132,22 @@ subGravitySingFind(VALUE self,
     "Gravity", buf, flags, False);
 } /* }}} */
 
-/* subGravitySingAll {{{ */
+/* subGravitySingList {{{ */
 /*
- * call-seq: all -> Array
+ * call-seq: list -> Array
  *
  * Get an array of all Gravities based on the <code>SUBTLE_GRAVITIY_LIST</code>
  * property list.
  *
- *  Subtlext::Gravity.all
+ *  Subtlext::Gravity.list
  *  => [#<Subtlext::Gravity:xxx>, #<Subtlext::Gravity:xxx>]
  *
- *  Subtlext::Gravity.all
+ *  Subtlext::Gravity.list
  *  => []
  */
 
 VALUE
-subGravitySingAll(VALUE self)
+subGravitySingList(VALUE self)
 {
   return subSubtlextFindObjectsGeometry("SUBTLE_GRAVITY_LIST",
     "Gravity", NULL, 0, True);

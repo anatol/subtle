@@ -241,7 +241,7 @@ subClientSingFind(VALUE self,
         if(CHAR2SYM("visible") == parsed)
           return subClientSingVisible(Qnil);
         else if(CHAR2SYM("all") == parsed)
-          return subClientSingAll(Qnil);
+          return subClientSingList(Qnil);
         else if(CHAR2SYM("current") == parsed)
           return subClientSingCurrent(Qnil);
         break;
@@ -387,22 +387,22 @@ subClientSingVisible(VALUE self)
   return array;
 } /* }}} */
 
-/* subClientSingAll {{{ */
+/* subClientSingList {{{ */
 /*
- * call-seq: all -> Array
+ * call-seq: list -> Array
  *
  * Get an array of all Clients based on <code>_NET_CLIENT_LIST</code>
  * property list.
  *
- *  Subtlext::Client.all
+ *  Subtlext::Client.list
  *  => [#<Subtlext::Client:xxx>, #<Subtlext::Client:xxx>]
  *
- *  Subtlext::Client.all
+ *  Subtlext::Client.list
  *  => []
  */
 
 VALUE
-subClientSingAll(VALUE self)
+subClientSingList(VALUE self)
 {
   int i, nclients = 0;
   Window *clients = NULL;

@@ -53,7 +53,7 @@ VALUE subClientSingSelect(VALUE self);                            ///< Select cl
 VALUE subClientSingFind(VALUE self, VALUE value);                 ///< Find client
 VALUE subClientSingCurrent(VALUE self);                           ///< Get current client
 VALUE subClientSingVisible(VALUE self);                           ///< Get all visible clients
-VALUE subClientSingAll(VALUE self);                               ///< Get all clients
+VALUE subClientSingList(VALUE self);                              ///< Get all clients
 VALUE subClientSingRecent(VALUE self);                            ///< Get recent active clients
 
 /* Class */
@@ -121,7 +121,7 @@ VALUE subGeometryEqualTyped(VALUE self, VALUE other);             ///< Whether o
 /* gravity.c {{{ */
 /* Singleton */
 VALUE subGravitySingFind(VALUE self, VALUE value);                ///< Find gravity
-VALUE subGravitySingAll(VALUE self);                              ///< Get all gravities
+VALUE subGravitySingList(VALUE self);                             ///< Get all gravities
 
 /* Class */
 VALUE subGravityInstantiate(char *name);                          ///< Instantiate gravity
@@ -155,7 +155,7 @@ VALUE subIconEqualTyped(VALUE self, VALUE other);                 ///< Whether o
 /* screen.c {{{ */
 /* Singleton */
 VALUE subScreenSingFind(VALUE self, VALUE id);                    ///< Find screen
-VALUE subScreenSingAll(VALUE self);                               ///< Get all screens
+VALUE subScreenSingList(VALUE self);                              ///< Get all screens
 VALUE subScreenSingCurrent(VALUE self);                           ///< Get current screen
 
 /* Class */
@@ -172,7 +172,7 @@ VALUE subScreenToString(VALUE self);                              ///< Screen to
 /* sublet.c {{{ */
 /* Singleton */
 VALUE subSubletSingFind(VALUE self, VALUE value);                 ///< Find sublet
-VALUE subSubletSingAll(VALUE self);                               ///< Get all sublets
+VALUE subSubletSingList(VALUE self);                              ///< Get all sublets
 
 /* Class */
 VALUE subSubletInstantiate(char *name);                           ///< Instantiate sublet
@@ -225,7 +225,7 @@ VALUE subSubtlextFindObjectsGeometry(char *prop_name,
 /* Singleton */
 VALUE subTagSingFind(VALUE self, VALUE value);                    ///< Find tag
 VALUE subTagSingVisible(VALUE self);                              ///< Get all visible tags
-VALUE subTagSingAll(VALUE self);                                  ///< Get all tags
+VALUE subTagSingList(VALUE self);                                 ///< Get all tags
 
 /* Class */
 VALUE subTagInstantiate(char *name);                              ///< Instantiate tag
@@ -240,7 +240,7 @@ VALUE subTagKill(VALUE self);                                     ///< Kill tag
 /* tray.c {{{ */
 /* Singleton */
 VALUE subTraySingFind(VALUE self, VALUE name);                    ///< Find tray
-VALUE subTraySingAll(VALUE self);                                 ///< Get all trays
+VALUE subTraySingList(VALUE self);                                ///< Get all trays
 
 /* Class */
 VALUE subTrayInstantiate(Window win);                             ///< Instantiate tray
@@ -255,7 +255,7 @@ VALUE subTrayKill(VALUE self);                                    ///< Kill tray
 VALUE subViewSingFind(VALUE self, VALUE name);                    ///< Find view
 VALUE subViewSingCurrent(VALUE self);                             ///< Get current view
 VALUE subViewSingVisible(VALUE self);                             ///< Get all visible views
-VALUE subViewSingAll(VALUE self);                                 ///< Get all views
+VALUE subViewSingList(VALUE self);                                ///< Get all views
 
 /* Class */
 VALUE subViewInstantiate(char *name);                             ///< Instantiate view

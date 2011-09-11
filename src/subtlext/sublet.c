@@ -59,7 +59,7 @@ subSubletSingFind(VALUE self,
     {
       case T_SYMBOL:
         if(CHAR2SYM("all") == parsed)
-          return subSubletSingAll(Qnil);
+          return subSubletSingList(Qnil);
         break;
       case T_OBJECT:
         if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("Sublet"))))
@@ -70,22 +70,22 @@ subSubletSingFind(VALUE self,
     "Sublet", buf, flags, False);
 } /* }}} */
 
-/* subSubletSingAll {{{ */
+/* subSubletSingList {{{ */
 /*
- * call-seq: all -> Array
+ * call-seq: list -> Array
  *
  * Get an array of all Sublets based on the <code>SUBTLE_SUBLET_LIST</code>
  * property list.
  *
- *  Subtlext::Sublet.all
+ *  Subtlext::Sublet.list
  *  => [#<Subtlext::Sublet:xxx>, #<Subtlext::Sublet:xxx>]
  *
- *  Subtlext::Sublet.all
+ *  Subtlext::Sublet.list
  *  => []
  */
 
 VALUE
-subSubletSingAll(VALUE self)
+subSubletSingList(VALUE self)
 {
   return subSubtlextFindObjectsGeometry("SUBTLE_SUBLET_LIST",
     "Sublet", NULL, 0, True);

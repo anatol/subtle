@@ -60,7 +60,7 @@ subTagSingFind(VALUE self,
         if(CHAR2SYM("visible") == parsed)
           return subTagSingVisible(Qnil);
         else if(CHAR2SYM("all") == parsed)
-          return subTagSingAll(Qnil);
+          return subTagSingList(Qnil);
         break;
       case T_OBJECT:
         if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("Tag"))))
@@ -125,22 +125,22 @@ subTagSingVisible(VALUE self)
   return array;
 } /* }}} */
 
-/* subTagSingAll {{{ */
+/* subTagSingList {{{ */
 /*
- * call-seq: all -> Array
+ * call-seq: list -> Array
  *
  * Get an array of all Tags based on the <code>SUBTLE_TAG_LIST</code>
  * property list.
  *
- *  Subtlext::Tag.all
+ *  Subtlext::Tag.list
  *  => [#<Subtlext::Tag:xxx>, #<Subtlext::Tag:xxx>]
  *
- *  Subtlext::Tag.all
+ *  Subtlext::Tag.list
  *  => []
  */
 
 VALUE
-subTagSingAll(VALUE self)
+subTagSingList(VALUE self)
 {
   int i, ntags = 0;
   char **tags = NULL;

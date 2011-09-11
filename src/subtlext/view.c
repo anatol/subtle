@@ -101,7 +101,7 @@ subViewSingFind(VALUE self,
         if(CHAR2SYM("visible") == parsed)
           return subViewSingVisible(Qnil);
         else if(CHAR2SYM("all") == parsed)
-          return subViewSingAll(Qnil);
+          return subViewSingList(Qnil);
         else if(CHAR2SYM("current") == parsed)
           return subViewSingCurrent(Qnil);
         break;
@@ -208,22 +208,22 @@ subViewSingVisible(VALUE self)
   return array;
 } /* }}} */
 
-/* subViewSingAll {{{ */
+/* subViewSingList {{{ */
 /*
- * call-seq: all -> Array
+ * call-seq: list -> Array
  *
  * Get an array of all Views based on the <code>_NET_DESKTOP_NAMES</code>
  * property list.
  *
- *  Subtlext::View.all
+ *  Subtlext::View.list
  *  => [#<Subtlext::View:xxx>, #<Subtlext::View:xxx>]
  *
- *  Subtlext::View.all
+ *  Subtlext::View.list
  *  => []
  */
 
 VALUE
-subViewSingAll(VALUE self)
+subViewSingList(VALUE self)
 {
   int i, nnames = 0;
   char **names = NULL;

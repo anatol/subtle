@@ -1766,7 +1766,7 @@ Init_subtlext(void)
   rb_define_singleton_method(client, "find",    subClientSingFind,    1);
   rb_define_singleton_method(client, "current", subClientSingCurrent, 0);
   rb_define_singleton_method(client, "visible", subClientSingVisible, 0);
-  rb_define_singleton_method(client, "all",     subClientSingAll,     0);
+  rb_define_singleton_method(client, "list",    subClientSingList,    0);
   rb_define_singleton_method(client, "recent",  subClientSingRecent,  0);
 
   /* General methods */
@@ -1820,7 +1820,8 @@ Init_subtlext(void)
   rb_define_method(client, "kill",              subClientKill,                  0);
 
   /* Singleton aliases */
-  rb_define_alias(rb_singleton_class(client), "[]", "find");
+  rb_define_alias(rb_singleton_class(client), "[]",  "find");
+  rb_define_alias(rb_singleton_class(client), "all", "list");
 
   /* Aliases */
   rb_define_alias(client, "+",     "tag");
@@ -1919,7 +1920,7 @@ Init_subtlext(void)
 
   /* Singleton methods */
   rb_define_singleton_method(gravity, "find", subGravitySingFind, 1);
-  rb_define_singleton_method(gravity, "all",  subGravitySingAll,  0);
+  rb_define_singleton_method(gravity, "list", subGravitySingList, 0);
 
   /* General methods */
   rb_define_method(gravity, "<=>",  SubtlextEqualSpaceId, 1);
@@ -1938,7 +1939,8 @@ Init_subtlext(void)
   rb_define_method(gravity, "kill",         subGravityKill,            0);
 
   /* Singleton aliases */
-  rb_define_alias(rb_singleton_class(gravity), "[]", "find");
+  rb_define_alias(rb_singleton_class(gravity), "[]",  "find");
+  rb_define_alias(rb_singleton_class(gravity), "all", "list");
 
   /* Aliases */
   rb_define_alias(gravity, "save", "update");
@@ -2002,7 +2004,7 @@ Init_subtlext(void)
   /* Singleton methods */
   rb_define_singleton_method(screen, "find",    subScreenSingFind,    1);
   rb_define_singleton_method(screen, "current", subScreenSingCurrent, 0);
-  rb_define_singleton_method(screen, "all",     subScreenSingAll,     0);
+  rb_define_singleton_method(screen, "list",    subScreenSingList,    0);
 
   /* General methods */
   rb_define_method(screen, "<=>",  SubtlextEqualSpaceId, 1);
@@ -2019,7 +2021,8 @@ Init_subtlext(void)
   rb_define_method(screen, "to_str",     subScreenToString,   0);
 
   /* Singleton aliases */
-  rb_define_alias(rb_singleton_class(screen), "[]", "find");
+  rb_define_alias(rb_singleton_class(screen), "[]",  "find");
+  rb_define_alias(rb_singleton_class(screen), "all", "list");
 
   /* Aliases */
   rb_define_alias(screen, "save", "update");
@@ -2068,7 +2071,7 @@ Init_subtlext(void)
 
   /* Singleton methods */
   rb_define_singleton_method(sublet, "find", subSubletSingFind, 1);
-  rb_define_singleton_method(sublet, "all",  subSubletSingAll,  0);
+  rb_define_singleton_method(sublet, "list", subSubletSingList, 0);
 
   /* General methods */
   rb_define_method(sublet, "<=>",    SubtlextEqualSpaceId, 1);
@@ -2087,7 +2090,8 @@ Init_subtlext(void)
   rb_define_method(sublet, "kill",       subSubletKill,           0);
 
   /* Singleton aliases */
-  rb_define_alias(rb_singleton_class(sublet), "[]", "find");
+  rb_define_alias(rb_singleton_class(sublet), "[]",  "find");
+  rb_define_alias(rb_singleton_class(sublet), "all", "list");
 
   /* Aliases */
   rb_define_alias(sublet, "to_s", "to_str");
@@ -2109,7 +2113,7 @@ Init_subtlext(void)
   /* Singleton methods */
   rb_define_singleton_method(tag, "find",    subTagSingFind,    1);
   rb_define_singleton_method(tag, "visible", subTagSingVisible, 0);
-  rb_define_singleton_method(tag, "all",     subTagSingAll,     0);
+  rb_define_singleton_method(tag, "list",    subTagSingList,    0);
 
   /* General methods */
   rb_define_method(tag, "<=>",  SubtlextEqualSpaceId, 1);
@@ -2125,7 +2129,8 @@ Init_subtlext(void)
   rb_define_method(tag, "kill",       subTagKill,     0);
 
   /* Singleton aliases */
-  rb_define_alias(rb_singleton_class(tag), "[]", "find");
+  rb_define_alias(rb_singleton_class(tag), "[]",  "find");
+  rb_define_alias(rb_singleton_class(tag), "all", "list");
 
   /* Aliases */
   rb_define_alias(tag, "save", "update");
@@ -2153,7 +2158,7 @@ Init_subtlext(void)
 
   /* Singleton methods */
   rb_define_singleton_method(tray, "find", subTraySingFind, 1);
-  rb_define_singleton_method(tray, "all",  subTraySingAll,  0);
+  rb_define_singleton_method(tray, "list", subTraySingList, 0);
 
   /* General methods */
   rb_define_method(tray, "send_button", SubtlextSendButton,      -1);
@@ -2174,7 +2179,8 @@ Init_subtlext(void)
   rb_define_method(tray, "kill",       subTrayKill,       0);
 
   /* Singleton aliases */
-  rb_define_alias(rb_singleton_class(tray), "[]", "find");
+  rb_define_alias(rb_singleton_class(tray), "[]",  "find");
+  rb_define_alias(rb_singleton_class(tray), "all", "list");
 
   /* Aliases */
   rb_define_alias(tray, "to_s",  "to_str");
@@ -2198,7 +2204,7 @@ Init_subtlext(void)
   rb_define_singleton_method(view, "find",    subViewSingFind,    1);
   rb_define_singleton_method(view, "current", subViewSingCurrent, 0);
   rb_define_singleton_method(view, "visible", subViewSingVisible, 0);
-  rb_define_singleton_method(view, "all",     subViewSingAll,     0);
+  rb_define_singleton_method(view, "list",    subViewSingList,    0);
 
   /* General methods */
   rb_define_method(view, "has_tag?", SubtlextTagAsk,       1);
@@ -2226,7 +2232,8 @@ Init_subtlext(void)
   rb_define_method(view, "kill",       subViewKill,          0);
 
   /* Singleton aliases */
-  rb_define_alias(rb_singleton_class(view), "[]", "find");
+  rb_define_alias(rb_singleton_class(view), "[]",  "find");
+  rb_define_alias(rb_singleton_class(view), "all", "list");
 
   /* Aliases */
   rb_define_alias(view, "+",     "tag");
