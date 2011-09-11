@@ -239,7 +239,7 @@ module Subtle # {{{
                  "Examples:\n" \
                  "sur server -p 3000\n"
           when "test"
-            puts "Usage: sur uninstall NAME [OPTIONS]\n\n" \
+            puts "Usage: sur test NAME [OPTIONS]\n\n" \
                  "Test given sublets for syntax and functionality\n\n" \
                  "Options:\n" \
                  "  -C, --config VALUE        Add config value (can be used multiple times)\n" \
@@ -306,8 +306,9 @@ module Subtle # {{{
                  "  server [-p PORT|-h]                     Serve sublets (default: http://localhost:4567)\n" \
                  "  submit FILE                             Submit a sublet to SUR\n" \
                  "  template FILE                           Create a new sublet template in current dir\n" \
+                 "  test NAME [-C VALUE|-h]                 Test sublets for syntax and functionality\n" \
                  "  uninstall NAME [-R|-t|-v VERSION|-h]    Uninstall a sublet\n" \
-                 "  unpack NAME [-t|-v VERSION|-h]          Unpack a sublet\n" \
+                 "  unpack NAME [-t|-v VERSION|-h]          Unpack a sublet in current directory\n" \
                  "  update [-l|-r|-h]                       Update local/remote sublet cache\n" \
                  "  upgrade [-R|-y|-h]                      Upgrade all installed sublets\n" \
                  "  version                                 Show version info and exit\n"
