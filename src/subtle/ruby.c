@@ -3569,7 +3569,10 @@ subRubyReloadConfig(void)
 
       c          = CLIENT(subtle->clients->data[i]);
       c->gravity = -1;
+      c->flags   = (c->flags & (SUB_TYPE_CLIENT|SUB_CLIENT_FOCUS|
+        SUB_CLIENT_INPUT|SUB_CLIENT_CLOSE)); ///< Reset flags
 
+      subClientSetType(c, &flags);
       subClientRetag(c, &flags);
       subClientToggle(c, ~c->flags & flags, True); ///< Toggle flags
     }
