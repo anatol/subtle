@@ -88,6 +88,8 @@
 #define SUB_EWMH_BORDERLESS (1L << 8)                             ///< EWMH fixed flag
 #define SUB_EWMH_VISIBLE    (1L << 9)                             ///< EWMH visible flag
 #define SUB_EWMH_HIDDEN     (1L << 10)                            ///< EWMH hidden flag
+#define SUB_EWMH_HORZ       (1L << 12)                            ///< EWMH horizontal flag
+#define SUB_EWMH_VERT       (1L << 11)                            ///< EWMH vertical flag
 
 /* Match types flags */
 #define SUB_MATCH_NAME      (1L << 0)                             ///< Match SUBTLE_NAME
