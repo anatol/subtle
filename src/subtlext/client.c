@@ -1194,6 +1194,7 @@ subClientGeometryReader(VALUE self)
 /*
  * call-seq: geometry=(x, y, width, height) -> Subtlext::Geometry
  *           geometry=(array)               -> Subtlext::Geometry
+ *           geometry=(hash)                -> Subtlext::Geometry
  *           geometry=(geometry)            -> Subtlext::Geometry
  *
  * Set Client geometry.
@@ -1202,6 +1203,9 @@ subClientGeometryReader(VALUE self)
  *  => #<Subtlext::Geometry:xxx>
  *
  *  client.geometry = [ 0, 0, 100, 100 ]
+ *  => #<Subtlext::Geometry:xxx>
+ *
+ *  client.geometry = {x: 0, y: 0, width: 100, height: 100 }
  *  => #<Subtlext::Geometry:xxx>
  *
  *  client.geometry = Subtlext::Geometry(0, 0, 100, 100)
@@ -1213,35 +1217,36 @@ subClientGeometryWriter(int argc,
   VALUE *argv,
   VALUE self)
 {
-  VALUE klass = Qnil, geometry = Qnil;
+  VALUE klass = Qnil, geom = Qnil;
 
+  /* Check ruby object */
   rb_check_frozen(self);
   subSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Delegate arguments */
-  klass    = rb_const_get(mod, rb_intern("Geometry"));
-  geometry = rb_funcall2(klass, rb_intern("new"), argc, argv);
+  klass = rb_const_get(mod, rb_intern("Geometry"));
+  geom  = rb_funcall2(klass, rb_intern("new"), argc, argv);
 
   /* Update geometry */
-  if(RTEST(geometry))
+  if(RTEST(geom))
     {
       VALUE win = Qnil;
       SubMessageData data = { { 0, 0, 0, 0, 0 } };
 
       GET_ATTR(self, "@win", win);
 
-      data.l[1] = FIX2INT(rb_iv_get(geometry,  "@x"));
-      data.l[2] = FIX2INT(rb_iv_get(geometry,  "@y"));
-      data.l[3] = FIX2INT(rb_iv_get(geometry,  "@width"));
-      data.l[4] = FIX2INT(rb_iv_get(geometry,  "@height"));
+      data.l[1] = FIX2INT(rb_iv_get(geom,  "@x"));
+      data.l[2] = FIX2INT(rb_iv_get(geom,  "@y"));
+      data.l[3] = FIX2INT(rb_iv_get(geom,  "@width"));
+      data.l[4] = FIX2INT(rb_iv_get(geom,  "@height"));
 
       subSharedMessage(display, NUM2LONG(win),
         "_NET_MOVERESIZE_WINDOW", data, 32, True);
 
-      rb_iv_set(self, "@geometry", geometry);
+      rb_iv_set(self, "@geometry", geom);
     }
 
-  return geometry;
+  return geom;
 } /* }}} */
 
 /* subClientScreenReader {{{ */
