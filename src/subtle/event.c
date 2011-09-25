@@ -1639,6 +1639,7 @@ EventUnmap(XUnmapEvent *ev)
       subClientKill(c);
       subClientPublish(False);
 
+      subScreenConfigure();
       subScreenUpdate();
       subScreenRender();
 
