@@ -466,6 +466,7 @@ typedef enum subewmh_t /* {{{ */
   SUB_EWMH_SUBTLE_CLIENT_SCREEN,                                  ///< Subtle client screen
   SUB_EWMH_SUBTLE_CLIENT_FLAGS,                                   ///< Subtle client flags
   SUB_EWMH_SUBTLE_GRAVITY_NEW,                                    ///< Subtle gravity new
+  SUB_EWMH_SUBTLE_GRAVITY_FLAGS,                                  ///< Subtle gravity flags
   SUB_EWMH_SUBTLE_GRAVITY_LIST,                                   ///< Subtle gravity list
   SUB_EWMH_SUBTLE_GRAVITY_KILL,                                   ///< Subtle gravtiy kill
   SUB_EWMH_SUBTLE_TAG_NEW,                                        ///< Subtle tag new
