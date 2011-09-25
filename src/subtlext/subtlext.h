@@ -128,9 +128,10 @@ VALUE subGravityInstantiate(char *name);                          ///< Instantia
 VALUE subGravityInit(int argc, VALUE *argv, VALUE self);          ///< Create new gravity
 VALUE subGravityUpdate(VALUE self);                               ///< Update gravity
 VALUE subGravityClients(VALUE self);                              ///< List clients with gravity
-VALUE subGravityGeometryReader(VALUE self);                       ///< Get geometry gravity
-VALUE subGravityGeometryWriter(VALUE self, VALUE value);          ///< Set geometry gravity
 VALUE subGravityGeometryFor(VALUE self, VALUE value);             ///< Get geometry gravity for screen
+VALUE subGravityGeometryReader(VALUE self);                       ///< Get geometry gravity
+VALUE subGravityGeometryWriter(int argc, VALUE *argv, VALUE self);///< Get geometry gravity
+VALUE subGravityTilingWriter(VALUE self, VALUE value);            ///< Set gravity tiling
 VALUE subGravityToString(VALUE self);                             ///< Gravity to string
 VALUE subGravityToSym(VALUE self);                                ///< Gravity to symbol
 VALUE subGravityKill(VALUE self);                                 ///< Kill gravity

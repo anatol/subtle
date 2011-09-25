@@ -1931,9 +1931,10 @@ Init_subtlext(void)
   rb_define_method(gravity, "initialize",   subGravityInit,           -1);
   rb_define_method(gravity, "update",       subGravityUpdate,          0);
   rb_define_method(gravity, "clients",      subGravityClients,         0);
-  rb_define_method(gravity, "geometry",     subGravityGeometryReader,  0);
-  rb_define_method(gravity, "geometry=",    subGravityGeometryWriter,  1);
   rb_define_method(gravity, "geometry_for", subGravityGeometryFor,     1);
+  rb_define_method(gravity, "geometry",     subGravityGeometryReader,  0);
+  rb_define_method(gravity, "geometry=",    subGravityGeometryWriter, -1);
+  rb_define_method(gravity, "tiling=",      subGravityTilingWriter,    1);
   rb_define_method(gravity, "to_str",       subGravityToString,        0);
   rb_define_method(gravity, "to_sym",       subGravityToSym,           0);
   rb_define_method(gravity, "kill",         subGravityKill,            0);

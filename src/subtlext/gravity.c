@@ -170,13 +170,16 @@ subGravityInstantiate(char *name)
 
 /* subGravityInit {{{ */
 /*
- * call-seq: new(name, gravity) -> Subtlext::Gravity
+ * call-seq: new(name, x, y, width, height) -> Subtlext::Gravity
+ *           new(name, array)               -> Subtlext::Gravity
+ *           new(name, hash)                -> Subtlext::Gravity
+ *           new(name, geometry)            -> Subtlext::Gravity
  *
  * Create a new Gravity object locally <b>without</b> calling #save automatically.
  *
  * The Gravity <b>won't</b> be useable until #save is called.
  *
- *  gravity = Subtlext::Gravity.new("top")
+ *  gravity = Subtlext::Gravity.new("center", 0, 0, 100, 100)
  *  => #<Subtlext::Gravity:xxx>
  */
 
@@ -185,17 +188,28 @@ subGravityInit(int argc,
   VALUE *argv,
   VALUE self)
 {
-  VALUE data[2] = { Qnil };
+  VALUE data[5] = { Qnil }, geom = Qnil;
 
-  rb_scan_args(argc, argv, "02", &data[0], &data[1]);
+  rb_scan_args(argc, argv, "14", &data[0], &data[1], &data[2],
+    &data[3], &data[4]);
 
+  /* Check gravity name */
   if(T_STRING != rb_type(data[0]))
     rb_raise(rb_eArgError, "Invalid value type");
+
+  /* Delegate arguments */
+  if(RTEST(data[1]))
+    {
+      VALUE klass = Qnil;
+
+      klass = rb_const_get(mod, rb_intern("Geometry"));
+      geom  = rb_funcall2(klass, rb_intern("new"), argc - 1, argv + 1);
+    }
 
   /* Init object */
   rb_iv_set(self, "@id",       Qnil);
   rb_iv_set(self, "@name",     data[0]);
-  rb_iv_set(self, "@geometry", data[1]);
+  rb_iv_set(self, "@geometry", geom);
 
   subSubtlextConnect(NULL); ///< Implicit open connection
 
@@ -339,71 +353,6 @@ subGravityClients(VALUE self)
   return array;
 } /* }}} */
 
-/* subGravityGeometryReader {{{ */
-/*
- * call-seq: geometry -> Subtlext::Geometry
- *
- * Get the Gravity Geometry
- *
- *  gravity.geometry
- *  => #<Subtlext::Geometry:xxx>
- */
-
-VALUE
-subGravityGeometryReader(VALUE self)
-{
-  VALUE geometry = Qnil, name = Qnil;
-
-  /* Check ruby object */
-  rb_check_frozen(self);
-  GET_ATTR(self, "@name", name);
-
-  /* Load on demand */
-  if(NIL_P((geometry = rb_iv_get(self, "@geometry"))))
-    {
-      XRectangle geom = { 0 };
-
-      GravityFindId(RSTRING_PTR(name), NULL, &geom);
-
-      geometry = subGeometryInstantiate(geom.x, geom.y,
-        geom.width, geom.height);
-      rb_iv_set(self, "@geometry", geometry);
-    }
-
-  return geometry;
-} /* }}} */
-
-/* subGravityGeometryWriter {{{ */
-/*
- * call-seq: geometry=(geometry) -> nil
- *
- * Set the Gravity Geometry
- *
- *  gravity.geometry=geometry
- *  => #<Subtlext::Geometry:xxx>
- */
-
-VALUE
-subGravityGeometryWriter(VALUE self,
-  VALUE value)
-{
-  /* Check value type */
-  if(T_OBJECT == rb_type(value))
-    {
-      VALUE klass = rb_const_get(mod, rb_intern("Geometry"));
-
-      /* Check object instance */
-      if(rb_obj_is_instance_of(value, klass))
-        {
-          rb_iv_set(self, "@geometry", value);
-        }
-      else rb_raise(rb_eArgError, "Unexpected value-type `%s'",
-        rb_obj_classname(value));
-    }
-
-  return Qnil;
-} /* }}} */
-
 /* subGravityGeometryFor {{{ */
 /*
  * call-seq: geometry_for(screen) -> nil
@@ -452,6 +401,133 @@ subGravityGeometryFor(VALUE self,
     }
 
   return ary;
+} /* }}} */
+
+/* subGravityGeometryReader {{{ */
+/*
+ * call-seq: geometry -> Subtlext::Geometry
+ *
+ * Get the Gravity Geometry
+ *
+ *  gravity.geometry
+ *  => #<Subtlext::Geometry:xxx>
+ */
+
+VALUE
+subGravityGeometryReader(VALUE self)
+{
+  VALUE geometry = Qnil, name = Qnil;
+
+  /* Check ruby object */
+  rb_check_frozen(self);
+  GET_ATTR(self, "@name", name);
+
+  /* Load on demand */
+  if(NIL_P((geometry = rb_iv_get(self, "@geometry"))))
+    {
+      XRectangle geom = { 0 };
+
+      GravityFindId(RSTRING_PTR(name), NULL, &geom);
+
+      geometry = subGeometryInstantiate(geom.x, geom.y,
+        geom.width, geom.height);
+      rb_iv_set(self, "@geometry", geometry);
+    }
+
+  return geometry;
+} /* }}} */
+
+/* subGravityGeometryWriter {{{ */
+/*
+ * call-seq: geometry=(x, y, width, height) -> Subtlext::Geometry
+ *           geometry=(array)               -> Subtlext::Geometry
+ *           geometry=(hash)                -> Subtlext::Geometry
+ *           geometry=(geometry)            -> Subtlext::Geometry
+ *
+ * Set the Gravity Geometry
+ *
+ *  gravity.geometry = 0, 0, 100, 100
+ *  => #<Subtlext::Geometry:xxx>
+ *
+ *  gravity.geometry = [ 0, 0, 100, 100 ]
+ *  => #<Subtlext::Geometry:xxx>
+ *
+ *  gravity.geometry = {x: 0, y: 0, width: 100, height: 100 }
+ *  => #<Subtlext::Geometry:xxx>
+ *
+ *  gravity.geometry = Subtlext::Geometry(0, 0, 100, 100)
+ *  => #<Subtlext::Geometry:xxx>
+ */
+
+VALUE
+subGravityGeometryWriter(int argc,
+  VALUE *argv,
+  VALUE self)
+{
+  VALUE klass = Qnil, geom = Qnil;
+
+  /* Check ruby object */
+  rb_check_frozen(self);
+  subSubtlextConnect(NULL); ///< Implicit open connection
+
+  /* Delegate arguments */
+  klass = rb_const_get(mod, rb_intern("Geometry"));
+  geom  = rb_funcall2(klass, rb_intern("new"), argc, argv);
+
+  /* Update geometry */
+  if(RTEST(geom)) rb_iv_set(self, "@geometry", geom);
+
+  return Qnil;
+} /* }}} */
+
+/* subGravityTilingWriter {{{ */
+/*
+ * call-seq: tiling=(value) -> nil
+ *
+ * Set the tiling mode for gravity
+ *
+ *  gravity.tiling = :vert
+ *  => nil
+ *
+ *  gravity.tiling = :vert
+ *  => nil
+ *
+ *  gravity.tiling = nil
+ *  => nil
+ */
+
+VALUE
+subGravityTilingWriter(VALUE self,
+  VALUE value)
+{
+  int flags = 0;
+  VALUE id = Qnil;
+  SubMessageData data = { { 0, 0, 0, 0, 0 } };
+
+  /* Check ruby object */
+  rb_check_frozen(self);
+  GET_ATTR(self, "@id", id);
+
+  /* Check value type */
+  switch(rb_type(value))
+    {
+      case T_SYMBOL:
+        if(CHAR2SYM("horz")      == value) flags = SUB_EWMH_HORZ;
+        else if(CHAR2SYM("vert") == value) flags = SUB_EWMH_VERT;
+        break;
+      case T_NIL: break;
+      default: rb_raise(rb_eArgError, "Unexpected value-type `%s'",
+        rb_obj_classname(value));
+    }
+
+  /* Assemble message */
+  data.l[0] = FIX2INT(id);
+  data.l[1] = flags;
+
+  subSharedMessage(display, DefaultRootWindow(display),
+    "SUBTLE_GRAVITY_FLAGS", data, 32, True);
+
+  return Qnil;
 } /* }}} */
 
 /* subGravityToString {{{ */
