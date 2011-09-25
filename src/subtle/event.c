@@ -1118,6 +1118,32 @@ EventMessage(XClientMessageEvent *ev)
                 subGravityPublish();
               }
             break; /* }}} */
+          case SUB_EWMH_SUBTLE_GRAVITY_FLAGS: /* {{{ */
+            if((g = GRAVITY(subArrayGet(subtle->gravities,
+                (int)ev->data.l[0]))))
+              {
+                int i, flags = 0;
+
+                /* Translate and update flags */
+                if(ev->data.l[1] & SUB_EWMH_HORZ) flags |= SUB_GRAVITY_HORZ;
+                if(ev->data.l[1] & SUB_EWMH_VERT) flags |= SUB_GRAVITY_VERT;
+
+                g->flags = (g->flags & SUB_TYPE_GRAVITY) | flags;
+
+                /* Find clients with that gravity and mark them for arrange */
+                for(i = 0; i < subtle->clients->ndata; i++)
+                  {
+                    c = CLIENT(subtle->clients->data[i]);
+
+                    if(c->gravity == ev->data.l[0])
+                      c->flags |= SUB_CLIENT_ARRANGE;
+                  }
+
+                subScreenConfigure();
+                subScreenUpdate();
+                subScreenRender();
+              }
+            break; /* }}} */
           case SUB_EWMH_SUBTLE_GRAVITY_KILL: /* {{{ */
             if((g = GRAVITY(subArrayGet(subtle->gravities, (int)ev->data.l[0]))))
               {
