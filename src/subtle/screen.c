@@ -297,12 +297,12 @@ subScreenConfigure(void)
   SubScreen *s = NULL;
   SubView *v = NULL;
 
-  /* Reset visible tags, views and avaiclients */
+  /* Reset visible tags, views and available clients */
   subtle->visible_tags  = 0;
   subtle->visible_views = 0;
   subtle->client_tags   = 0;
 
-  /* Either check each client or just get visibles */
+  /* Either check each client or just get visible clients */
   if(0 < subtle->clients->ndata)
     {
       int j;
@@ -316,10 +316,10 @@ subScreenConfigure(void)
           /* Ignore dead or just iconified clients */
           if(c->flags & SUB_CLIENT_DEAD) continue;
 
-          /* Set client tags to ease lookups */
+          /* Set available client tags to ease lookups */
           subtle->client_tags |= c->tags;
 
-          /* Check views of each screen */
+          /* Check view of each screen */
           for(j = 0; j < subtle->screens->ndata; j++)
             {
               s = SCREEN(subtle->screens->data[j]);
@@ -337,7 +337,7 @@ subScreenConfigure(void)
                   screen  = j;
                   visible++;
 
-                  /* Keep stick screen */
+                  /* Keep screen on sticky mode */
                   if(c->flags & SUB_CLIENT_MODE_STICK)
                     screen = c->screen;
                 }
