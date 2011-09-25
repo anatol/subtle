@@ -55,13 +55,20 @@ context 'Gravity' do
   end # }}}
 
   asserts 'Create new gravity' do # {{{
-    g = Subtlext::Gravity.new 'test'
-    g.geometry = Subtlext::Geometry.new 0, 0, 100, 100
+    g = Subtlext::Gravity.new('test', 0, 0, 100, 100)
     g.save
 
     sleep 0.5
 
     GRAVITY_COUNT + 1 == Subtlext::Gravity.all.size
+  end # }}}
+
+  asserts 'Test tiling' do # {{{
+    topic.tiling = :vert
+    topic.tiling = :horz
+    topic.tiling = nil
+
+    true
   end # }}}
 
   asserts 'Kill a gravity' do # {{{
