@@ -53,6 +53,8 @@
 #define HISTORYSIZE  5                                            ///< Size of the focus history
 #define DEFAULTTAG   (1L << 1)                                    ///< Default tag
 
+#define GRAVITYSTRLIMIT 1                                         ///< Gravity string limit to ignore \0
+
 #define BORDER(c) \
   (c->flags & SUB_CLIENT_MODE_BORDERLESS ? 0 : \
   subtle->styles.clients.border.top)                              ///< Get border width

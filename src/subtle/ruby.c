@@ -336,9 +336,9 @@ RubyValueToGravityString(VALUE value,
       /* Add gravities */
       for(i = 0, j = 0; Qnil != (entry = rb_ary_entry(value, i)); i++)
         {
-          /* We store ids in a string to ease the whole thing */
+          /* We store gravity ids in a string to save a bit of memory */
           if(-1 != (id = RubyValueToGravity(entry)))
-            (*string)[j++] = id + 65; /// Use letters only
+            (*string)[j++] = id+ GRAVITYSTRLIMIT;
           else subSharedLogWarn("Failed finding gravity `%s'\n",
             SYM2CHAR(entry));
         }

@@ -763,8 +763,8 @@ EventGrab(XEvent *ev)
             if((c = CLIENT(subSubtleFind(win, CLIENTID))) &&
                 !(c->flags & SUB_CLIENT_MODE_FIXED))
               {
-                int i, id = -1, cid = 0, fid = (int)g->data.string[0] - 65,
-                  size = strlen(g->data.string);
+                int i, id = -1, cid = 0, fid = (int)g->data.string[0] -
+                  GRAVITYSTRLIMIT, size = strlen(g->data.string);
 
                 /* Remove float/fullscreen mode */
                 if(c->flags & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_FULL))
@@ -780,14 +780,14 @@ EventGrab(XEvent *ev)
                 /* Select next gravity */
                 for(i = 0; -1 == id && i < size; i++)
                   {
-                    cid = (int)g->data.string[i] - 65;
+                    cid = (int)g->data.string[i] - GRAVITYSTRLIMIT;
 
                     /* Toggle gravity */
                     if(c->gravity == cid)
                       {
                         /* Select first or next id */
                         if(i == size - 1) id = fid;
-                        else id = (int)g->data.string[i + 1] - 65;
+                        else id = (int)g->data.string[i + 1] - GRAVITYSTRLIMIT;
                       }
                   }
                 if(-1 == id) id = fid; ///< Fallback
