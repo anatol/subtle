@@ -794,9 +794,17 @@ module Subtle # {{{
       end # }}}
 
       def download(spec) # {{{
-        temp = nil
-        uri  = URI.parse(HOST)
-        http = Net::HTTP.new(uri.host, uri.port)
+        temp  = nil
+        uri   = URI.parse(HOST)
+
+        # Proxy?
+        begin
+          proxy = URI.parse(ENV["HTTP_PROXY"])
+          http  = Net::HTTP::Proxy(proxy.host, proxy.port,
+            proxy.user, proxy.password).start(uri.host, uri.port)
+        rescue
+          http = Net::HTTP.new(uri.host, uri.port)
+        end
 
         # Fetch file
         http.request_get("/get/" + spec.digest) do |response|
