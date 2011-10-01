@@ -44,6 +44,17 @@ StyleInherit(SubStyle *s1,
   StyleInheritSides(&s1->padding, &s2->padding, False);
   StyleInheritSides(&s1->margin,  &s2->margin,  False);
 
+  /* Inherit font */
+  if(NULL == s1->font) s1->font = s2->font;
+
+  /* Check max height */
+  if(s1->font && (s1 != &subtle->styles.clients || s1 != &subtle->styles.subtle))
+    {
+      int height = STYLE_HEIGHT((*s1)) + s1->font->height;
+
+      if(height > subtle->ph) subtle->ph = height;
+    }
+
   /* Check nested styles */
   if(s1->styles)
     {
@@ -151,6 +162,15 @@ subStyleReset(SubStyle *s,
   /* Force value to prevent inheriting of 0 value from all */
   s->icon = -1;
 
+  /* Reset font */
+  if(s->flags & SUB_STYLE_FONT && s->font)
+    {
+      subSharedFontKill(subtle->dpy, s->font);
+      s->flags &= ~SUB_STYLE_FONT;
+    }
+
+  s->font = NULL;
+
   /* Remove states */
   if(s->styles) subArrayKill(s->styles, True);
   s->styles = NULL;
@@ -177,6 +197,9 @@ subStyleMerge(SubStyle *s1,
   if(-1 != s2->bottom) s1->bottom = s2->bottom;
   if(-1 != s2->left)   s1->left   = s2->left;
 
+  /* Merge font */
+  if(NULL != s2->font) s1->font = s2->font;
+
   /* Merge set border, padding and margin */
   StyleInheritSides(&s1->border,  &s2->border,  True);
   StyleInheritSides(&s1->padding, &s2->padding, True);
@@ -192,6 +215,10 @@ void
 subStyleKill(SubStyle *s)
 {
   assert(s);
+
+  /* Free font */
+  if(s->flags & SUB_STYLE_FONT && s->font)
+    subSharedFontKill(subtle->dpy, s->font);
 
   if(s->name)   free(s->name);
   if(s->styles) subArrayKill(s->styles, True);
