@@ -37,10 +37,6 @@ set :resize, false
 # Enable gravity tiling
 set :tiling, false
 
-# Font string either take from e.g. xfontsel or use xft
-set :font, "-*-*-medium-*-*-*-14-*-*-*-*-*-*-*"
-#set :font, "xft:sans-8"
-
 # Separator between sublets
 set :separator, "|"
 
@@ -118,6 +114,7 @@ end
 # [*margin*]     Outer spacing
 # [*border*]     Border color and size
 # [*padding*]    Inner spacing
+# [*font*]       Font string (xftontsel or xft)
 #
 # === Link
 #
@@ -129,6 +126,8 @@ style :all do
   icon        "#757575"
   border      "#303030", 0
   padding     0, 3
+  font        "-*-*-*-*-*-*-14-*-*-*-*-*-*-*"
+  #font        "xft:sans-8"
 end
 
 # Style for the views
