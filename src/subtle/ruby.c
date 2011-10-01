@@ -94,6 +94,27 @@ RubyReceiver(unsigned long instance,
   return receiver == instance;
 } /* }}} */
 
+/* RubyFont {{{ */
+static SubFont *
+RubyFont(const char *fontname)
+{
+  SubFont *font = NULL;
+
+  /* Load font */
+  if(!(font = subSharedFontNew(subtle->dpy, fontname)))
+    {
+      /* Load fallback font */
+      if(!(font = subSharedFontNew(subtle->dpy, DEFFONT)))
+        {
+          subSubtleFinish();
+
+          exit(-1); ///< Should never happen
+        }
+    }
+
+  return font;
+} /* }}} */
+
 /* Type converter */
 
 /* RubySubtleToSubtlext {{{ */
@@ -945,27 +966,15 @@ RubyEvalConfig(void)
 {
   int i;
 
-  /* Check font */
-  if(!subtle->font)
-    {
-      subtle->font = subSharedFontNew(subtle->dpy, DEFFONT);
-
-      /* EWMH: Font */
-      subEwmhSetString(ROOT, SUB_EWMH_SUBTLE_FONT, DEFFONT);
-    }
-
-  /* Update panel height */
-  subtle->ph += subtle->font->height;
-
   /* Inherit style values */
   subStyleInheritance();
 
   /* Set separator */
   if(subtle->separator.string)
     {
-      subtle->separator.width = subSharedTextWidth(subtle->dpy, subtle->font,
-        subtle->separator.string, strlen(subtle->separator.string), NULL,
-        NULL, True);
+      subtle->separator.width = subSharedTextWidth(subtle->dpy,
+        subtle->styles.separator.font, subtle->separator.string,
+        strlen(subtle->separator.string), NULL, NULL, True);
 
       /* Add spacing for separator */
       if(0 < subtle->separator.width)
@@ -1112,8 +1121,7 @@ RubyEvalStyle(VALUE name,
       RubyHashToBorder(params, "active",   &s->fg, &s->border.top);
       RubyHashToBorder(params, "inactive", &s->bg, &s->border.top);
 
-      /* FIXME: Set title width
-       * Should be a title style, right? */
+      /* FIXME: Set title width, but that should be a title style, right? */
       if(FIXNUM_P(value = rb_hash_lookup(params, CHAR2SYM("width"))))
         s->right = FIX2INT(value);
       else s->right = 50;
@@ -1179,13 +1187,17 @@ RubyEvalStyle(VALUE name,
   RubyHashToInt(params, "min_width", &s->min);
   s->min = MAX(0, s->min);
 
-  /* Check max height */
-  if(CHAR2SYM("clients") != name && CHAR2SYM("subtle") != name)
+  /* Style font */
+  if(T_STRING == rb_type(value = rb_hash_lookup(params,
+      CHAR2SYM("font"))) && !s->font)
     {
-      int height = STYLE_HEIGHT((*s));
+      s->font   = RubyFont(RSTRING_PTR(value));
+      s->flags |= SUB_STYLE_FONT;
 
-      if(height > subtle->ph) subtle->ph = height;
-    }
+      /* EWMH: Font */
+      if(CHAR2SYM("all") == name)
+        subEwmhSetString(ROOT, SUB_EWMH_SUBTLE_FONT, RSTRING_PTR(value));
+  }
 } /* }}} */
 
 /* Foreach */
@@ -1859,26 +1871,21 @@ RubyConfigSet(VALUE self,
               SYM2CHAR(option));
             break; /* }}} */
           case T_STRING: /* {{{ */
-            if(CHAR2SYM("font") == option)
-              {
-                if(!(subtle->flags & SUB_SUBTLE_CHECK))
-                  {
-                    if(subtle->font)
-                      subSharedFontKill(subtle->dpy, subtle->font);
-                    if(!(subtle->font = subSharedFontNew(subtle->dpy,
-                        RSTRING_PTR(value))))
-                      {
-                        subSubtleFinish();
+           if(CHAR2SYM("font") == option)
+            {
+              subSharedLogDeprecated("The :font option is deprecated, "
+                "please use the styles font property.\n");
 
-                        exit(-1); ///< Should never happen
-                      }
+              if(!(subtle->flags & SUB_SUBTLE_CHECK) && !subtle->styles.all.font)
+                {
+                  subtle->styles.all.font   = RubyFont(RSTRING_PTR(value));
+                  subtle->styles.all.flags |= SUB_STYLE_FONT;
 
-                    /* EWMH: Font */
-                    subEwmhSetString(ROOT, SUB_EWMH_SUBTLE_FONT,
-                      RSTRING_PTR(value));
-                  }
-              }
-            else if(CHAR2SYM("separator") == option)
+                  /* EWMH: Font */
+                  subEwmhSetString(ROOT, SUB_EWMH_SUBTLE_FONT, RSTRING_PTR(value));
+                }
+            }
+           else if(CHAR2SYM("separator") == option)
               {
                 if(!(subtle->flags & SUB_SUBTLE_CHECK))
                   {
@@ -2889,8 +2896,9 @@ RubySubletDataWriter(VALUE self,
           if(s->styles && (style = subArrayGet(s->styles, p->sublet->style)))
               s = style;
 
-          p->sublet->width = subSharedTextParse(subtle->dpy, subtle->font,
-            p->sublet->text, RSTRING_PTR(value)) + STYLE_WIDTH((*s));
+          p->sublet->width = subSharedTextParse(subtle->dpy,
+            subtle->styles.sublets.font, p->sublet->text,
+            RSTRING_PTR(value)) + STYLE_WIDTH((*s));
         }
       else rb_raise(rb_eArgError, "Unknown value type");
     }
@@ -2992,8 +3000,9 @@ RubySubletStyleWriter(VALUE self,
               p->sublet->style = FIX2INT(value);
             }
 
-          p->sublet->width = subSharedTextParse(subtle->dpy, subtle->font,
-            p->sublet->text, RSTRING_PTR(value)) + STYLE_WIDTH((*s));
+          p->sublet->width = subSharedTextParse(subtle->dpy,
+            subtle->styles.sublets.font, p->sublet->text,
+            RSTRING_PTR(value)) + STYLE_WIDTH((*s));
         }
       else rb_raise(rb_eArgError, "Unknown value type");
     }
@@ -3501,7 +3510,7 @@ subRubyReloadConfig(void)
   /* Reset panel height */
   subtle->ph = 0;
 
-  /* Reset before reloading */
+  /* Reset flags before reloading */
   subtle->flags &= (SUB_SUBTLE_DEBUG|SUB_SUBTLE_EWMH|SUB_SUBTLE_RUN|
     SUB_SUBTLE_XINERAMA|SUB_SUBTLE_XRANDR|SUB_SUBTLE_URGENT);
 
@@ -3532,13 +3541,6 @@ subRubyReloadConfig(void)
       s->flags &= ~(SUB_SCREEN_STIPPLE|SUB_SCREEN_PANEL1|SUB_SCREEN_PANEL2);
 
       subArrayClear(s->panels, True);
-    }
-
-  /* Unload fonts */
-  if(subtle->font)
-    {
-      subSharedFontKill(subtle->dpy, subtle->font);
-      subtle->font = NULL;
     }
 
   /* Clear arrays */
