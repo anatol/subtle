@@ -794,8 +794,8 @@ module Subtle # {{{
       end # }}}
 
       def download(spec) # {{{
-        temp  = nil
-        uri   = URI.parse(HOST)
+        temp = nil
+        uri  = URI.parse(HOST)
 
         # Proxy?
         begin
@@ -821,7 +821,8 @@ module Subtle # {{{
                 total += str.length
                 temp  << str
 
-                progress(">>> Fetching sublet `#{spec.to_s}'", response.content_length, total)
+                progress(">>> Fetching sublet `#{spec.to_s}'",
+                  response.content_length, total)
               end
 
               temp.close
