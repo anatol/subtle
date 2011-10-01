@@ -269,6 +269,9 @@
 #define SUB_SCREEN_PANEL2             (1L << 11)                  ///< Panel2 enabled
 #define SUB_SCREEN_STIPPLE            (1L << 12)                  ///< Stipple enabled
 
+/* Style flags */
+#define SUB_STYLE_FONT                (1L << 10)                  ///< Style has custom font
+
 /* Subtle flags */
 #define SUB_SUBTLE_DEBUG              (1L << 0)                   ///< Debug enabled
 #define SUB_SUBTLE_CHECK              (1L << 1)                   ///< Check config
@@ -584,6 +587,7 @@ typedef struct substyle_t /* {{{ */
   long              fg, bg, icon, top, right, bottom, left;       ///< Style colors
   struct subsides_t border, padding, margin;                      ///< Style border, padding and margin
   struct subarray_t *styles;                                      ///< Style state list
+  struct subfont_t  *font;                                        ///< Style font
 } SubStyle; /* }}} */
 
 typedef struct subsubtle_t /* {{{ */
@@ -598,7 +602,6 @@ typedef struct subsubtle_t /* {{{ */
 
   Display              *dpy;                                      ///< Subtle Xorg display
 
-  struct subfont_t     *font;                                     ///< Subtle font
   struct subgrab_t     *keychain;                                 ///< Subtle current keychain
 
   struct subarray_t    *clients;                                  ///< Subtle clients
