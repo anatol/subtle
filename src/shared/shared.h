@@ -43,7 +43,7 @@
 #define RINT(r)   printf("<%s:%d> %s: x=%d, y=%d, width=%d, height=%d\n", \
   __FILE__, __LINE__, #r, r.x, r.y, r.width, r.height);           ///< Print a XRectangle
 
-#define DEFFONT   "-*-*-medium-*-*-*-14-*-*-*-*-*-*-*"            ///< Default font
+#define DEFFONT   "-*-*-*-*-*-*-14-*-*-*-*-*-*-*"                 ///< Default font
 
 #define DATA(d)   ((SubData)d)                                    ///< Cast to SubData
 #define FONT(f)   ((SubFont *)f)                                  ///< Cast to SubFont
