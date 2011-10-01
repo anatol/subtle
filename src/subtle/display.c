@@ -352,9 +352,6 @@ subDisplayFinish(void)
       if(subtle->gcs.invert)  XFreeGC(subtle->dpy, subtle->gcs.invert);
       if(subtle->gcs.draw)    XFreeGC(subtle->dpy, subtle->gcs.draw);
 
-      /* Free font */
-      if(subtle->font) subSharedFontKill(subtle->dpy, subtle->font);
-
       XDestroyWindow(subtle->dpy, subtle->windows.tray);
       XDestroyWindow(subtle->dpy, subtle->windows.support);
 
