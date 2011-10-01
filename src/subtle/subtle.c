@@ -265,21 +265,14 @@ subSubtleFinish(void)
       subArrayKill(subtle->views,     True);
       subArrayKill(subtle->hooks,     False);
 
-      /* Kill styles */
-      if(subtle->styles.all.styles)
-        subArrayKill(subtle->styles.all.styles,       True);
-      if(subtle->styles.views.styles)
-        subArrayKill(subtle->styles.views.styles,     True);
-      if(subtle->styles.title.styles)
-        subArrayKill(subtle->styles.title.styles,     True);
-      if(subtle->styles.sublets.styles)
-        subArrayKill(subtle->styles.sublets.styles,   True);
-      if(subtle->styles.separator.styles)
-        subArrayKill(subtle->styles.separator.styles, True);
-      if(subtle->styles.clients.styles)
-        subArrayKill(subtle->styles.clients.styles,   True);
-      if(subtle->styles.subtle.styles)
-        subArrayKill(subtle->styles.subtle.styles,    True);
+      /* Reset styles to free fonts and substyles */
+      subStyleReset(&subtle->styles.all,       0);
+      subStyleReset(&subtle->styles.views,     0);
+      subStyleReset(&subtle->styles.title,     0);
+      subStyleReset(&subtle->styles.sublets,   0);
+      subStyleReset(&subtle->styles.separator, 0);
+      subStyleReset(&subtle->styles.clients,   0);
+      subStyleReset(&subtle->styles.subtle,    0);
 
       subEventFinish();
       subRubyFinish();
