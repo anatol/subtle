@@ -62,11 +62,12 @@ PanelSeparator(int type,
   /* Set window background and border*/
   PanelRect(drawable, x, subtle->separator.width, &subtle->styles.separator);
 
-  subSharedTextDraw(subtle->dpy, subtle->gcs.draw, subtle->font,
-    drawable, x + STYLE_LEFT(subtle->styles.separator), subtle->font->y +
-    STYLE_TOP(subtle->styles.separator), subtle->styles.separator.fg,
-    subtle->styles.separator.bg, subtle->separator.string,
-    strlen(subtle->separator.string));
+  subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
+    subtle->styles.separator.font, drawable,
+    x + STYLE_LEFT(subtle->styles.separator),
+    subtle->styles.separator.font->y + STYLE_TOP(subtle->styles.separator),
+    subtle->styles.separator.fg, subtle->styles.separator.bg,
+    subtle->separator.string, strlen(subtle->separator.string));
 } /* }}} */
 
 /* PanelClientModes {{{ */
@@ -109,7 +110,7 @@ PanelClientModes(SubClient *c,
       x++;
     }
 
-  *width = subSharedTextWidth(subtle->dpy, subtle->font,
+  *width = subSharedTextWidth(subtle->dpy, subtle->styles.title.font,
     buf, strlen(buf), NULL, NULL, True);
 } /* }}} */
 
@@ -232,9 +233,11 @@ subPanelUpdate(SubPanel *p)
         if(p->keychain && p->keychain->keys)
           {
             /* Font offset, panel border and padding */
-            p->width = subSharedTextWidth(subtle->dpy, subtle->font,
-              p->keychain->keys, p->keychain->len, NULL, NULL, True) +
-              subtle->styles.separator.padding.left + subtle->styles.separator.padding.right;
+            p->width = subSharedTextWidth(subtle->dpy,
+              subtle->styles.separator.font, p->keychain->keys,
+              p->keychain->len, NULL, NULL, True) +
+              subtle->styles.separator.padding.left +
+              subtle->styles.separator.padding.right;
           }
         break; /* }}} */
       case SUB_PANEL_SUBLET: /* {{{ */
@@ -268,7 +271,7 @@ subPanelUpdate(SubPanel *p)
 
                     /* Font offset, panel border and padding */
                     p->width = subSharedTextWidth(subtle->dpy,
-                      subtle->font, c->name,
+                      subtle->styles.title.font, c->name,
                       /* Limit string length */
                       len > subtle->styles.clients.right ?
                       subtle->styles.clients.right : len,
@@ -305,7 +308,7 @@ subPanelUpdate(SubPanel *p)
                   v->width = v->icon->width + STYLE_WIDTH((s));
                 else
                   {
-                    v->width = subSharedTextWidth(subtle->dpy, subtle->font,
+                    v->width = subSharedTextWidth(subtle->dpy, s.font,
                       v->name, strlen(v->name), NULL, NULL, True) +
                       STYLE_WIDTH((s)) + (v->icon ? v->icon->width + 3 : 0);
                   }
@@ -342,7 +345,8 @@ subPanelRender(SubPanel *p,
           {
             int y = 0, icony = 0;
 
-            y     = subtle->font->y + STYLE_TOP(subtle->styles.separator);
+            y     = subtle->styles.separator.font->y +
+              STYLE_TOP(subtle->styles.separator);
             icony = p->icon->height > y ? subtle->styles.separator.margin.top :
               y - p->icon->height;
 
@@ -355,9 +359,11 @@ subPanelRender(SubPanel *p,
       case SUB_PANEL_KEYCHAIN: /* {{{ */
         if(p->keychain && p->keychain->keys)
           {
-            subSharedTextDraw(subtle->dpy, subtle->gcs.draw, subtle->font,
-              drawable, p->x + STYLE_LEFT(subtle->styles.separator),
-              subtle->font->y + STYLE_TOP(subtle->styles.separator),
+            subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
+              subtle->styles.separator.font, drawable,
+              p->x + STYLE_LEFT(subtle->styles.separator),
+              subtle->styles.separator.font->y +
+              STYLE_TOP(subtle->styles.separator),
               subtle->styles.title.fg, subtle->styles.title.bg,
               p->keychain->keys, strlen(p->keychain->keys));
           }
@@ -370,8 +376,8 @@ subPanelRender(SubPanel *p,
             PanelRect(drawable, p->x, p->width, s);
 
             /* Render text parts */
-            subSharedTextRender(subtle->dpy, subtle->gcs.draw, subtle->font,
-              drawable, p->x + STYLE_LEFT((*s)), subtle->font->y +
+            subSharedTextRender(subtle->dpy, subtle->gcs.draw, s->font,
+              drawable, p->x + STYLE_LEFT((*s)), s->font->y +
               STYLE_TOP((*s)), s->fg, s->icon, s->bg, p->sublet->text);
           }
         break; /* }}} */
@@ -385,25 +391,28 @@ subPanelRender(SubPanel *p,
               {
                 int x = 0, y = 0, width = 0, len = 0;
                 char buf[5] = { 0 };
-                SubStyle *s = &subtle->styles.title;
 
                 DEAD(c);
 
                 PanelClientModes(c, buf, &width);
 
                 /* Set window background and border*/
-                PanelRect(drawable, p->x, p->width, s);
+                PanelRect(drawable, p->x, p->width, &subtle->styles.title);
 
                 /* Draw modes and title */
                 len = strlen(c->name);
                 x   = p->x + STYLE_LEFT(subtle->styles.title);
-                y   = subtle->font->y + STYLE_TOP(subtle->styles.title);
+                y   = subtle->styles.title.font->y +
+                  STYLE_TOP(subtle->styles.title);
 
-                subSharedTextDraw(subtle->dpy, subtle->gcs.draw, subtle->font,
-                  drawable, x, y, s->fg, s->bg, buf, strlen(buf));
+                subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
+                  subtle->styles.title.font, drawable, x, y,
+                  subtle->styles.title.fg, subtle->styles.title.bg,
+                  buf, strlen(buf));
 
-                subSharedTextDraw(subtle->dpy, subtle->gcs.draw, subtle->font,
-                  drawable, x + width, y, s->fg, s->bg, c->name,
+                subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
+                  subtle->styles.title.font, drawable, x + width, y,
+                  subtle->styles.title.fg, subtle->styles.title.bg, c->name,
                   /* Limit string length */
                   len > subtle->styles.clients.right ? 
                   subtle->styles.clients.right : len);
@@ -439,7 +448,7 @@ subPanelRender(SubPanel *p,
                   {
                     int y = 0, icony = 0;
 
-                    y     = subtle->font->y + STYLE_TOP((s));
+                    y     = s.font->y + STYLE_TOP((s));
                     icony = v->icon->height > y ? s.margin.top :
                       y - v->icon->height;
 
@@ -454,7 +463,7 @@ subPanelRender(SubPanel *p,
                     if(v->flags & SUB_VIEW_ICON) x += v->icon->width + 3;
 
                     subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
-                      subtle->font, drawable, vx + x, subtle->font->y +
+                      s.font, drawable, vx + x, s.font->y +
                       STYLE_TOP((s)), s.fg, s.bg, v->name, strlen(v->name));
                   }
 
