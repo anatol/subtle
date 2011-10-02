@@ -259,21 +259,27 @@ EventConfigureRequest(XConfigureRequestEvent *ev)
         {
           SubScreen *s = SCREEN(subtle->screens->data[c->screen]);
 
-          if(ev->value_mask & CWX)      c->geom.x      = s->geom.x + ev->x;
-          if(ev->value_mask & CWY)      c->geom.y      = s->geom.y + ev->y;
+          /* Handle request values and check if they make sense
+           * Some clients outsmart us and center their toplevel windows */
+          if(ev->value_mask & CWX)
+            c->geom.x = ev->x < s->geom.x ? s->geom.x + ev->x : ev->x;
+          if(ev->value_mask & CWY)
+            c->geom.y = ev->y < s->geom.y ? s->geom.y + ev->y : ev->y;
           if(ev->value_mask & CWWidth)  c->geom.width  = ev->width;
           if(ev->value_mask & CWHeight) c->geom.height = ev->height;
 
           subClientResize(c, &(s->geom), False);
 
           /* Send synthetic configure notify */
-          if((ev->value_mask & (CWX|CWY)) &&
-              !(ev->value_mask & (CWWidth|CWHeight)))
+          if(!(ev->value_mask & (CWX|CWY|CWWidth|CWHeight)) ||
+              ((ev->value_mask & (CWX|CWY)) &&
+              !(ev->value_mask & (CWWidth|CWHeight))))
             subClientConfigure(c);
 
           /* Send real configure notify */
-          XMoveResizeWindow(subtle->dpy, c->win, c->geom.x, c->geom.y,
-            c->geom.width, c->geom.height);
+          if(ev->value_mask & (CWX|CWY|CWWidth|CWHeight))
+            XMoveResizeWindow(subtle->dpy, c->win, c->geom.x, c->geom.y,
+              c->geom.width, c->geom.height);
         }
       else subClientConfigure(c);
     }
