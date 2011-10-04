@@ -232,7 +232,7 @@ module Subtle # {{{
                  "sur query -r clock -v 0.3\n"
           when "server"
             puts "Usage: sur server [OPTIONS]\n\n" \
-                 "Serve sublets on localhost ann optionally on a given port\n\n" \
+                 "Serve sublets on localhost and optionally on a given port\n\n" \
                  "Options:\n" \
                  "  -p, --port PORT           Select a specific port\n" \
                  "  -h, --help                Show this help and exit\n\n" \
