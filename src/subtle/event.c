@@ -1095,7 +1095,7 @@ EventMessage(XClientMessageEvent *ev)
                 if(ev->data.l[1] & SUB_EWMH_FIXED)      flags |= SUB_CLIENT_MODE_FIXED;
                 if(ev->data.l[1] & SUB_EWMH_BORDERLESS) flags |= SUB_CLIENT_MODE_BORDERLESS;
 
-                subClientToggle(c, (~c->flags & flags), False); ///< Enable only
+                subClientToggle(c, flags, False);
 
                 /* Configure and render when necessary */
                 if(VISIBLE(subtle->visible_tags, c) ||

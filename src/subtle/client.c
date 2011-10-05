@@ -391,6 +391,7 @@ subClientNew(Window win)
   subClientSetState(c, &flags);
   subClientSetTransient(c, &flags);
   subClientSetMWMHints(c);
+  subClientToggle(c, flags, False);
 
   /* Set leader window */
   if((leader = (Window *)subSharedPropertyGet(subtle->dpy, c->win, XA_WINDOW,
@@ -400,9 +401,6 @@ subClientNew(Window win)
 
       free(leader);
     }
-
-  /* Update and handle according to flags */
-  subClientToggle(c, (~c->flags & flags), False); ///< Just enable
 
   /* EWMH: Gravity, screen, desktop, extents */
   subEwmhSetCardinals(c->win, SUB_EWMH_SUBTLE_CLIENT_GRAVITY,
@@ -1078,7 +1076,7 @@ subClientToggle(SubClient *c,
       /* Set fullscreen mode */
       if(type & SUB_CLIENT_MODE_FULL)
         {
-          /* Prevent fixed windows from set to fullscreen */
+          /* Exclude fixed windows from fullscreen mode */
           if(c->flags & SUB_CLIENT_MODE_FIXED)
             {
               c->flags &= ~SUB_CLIENT_MODE_FULL;
@@ -1305,7 +1303,7 @@ subClientSetSizeHints(SubClient *c,
               s->geom.height - subtle->ph : size->max_height;
         }
 
-      /* Floating on equal min and max sizes (EWMH: Fixed size windows) */
+      /* Set float when min == max size (EWMH: Fixed size windows) */
       if(size->flags & PMinSize && size->flags & PMaxSize)
         {
           if(size->min_width == size->max_width &&
