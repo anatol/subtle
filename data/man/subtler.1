@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SUBTLER" "1" "September 2011" "" ""
+.TH "SUBTLER" "1" "October 2011" "" ""
 .
 .SH "NAME"
 \fBsubtler\fR \- a commandline interface for subtle
@@ -10,7 +10,7 @@
 \fBsubtler\fR [GENERIC|MODIFIER] [GROUP] [ACTION]
 .
 .SH "DESCRIPTION"
-\fBsubtler\fR is a commandline tool that allows to interact with a \fBEWMH/NetWM\fR compatible window manager and especially with subtle\. It uses many features of subtle like adding new tags \- but other stuff will also work with every other compliant wm\.
+\fBsubtler\fR is a commandline tool, that allows interacting with a \fBEWMH/NetWM\fR compatible window manager and especially with subtle(1) from a shell\.
 .
 .SH "FORMATS"
 .
@@ -27,7 +27,7 @@
 \fBPATTERN\fR
 .
 .br
-Matching works either via plain, regex(7) or window id if applicable\. If a pattern matches more than once ONLY the first match will be used\.
+Matching works either via plaintext, regex(7), id or window id if applicable\. If a pattern matches more than once ALL matches are used\.
 .
 .IP
 If the \fBPATTERN\fR is \- subtler will read from stdin\.
@@ -39,7 +39,7 @@ If the \fBPATTERN\fR is \- subtler will read from stdin\.
 .SH "GENERIC"
 .
 .IP "\(bu" 4
-\fB\-d\fR, \fB\-\-display\fR DISPLAY
+\fB\-d\fR, \fB\-\-display\fR=DISPLAY
 .
 .br
 Connect to DISPLAY (default: :0)
@@ -153,13 +153,13 @@ Use views group
 .SH "ACTIONS FOR CLIENTS"
 .
 .IP "\(bu" 4
-\fB\-f\fR, \fB\-\-find\fR PATTERN
+\fB\-f\fR, \fB\-\-find\fR=PATTERN
 .
 .br
 Find client
 .
 .IP "\(bu" 4
-\fB\-o\fR, \fB\-\-focus\fR PATTERN
+\fB\-o\fR, \fB\-\-focus\fR=PATTERN
 .
 .br
 Set focus to client
@@ -195,13 +195,13 @@ Toggle urgent
 List all clients
 .
 .IP "\(bu" 4
-\fB\-T\fR, \fB\-\-tag\fR PATTERN
+\fB\-T\fR, \fB\-\-tag\fR=PATTERN
 .
 .br
 Add tag to client
 .
 .IP "\(bu" 4
-\fB\-U\fR, \fB\-\-untag\fR PATTERN
+\fB\-U\fR, \fB\-\-untag\fR=PATTERN
 .
 .br
 Remove tag from client
@@ -231,7 +231,7 @@ Raise client window
 Lower client window
 .
 .IP "\(bu" 4
-\fB\-k\fR, \fB\-\-kill\fR PATTERN
+\fB\-k\fR, \fB\-\-kill\fR=PATTERN
 .
 .br
 Kill client
@@ -241,7 +241,7 @@ Kill client
 .SH "ACTIONS FOR GRAVITIES"
 .
 .IP "\(bu" 4
-\fB\-a\fR, \fB\-\-add\fR NAME
+\fB\-a\fR, \fB\-\-add\fR=NAME
 .
 .br
 Create new gravity
@@ -253,16 +253,16 @@ Create new gravity
 List all gravities
 .
 .IP "\(bu" 4
-\fB\-f\fR, \fB\-\-find\fR PATTERN
+\fB\-f\fR, \fB\-\-find\fR=PATTERN
 .
 .br
 Find a gravity
 .
 .IP "\(bu" 4
-\fB\-k\fR, \fB\-\-kill\fR PATTERN
+\fB\-k\fR, \fB\-\-kill\fR=PATTERN
 .
 .br
-Kill gravity mode
+Kill gravity
 .
 .IP "" 0
 .
@@ -275,7 +275,7 @@ Kill gravity mode
 List all screens
 .
 .IP "\(bu" 4
-\fB\-f\fR, \fB\-\-find\fR ID
+\fB\-f\fR, \fB\-\-find\fR=ID
 .
 .br
 Find a screen
@@ -285,7 +285,7 @@ Find a screen
 .SH "ACTIONS FOR SUBLETS"
 .
 .IP "\(bu" 4
-\fB\-a\fR, \fB\-\-add\fR FILE
+\fB\-a\fR, \fB\-\-add\fR=FILE
 .
 .br
 Create new sublet
@@ -309,7 +309,7 @@ Updates value of sublet
 Set data of sublet
 .
 .IP "\(bu" 4
-\fB\-k\fR, \fB\-\-kill\fR PATTERN
+\fB\-k\fR, \fB\-\-kill\fR=PATTERN
 .
 .br
 Kill sublet
@@ -319,7 +319,7 @@ Kill sublet
 .SH "ACTIONS FOR TAGS"
 .
 .IP "\(bu" 4
-\fB\-a\fR, \fB\-\-add\fR NAME
+\fB\-a\fR, \fB\-\-add\fR=NAME
 .
 .br
 Create new tag
@@ -343,23 +343,42 @@ List all tags
 Show clients with tag
 .
 .IP "\(bu" 4
-\fB\-k\fR, \fB\-\-kill\fR PATTERN
+\fB\-k\fR, \fB\-\-kill\fR=PATTERN
 .
 .br
 Kill tag
 .
 .IP "" 0
 .
+.SH "ACTIONS FOR TRAYS"
+.
+.IP "\(bu" 4
+\fB\-f\fR, \fB\-\-find\fR=PATTERN
+.
+.br
+Find a tray
+.
+.IP "\(bu" 4
+\fB\-l\fR, \fB\-\-list\fR List all trays
+.
+.IP "\(bu" 4
+\fB\-k\fR, \fB\-\-kill\fR=TRAY
+.
+.br
+Kill tray
+.
+.IP "" 0
+.
 .SH "ACTIONS FOR VIEWS"
 .
 .IP "\(bu" 4
-\fB\-a\fR, \fB\-\-add\fR NAME
+\fB\-a\fR, \fB\-\-add\fR=NAME
 .
 .br
 Create new view
 .
 .IP "\(bu" 4
-\fB\-f\fR, \fB\-\-find\fR PATTERN
+\fB\-f\fR, \fB\-\-find\fR=PATTERN
 .
 .br
 Find a view
@@ -368,13 +387,13 @@ Find a view
 \fB\-l\fR, \fB\-\-list\fR List all views
 .
 .IP "\(bu" 4
-\fB\-T\fR, \fB\-\-tag\fR PATTERN
+\fB\-T\fR, \fB\-\-tag\fR=PATTERN
 .
 .br
 Add tag to view
 .
 .IP "\(bu" 4
-\fB\-U\fR, `\-\-untag PATTERN
+\fB\-U\fR, \fB\-\-untag\fR=PATTERN
 .
 .br
 Remove tag from view
@@ -386,7 +405,7 @@ Remove tag from view
 \fB\-I\fR, \fB\-\-clients\fR Show clients on view
 .
 .IP "\(bu" 4
-\fB\-k\fR, \fB\-\-kill\fR VIEW
+\fB\-k\fR, \fB\-\-kill\fR=VIEW
 .
 .br
 Kill view
@@ -394,7 +413,7 @@ Kill view
 .IP "" 0
 .
 .SH "LISTINGS"
-Client listing: \fIwindow id\fR [\-\fI] \fIview id\fR \fIgeometry\fR \fIgravity\fR \fIflags\fR \fIname\fR (\fIclass\fR)
+Client listing: \fIwindow id\fR [\-\fI] \fIview id\fR \fIgeometry\fR \fIgravity\fR \fIflags\fR \fIinstance name\fR (\fIclass name\fR)
 .
 .br
 Gravity listing: \fIgravity id\fR \fIgeometry\fR
@@ -403,10 +422,10 @@ Gravity listing: \fIgravity id\fR \fIgeometry\fR
 Screen listing: \fIscreen id\fR \fIgeometry\fR
 .
 .br
-Tag listing: \fIname\fR
+Tag listing: \fItag name\fR
 .
 .br
-View listing: \fIwindow id\fR [\-\fR] \fIview id\fR \fIname\fR
+Tray listing: \fIwindow id\fR \fIinstance name\fR (\fIclass name\fR) View listing: \fIwindow id\fR [\-\fR] \fIview id\fR \fIview name\fR
 .
 .SH "EXAMPLES"
 subtler \-c \-l List all clients
@@ -426,6 +445,9 @@ subtler \-c \-X \-f Select client and show info
 .br
 subtler \-c \-C \-Y 5 Set gravity 5 to current active client
 .
+.br
+subtler \-t \-f term Show every client/view tagged with \'term\'
+.
 .SH "BUGS"
 Report bugs at http://subforge\.org/projects/subtle/issues
 .
@@ -433,7 +455,7 @@ Report bugs at http://subforge\.org/projects/subtle/issues
 Homepage: http://subtle\.subforge\.org
 .
 .SH "COPYRIGHT"
-Copyright (c) Christoph Kappel \fIunexist@dorfelite\.net\fR
+Copyright (c) Christoph Kappel \fIunexist@subforge\.org\fR
 .
 .SH "SEE ALSO"
 subtle(1), subtlext(1), sur(1), surserver(1)

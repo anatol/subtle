@@ -10,27 +10,21 @@
 \fBsubtle\fR \fIOPTIONS\fR
 .
 .SH "DESCRIPTION"
-\fBsubtle\fR is a grid\-based manual tiling window manager with a strong focus on easy but customizable look and feel\. In comparison to other tiling windows managers, \fBsubtle\fR has no automatic tiling of the screen size in any way, instead windows are arranged according to positions inside of a grid \- these positions are called gravities\.
+\fBsubtle\fR is a \fBmanual\fR tiling window manager with a rather uncommon approach of tiling: Instead of relying on predefined layouts, subtle divides the screen into a grid with customizeable slots (called gravities)\. For better understanding, the default config uses a 3x3 grid and maps each gravity to one key of the numpad\. With those keys, windows can be moved directly to the desired gravity \- the same can be done with tagging rules in the config\.
 .
 .P
-For better understanding of gravities, the layout of the grid is per default oriented on the numpad but can be changed in the config\. That means that the 5 on the numpad is center, the 7 the upper left corner and so on\. The gravity of a window can be changed with the \fI:WindowGravity\fR grab, which is \fBWin+Numpad\fR number\.
-.
-.P
-Views, virtual desktops in \fBsubtle\fR, show only windows with matching tags\. Both windows and views can be tagged either in the config or via subtler and subtlext\.
-.
-.P
-Tagging is \fBmandatory\fR, without a matching tag a window will never appear on a certain view\.
+Another unique concept is the \fBstrict\fR tagging: Unlike other tiling window managers, subtle doesn\'t allow \fBweak\fR tagging and always maps windows to virtual desktops (called views) with matching tags, \fBregardless\fR of the current active view\.
 .
 .SH "OPTIONS"
 .
 .IP "\(bu" 4
-\fB\-c\fR, \fB\-\-config\fR CONFIG
+\fB\-c\fR, \fB\-\-config\fR=CONFIG
 .
 .br
 Load config
 .
 .IP "\(bu" 4
-\fB\-d\fR, \fB\-\-display\fR DISPLAY
+\fB\-d\fR, \fB\-\-display\fR=DISPLAY
 .
 .br
 Connect to DISPLAY
@@ -60,7 +54,7 @@ Disable RandR extension (required for Twinview)
 Replace current window manager
 .
 .IP "\(bu" 4
-\fB\-s\fR, \fB\-\-sublets\fR DIR
+\fB\-s\fR, \fB\-\-sublets\fR=DIR
 .
 .br
 Load sublets from DIR
@@ -72,10 +66,7 @@ Load sublets from DIR
 Show version info and exit
 .
 .IP "\(bu" 4
-\fB\-l\fR, \fB\-\-level\fR
-.
-.br
-Set logging level
+\fB\-l\fR, \fB\-\-level\fR=LEVEL[,LEVEL] Set logging levels
 .
 .IP "\(bu" 4
 \fB\-D\fR, \fB\-\-debug\fR
@@ -86,7 +77,7 @@ Print debugging messages
 .IP "" 0
 .
 .SH "LOGLEVELS"
-subtle uses a loglevel system to distinguish between messages and to be able to turn certain messages off\. The level can be set with the \-l or \-\-level= options, multiple values are comma separated without any whitespace\.
+\fBsubtle\fR uses a loglevel system to distinguish between messages and to be able to turn certain messages off\. The level can be set with the \-l or \-\-level= options, multiple values are comma separated without any whitespace\.
 .
 .IP "\(bu" 4
 \fBsubtle \-l ruby,subtlext\fR
@@ -155,7 +146,7 @@ Report bugs at http://subforge\.org/projects/subtle/issues
 Homepage: http://subtle\.subforge\.org
 .
 .SH "COPYRIGHT"
-Copyright (c) Christoph Kappel \fIunexist@dorfelite\.net\fR
+Copyright (c) Christoph Kappel \fIunexist@subforge\.org\fR
 .
 .SH "SEE ALSO"
 subtle(1), subtler(1), subtlext(1), sur(1), surserver(1)
