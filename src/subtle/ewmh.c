@@ -3,7 +3,7 @@
   * @package subtle
   *
   * @file EWMH functions
-  * @copyright Copyright (c) 2005-2011 Christoph Kappel <unexist@dorfelite.net>
+  * @copyright Copyright (c) 2005-2011 Christoph Kappel <unexist@subforge.org>
   * @version $Id$
   *
   * This program can be distributed under the terms of the GNU GPLv2.

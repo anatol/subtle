@@ -1,5 +1,5 @@
 #
-# Author::  Christoph Kappel <unexist@dorfelite.net>
+# Author::  Christoph Kappel <unexist@subforge.org>
 # Version:: $Id$
 # License:: GNU GPLv2
 #

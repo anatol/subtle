@@ -3,7 +3,7 @@
   * @package subtle
   *
   * @file Gravity functions
-  * @copyright (c) 2005-2009 Christoph Kappel <unexist@dorfelite.net>
+  * @copyright (c) 2005-2009 Christoph Kappel <unexist@subforge.org>
   * @version $Id$
   *
   * This program can be distributed under the terms of the GNU GPLv2.
