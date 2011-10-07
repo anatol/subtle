@@ -63,16 +63,16 @@ SubtleUsage(void)
 {
   printf("Usage: %s [OPTIONS]\n\n" \
          "Options:\n" \
-         "  -c, --config=FILE       Load config\n" \
-         "  -d, --display=DISPLAY   Connect to DISPLAY\n" \
-         "  -h, --help              Show this help and exit\n" \
-         "  -k, --check             Check config syntax\n" \
-         "  -n, --no-randr          Disable RandR extension (required for Twinview)\n" \
-         "  -r, --replace           Replace current window manager\n" \
-         "  -s, --sublets=DIR       Load sublets from DIR\n" \
-         "  -v, --version           Show version info and exit\n" \
-         "  -l, --level             Set logging level\n" \
-         "  -D, --debug             Print debugging messages\n" \
+         "  -c, --config=FILE          Load config\n" \
+         "  -d, --display=DISPLAY      Connect to DISPLAY\n" \
+         "  -h, --help                 Show this help and exit\n" \
+         "  -k, --check                Check config syntax\n" \
+         "  -n, --no-randr             Disable RandR extension (required for Twinview)\n" \
+         "  -r, --replace              Replace current window manager\n" \
+         "  -s, --sublets=DIR          Load sublets from DIR\n" \
+         "  -v, --version              Show version info and exit\n" \
+         "  -l, --level=LEVEL[,LEVEL]  Set logging levels\n" \
+         "  -D, --debug                Print debugging messages\n" \
          "\nPlease report bugs at %s\n",
          PKG_NAME, PKG_BUGREPORT);
 } /* }}} */

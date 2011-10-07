@@ -373,7 +373,7 @@ EOF
     -a, --add=NAME          Create new gravity
     -l, --list              List all gravities
     -f, --find=PATTERN      Find a gravity
-    -k, --kill=PATTERN      Kill gravity mode
+    -k, --kill=PATTERN      Kill gravity
 
 EOF
         end
@@ -413,7 +413,6 @@ EOF
 
         if(group.nil? or Subtlext::Tray == group)
           puts <<EOF
-
   Actions for tray (-y, --tray):
     -f, --find              Find all tray icons
     -l, --list              List all tray icons
@@ -444,16 +443,17 @@ EOF
     GEOMETRY: <x>x<y>+<width>+<height>
     PATTERN:
       Matching works either via plaintext, regex (see regex(7)), id or window id
-      if applicable. If a pattern matches more than once ONLY the first match will
-      be used.
+      if applicable. If a pattern matches more than once ALL matches are used.
+
       If the PATTERN is '-' subtler will read from stdin.
 
   Listings:
-    Client listing:  <window id> [-*] <view id> <geometry> <gravity> <flags> <name> (<class>)
+    Client listing:  <window id> [-*] <view id> <geometry> <gravity> <flags> <instance name> (<class name>)
     Gravity listing: <gravity id> <geometry>
     Screen listing:  <screen id> <geometry>
-    Tag listing:     <name>
-    View listing:    <window id> [-*] <view id> <name>
+    Tag listing:     <tag name>
+    Tray listing:    <window id> <instance name> (<class name>)
+    View listing:    <window id> [-*] <view id> <view name>
 
   Examples:
     subtler -c -l                List all clients
