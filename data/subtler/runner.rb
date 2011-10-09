@@ -152,7 +152,7 @@ module Subtle # {{{
 
         # Convert window ids
         arg1 = Integer(arg1) rescue arg1
-        arg2 = Integer(arg2) rescue arg1
+        arg2 = Integer(arg2) rescue arg2
 
         # Pipes?
         arg1 = ARGF.read.chop if("-" == arg1)
