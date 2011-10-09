@@ -175,9 +175,8 @@ WindowGrab(SubtlextWindow *w)
     {
       mask |= KeyPressMask;
 
-      XGrabKeyboard(display, ROOT, True, GrabModeAsync,
+      XGrabKeyboard(display, w->win, True, GrabModeAsync,
         GrabModeAsync, CurrentTime);
-      XSetInputFocus(display, w->win, RevertToPointerRoot, CurrentTime);
     }
   if(RTEST(w->pointer))
     {
@@ -187,8 +186,9 @@ WindowGrab(SubtlextWindow *w)
         GrabModeAsync, None, None, CurrentTime);
     }
 
-  XSelectInput(display, w->win, mask);
   XMapRaised(display, w->win);
+  XSelectInput(display, w->win, mask);
+  XSetInputFocus(display, w->win, RevertToPointerRoot, CurrentTime);
   WindowExpose(w);
   XFlush(display);
 
@@ -264,7 +264,7 @@ WindowGrab(SubtlextWindow *w)
       XSelectInput(display, w->win, NoEventMask);
       XUngrabKeyboard(display, CurrentTime);
     }
-  if(w->pointer) XUngrabPointer(display, CurrentTime);
+  if(RTEST(w->pointer)) XUngrabPointer(display, CurrentTime);
 
   /* Restore logical focus */
   if((focus = (unsigned long *)subSharedPropertyGet(display,
