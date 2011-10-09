@@ -124,7 +124,7 @@ PanelViewStyle(SubView *v,
   /* Select style */
   if(subtle->styles.views.styles)
     {
-      SubStyle *style = &subtle->styles.views;
+      SubStyle *style = NULL;
 
       /* Pick base style */
       if(!(style = subArrayGet(subtle->styles.views.styles, v->style)))
@@ -138,7 +138,8 @@ PanelViewStyle(SubView *v,
             style = subtle->styles.unoccupied;
         }
 
-      subStyleMerge(s, style);
+      /* Merge base style or default */
+      subStyleMerge(s, !style ? &subtle->styles.views : style);
 
       /* Apply modifiers */
       if(subtle->styles.urgent && subtle->urgent_tags & v->tags)
