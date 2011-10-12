@@ -76,9 +76,9 @@ module Subtle # {{{
           [ "--proc",    "-p", GetoptLong::REQUIRED_ARGUMENT ],
 
           # Other
-          [ "--display", "-d", GetoptLong::NO_ARGUMENT ],
-          [ "--help",    "-h", GetoptLong::NO_ARGUMENT ],
-          [ "--version", "-V", GetoptLong::NO_ARGUMENT ]
+          [ "--display", "-d", GetoptLong::REQUIRED_ARGUMENT ],
+          [ "--help",    "-h", GetoptLong::NO_ARGUMENT       ],
+          [ "--version", "-V", GetoptLong::NO_ARGUMENT       ]
         )
       end # }}}
 
@@ -133,7 +133,7 @@ module Subtle # {{{
             when "--proc"
               @proc = Proc.new { |param| eval(arg) }
             when "--display"
-              Subtlext::Subtle.display = ARGV.shift
+              Subtlext::Subtle.display = arg 
             when "--help"
               usage(@group)
               exit
