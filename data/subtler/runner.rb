@@ -188,55 +188,60 @@ module Subtle # {{{
         end
 
         # Call method
-        if(!@group.nil? and !@action.nil?)
-          # Check singleton and instance methods
-          if((@group.singleton_methods << :new).include?(@action))
-            obj   = @group
-            arg   = arg1
-            arity = obj.method(@action).arity
-          elsif(@group.instance_methods.include?(@action))
-            obj   = @group.send(:find, arg1)
-            arg   = arg2
-            arity = @group.instance_method(@action).arity
-          end
+        begin
+          if(!@group.nil? and !@action.nil?)
+            # Check singleton and instance methods
+            if((@group.singleton_methods << :new).include?(@action))
+              obj   = @group
+              arg   = arg1
+              arity = obj.method(@action).arity
+            elsif(@group.instance_methods.include?(@action))
+              obj   = @group.send(:find, arg1)
+              arg   = arg2
+              arity = @group.instance_method(@action).arity
+            end
 
-          # Check arity
-          case arity
-            when 1
-              # Handle different return types
-              if(obj.is_a?(Array))
-                obj.each do |o|
-                  p "%s:" % o
-                  handle_result(o.send(@action, arg))
+            # Check arity
+            case arity
+              when 1
+                # Handle different return types
+                if(obj.is_a?(Array))
+                  obj.each do |o|
+                    p "%s:" % o
+                    handle_result(o.send(@action, arg))
+                  end
+                else
+                  handle_result(obj.send(@action, arg))
                 end
-              else
-                handle_result(obj.send(@action, arg))
-              end
-            when -1
-              if([ Subtlext::View, Subtlext::Tag ].include?(@group))
-                # Create new object
-                ret = obj.send(@action, arg)
-                ret.save
+              when -1
+                if([ Subtlext::View, Subtlext::Tag ].include?(@group))
+                  # Create new object
+                  ret = obj.send(@action, arg)
+                  ret.save
 
-                handle_result(ret)
-              end
-
-              exit
-            when nil
-              usage(@group)
-              exit
-            else
-              # Handle different return types
-              if(obj.is_a?(Array))
-                obj.each do |o|
-                  p "%s:" % o
-                  handle_result(o.send(@action))
+                  handle_result(ret)
                 end
+
+                exit
+              when nil
+                usage(@group)
+                exit
               else
-                handle_result(obj.send(@action))
-              end
+                # Handle different return types
+                if(obj.is_a?(Array))
+                  obj.each do |o|
+                    p "%s:" % o
+                    handle_result(o.send(@action))
+                  end
+                else
+                  handle_result(obj.send(@action))
+                end
+            end
+          elsif(:reload != @mod and :restart != @mod and :quit != @mod)
+            usage(@group)
+            exit
           end
-        elsif(:reload != @mod and :restart != @mod and :quit != @mod)
+        rescue ArgumentError
           usage(@group)
           exit
         end
@@ -318,136 +323,142 @@ module Subtle # {{{
       end # }}}
 
       def usage(group) # {{{
-        puts "Usage: subtler [GENERIC|MODIFIER] [GROUP] [ACTION]\n\n"
+        puts "Usage: subtler [GENERIC|MODIFIER] GROUP ACTION [ARG1] [ARG2]\n\n"
 
         if(group.nil?)
-          puts <<EOF
+          puts <<-EOF
   Generic:
-    -d, --display=DISPLAY   Connect to DISPLAY (default: #{ENV["DISPLAY"]})
-    -h, --help              Show this help and exit
-    -V, --version           Show version info and exit
+    -d, --display=DISPLAY             Connect to DISPLAY (default: #{ENV["DISPLAY"]})
+    -h, --help                        Show this help and exit
+    -V, --version                     Show version info and exit
 
   Modifier:
-    -r, --reload            Reload config and sublets
-    -R, --restart           Restart subtle
-    -q, --quit              Quit %s
-    -C, --current           Select current active window/view
-    -X, --select            Select a window via pointer
+    -r, --reload                      Reload config and sublets
+    -R, --restart                     Restart subtle
+    -q, --quit                        Quit subtle
+    -C, --current                     Select current active window/view
+                                      instead of passing it via argument
+    -X, --select                      Select a window via pointer instead
+                                      of passing it via argument
 
   Groups:
-    -c, --client            Use client group
-    -g, --gravity           Use gravity group
-    -e, --screen            Use screen group
-    -s, --sublet            Use sublet group
-    -t, --tag               Use tag group
-    -y, --tray              Use tray group
-    -v, --view              Use views group
+    -c, --Client                      Use client group
+    -g, --Gravity                     Use gravity group
+    -e, --Screen                      Use screen group
+    -s, --Sublet                      Use sublet group
+    -t, --Tag                         Use tag group
+    -y, --Tray                        Use tray group
+    -v, --View                        Use views group
 
-EOF
+            EOF
         end
 
         if(group.nil? or Subtlext::Client == group)
-          puts <<EOF
-  Actions for clients (-c, --client):
-    -f, --find=PATTERN      Find client
-    -o, --focus=PATTERN     Set focus to client
-    -F, --full              Toggle full
-    -O, --float             Toggle float
-    -S, --stick             Toggle stick
-    -N, --urgent            Toggle urgent
-    -l, --list              List all clients
-    -T, --tag=PATTERN       Add tag to client
-    -U, --untag=PATTERN     Remove tag from client
-    -G, --tags              Show client tags
-    -Y, --gravity           Set client gravity
-    -E, --raise             Raise client window
-    -L, --lower             Lower client window
-    -k, --kill=PATTERN      Kill client
+          puts <<-EOF
+  Actions for clients (-c, --Client):
+    -f, --find    => PATTERN          Find client
+    -o, --focus   => PATTERN          Set focus to client
+    -F, --full    => PATTERN          Toggle full
+    -O, --float   => PATTERN          Toggle float
+    -S, --stick   => PATTERN          Toggle stick
+    -N, --urgent  => PATTERN          Toggle urgent
+    -l, --list                        List all clients
+    -T, --tag     => PATTERN NAME     Add tag to client
+    -U, --untag   => PATTERN NAME     Remove tag from client
+    -G, --tags    => PATTERN          Show client tags
+    -Y, --gravity => PATTERN PATTERN  Set client gravity
+    -E, --raise   => PATTERN          Raise client window
+    -L, --lower   => PATTERN          Lower client window
+    -k, --kill    => PATTERN          Kill client
 
-EOF
+            EOF
         end
 
         if(group.nil? or Subtlext::Gravity == group)
-          puts <<EOF
-  Actions for gravities (-g, --gravity):
-    -a, --add=NAME          Create new gravity
-    -l, --list              List all gravities
-    -f, --find=PATTERN      Find a gravity
-    -k, --kill=PATTERN      Kill gravity
+          puts <<-EOF
+  Actions for gravities (-g, --Gravity):
+    -a, --add     => NAME GEOMETRY   Create new gravity
+    -l, --list                       List all gravities
+    -f, --find    => PATTERN         Find a gravity
+    -k, --kill    => PATTERN         Kill gravity
 
-EOF
+            EOF
         end
 
         if(group.nil? or Subtlext::Screen == group)
-          puts <<EOF
-  Actions for screens (-e, --screen):
-    -l, --list              List all screens
-    -f, --find=ID           Find a screen
+          puts <<-EOF
+  Actions for screens (-e, --Screen):
+    -l, --list                       List all screens
+    -f, --find    => ID              Find a screen
 
-EOF
+            EOF
         end
 
         if(group.nil? or Subtlext::Sublet == group)
-          puts <<EOF
-  Actions for sublets (-s, --sublet):
-    -a, --add=FILE          Create new sublet
-    -l, --list              List all sublets
-    -u, --update            Updates value of sublet
-    -D, --data              Set data of sublet
-    -k, --kill=PATTERN      Kill sublet
+          puts <<-EOF
+  Actions for sublets (-s, --Sublet):
+    -a, --add     => PATH            Create new sublet
+    -l, --list                       List all sublets
+    -u, --update  => PATTERN         Updates value of sublet
+    -D, --data    => PATTERN DATA    Set data of sublet
+    -k, --kill    => PATTERN         Kill sublet
 
-EOF
+            EOF
         end
 
         if(group.nil? or Subtlext::Tag == group)
-          puts <<EOF
-  Actions for tags (-t, --tag):
-    -a, --add=NAME          Create new tag
-    -f, --find              Find all clients/views by tag
-    -l, --list              List all tags
-    -I, --clients           Show clients with tag
-    -k, --kill=PATTERN      Kill tag
+          puts <<-EOF
+  Actions for tags (-t, --Tag):
+    -a, --add     => NAME            Create new tag
+    -f, --find    => PATTERN         Find all clients/views by tag
+    -l, --list                       List all tags
+    -I, --clients => PATTERN         Show clients with tag
+    -k, --kill    => PATTERN         Kill tag
 
-EOF
+            EOF
         end
 
         if(group.nil? or Subtlext::Tray == group)
-          puts <<EOF
-  Actions for tray (-y, --tray):
-    -f, --find              Find all tray icons
-    -l, --list              List all tray icons
-    -k, --kill=PATTERN      Kill tray icon
+          puts <<-EOF
+  Actions for tray (-y, --Tray):
+    -f, --find    => PATTERN         Find all tray icons
+    -l, --list                       List all tray icons
+    -k, --kill    => PATTERN         Kill tray icon
 
-EOF
+            EOF
         end
 
         if(group.nil? or Subtlext::View == group)
-          puts <<EOF
-  Actions for views (-v, --view):
-    -a, --add=NAME          Create new view
-    -f, --find=PATTERN      Find a view
-    -l, --list              List all views
-    -T, --tag=PATTERN       Add tag to view
-    -U, --untag=PATTERN     Remove tag from view
-    -G, --tags              Show view tags
-    -I, --clients           Show clients on view
-    -k, --kill=VIEW         Kill view
+          puts <<-EOF
+  Actions for views (-v, --View):
+    -a, --add     => NAME            Create new view
+    -f, --find    => PATTERN         Find a view
+    -l, --list                       List all views
+    -T, --tag     => PATTERN NAME    Add tag to view
+    -U, --untag   => PATTERN NAME    Remove tag from view
+    -G, --tags                       Show view tags
+    -I, --clients                    Show clients on view
+    -k, --kill    => PATTERN         Kill view
 
-EOF
+            EOF
         end
 
-        puts <<EOF
+        puts <<-EOF
   Formats:
+
+  Input:
     DISPLAY:  :<display number>
     ID:       <number>
     GEOMETRY: <x>x<y>+<width>+<height>
+    NAME:     <string|number>
+    DATA      <string|number>
     PATTERN:
       Matching works either via plaintext, regex (see regex(7)), id or window id
       if applicable. If a pattern matches more than once ALL matches are used.
 
       If the PATTERN is '-' subtler will read from stdin.
 
-  Listings:
+  Output:
     Client listing:  <window id> [-*] <view id> <geometry> <gravity> <flags> <instance name> (<class name>)
     Gravity listing: <gravity id> <geometry>
     Screen listing:  <screen id> <geometry>
@@ -466,7 +477,7 @@ EOF
 
   Please report bugs at http://subforge.org/projects/subtle/issues
 
-EOF
+          EOF
       end # }}}
 
       def version # {{{
