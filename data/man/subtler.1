@@ -48,7 +48,7 @@ If the \fBPATTERN\fR is \- subtler will read from stdin\.
 .SH "OUTPUT"
 .
 .IP "\(bu" 4
-\fBClient listing\fR <window id> [\-*] <view id> <geometry> <gravity> <flags> <instance name> (<class name>)
+\fBClient listing\fR <window id> [\-*]¹ <view id> <geometry> <gravity> <flags> <instance name> (<class name>)
 .
 .IP "\(bu" 4
 \fBGravity listing\fR <gravity id> <geometry>
@@ -63,9 +63,12 @@ If the \fBPATTERN\fR is \- subtler will read from stdin\.
 \fBTray listing\fR <window id> <instance name> (<class name>)
 .
 .IP "\(bu" 4
-\fBView listing\fR <window id> [\-*] <view id> <view name>
+\fBView listing\fR <window id> [\-*]¹ <view id> <view name>
 .
 .IP "" 0
+.
+.P
+¹) \- = not visible, * = visible
 .
 .SH "OPTIONS"
 .
