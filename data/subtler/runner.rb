@@ -316,7 +316,7 @@ module Subtle # {{{
           when Subtlext::View # {{{
             puts "%2d %s %s" % [
               value.id,
-              value.current? ? "*" : "-",
+              Subtlext::View.visible.include?(value) ? "*" : "-",
               value.name
             ] # }}}
         end
@@ -328,27 +328,27 @@ module Subtle # {{{
         if(group.nil?)
           puts <<-EOF
   Generic:
-    -d, --display=DISPLAY             Connect to DISPLAY (default: #{ENV["DISPLAY"]})
-    -h, --help                        Show this help and exit
-    -V, --version                     Show version info and exit
+    -d, --display=DISPLAY  Connect to DISPLAY (default: #{ENV["DISPLAY"]})
+    -h, --help             Show this help and exit
+    -V, --version          Show version info and exit
 
   Modifier:
-    -r, --reload                      Reload config and sublets
-    -R, --restart                     Restart subtle
-    -q, --quit                        Quit subtle
-    -C, --current                     Select current active window/view
-                                      instead of passing it via argument
-    -X, --select                      Select a window via pointer instead
-                                      of passing it via argument
+    -r, --reload           Reload config and sublets
+    -R, --restart          Restart subtle
+    -q, --quit             Quit subtle
+    -C, --current          Select current active window/view
+                           instead of passing it via argument
+    -X, --select           Select a window via pointer instead
+                           of passing it via argument
 
   Groups:
-    -c, --Client                      Use client group
-    -g, --Gravity                     Use gravity group
-    -e, --Screen                      Use screen group
-    -s, --Sublet                      Use sublet group
-    -t, --Tag                         Use tag group
-    -y, --Tray                        Use tray group
-    -v, --View                        Use views group
+    -c, --Client           Use client group
+    -g, --Gravity          Use gravity group
+    -e, --Screen           Use screen group
+    -s, --Sublet           Use sublet group
+    -t, --Tag              Use tag group
+    -y, --Tray             Use tray group
+    -v, --View             Use views group
 
             EOF
         end
@@ -356,20 +356,20 @@ module Subtle # {{{
         if(group.nil? or Subtlext::Client == group)
           puts <<-EOF
   Actions for clients (-c, --Client):
-    -f, --find    => PATTERN          Find client
-    -o, --focus   => PATTERN          Set focus to client
-    -F, --full    => PATTERN          Toggle full
-    -O, --float   => PATTERN          Toggle float
-    -S, --stick   => PATTERN          Toggle stick
-    -N, --urgent  => PATTERN          Toggle urgent
-    -l, --list                        List all clients
-    -T, --tag     => PATTERN NAME     Add tag to client
-    -U, --untag   => PATTERN NAME     Remove tag from client
-    -G, --tags    => PATTERN          Show client tags
-    -Y, --gravity => PATTERN PATTERN  Set client gravity
-    -E, --raise   => PATTERN          Raise client window
-    -L, --lower   => PATTERN          Lower client window
-    -k, --kill    => PATTERN          Kill client
+    -f, --find    => -cf PATTERN            Find client
+    -o, --focus   => -co PATTERN            Set focus to client
+    -F, --full    => -cF PATTERN            Toggle full
+    -O, --float   => -cO PATTERN            Toggle float
+    -S, --stick   => -cS PATTERN            Toggle stick
+    -N, --urgent  => -cN PATTERN            Toggle urgent
+    -l, --list                              List all clients
+    -T, --tag     => -c PATTERN -T NAME     Add tag to client
+    -U, --untag   => -c PATTERN NAME        Remove tag from client
+    -G, --tags    => -cG PATTERN            Show client tags
+    -Y, --gravity => -c PATTERN -Y PATTERN  Set client gravity
+    -E, --raise   => -cE PATTERN            Raise client window
+    -L, --lower   => -cL PATTERN            Lower client window
+    -k, --kill    => -ck PATTERN            Kill client
 
             EOF
         end
@@ -377,10 +377,10 @@ module Subtle # {{{
         if(group.nil? or Subtlext::Gravity == group)
           puts <<-EOF
   Actions for gravities (-g, --Gravity):
-    -a, --add     => NAME GEOMETRY   Create new gravity
-    -l, --list                       List all gravities
-    -f, --find    => PATTERN         Find a gravity
-    -k, --kill    => PATTERN         Kill gravity
+    -a, --add     => -g NAME -a GEOMETRY    Create new gravity
+    -l, --list                              List all gravities
+    -f, --find    => -gf PATTERN            Find a gravity
+    -k, --kill    => -gk PATTERN            Kill gravity
 
             EOF
         end
@@ -388,8 +388,8 @@ module Subtle # {{{
         if(group.nil? or Subtlext::Screen == group)
           puts <<-EOF
   Actions for screens (-e, --Screen):
-    -l, --list                       List all screens
-    -f, --find    => ID              Find a screen
+    -l, --list                              List all screens
+    -f, --find    => -ef ID                 Find a screen
 
             EOF
         end
@@ -397,11 +397,11 @@ module Subtle # {{{
         if(group.nil? or Subtlext::Sublet == group)
           puts <<-EOF
   Actions for sublets (-s, --Sublet):
-    -a, --add     => PATH            Create new sublet
-    -l, --list                       List all sublets
-    -u, --update  => PATTERN         Updates value of sublet
-    -D, --data    => PATTERN DATA    Set data of sublet
-    -k, --kill    => PATTERN         Kill sublet
+    -a, --add     => -sa PATH               Create new sublet
+    -l, --list                              List all sublets
+    -u, --update  => -su PATTERN            Updates value of sublet
+    -D, --data    => -s PATTERN -D DATA     Set data of sublet
+    -k, --kill    => -sk PATTERN            Kill sublet
 
             EOF
         end
@@ -409,11 +409,11 @@ module Subtle # {{{
         if(group.nil? or Subtlext::Tag == group)
           puts <<-EOF
   Actions for tags (-t, --Tag):
-    -a, --add     => NAME            Create new tag
-    -f, --find    => PATTERN         Find all clients/views by tag
-    -l, --list                       List all tags
-    -I, --clients => PATTERN         Show clients with tag
-    -k, --kill    => PATTERN         Kill tag
+    -a, --add     => -ta NAME               Create new tag
+    -f, --find    => -tf PATTERN            Find all clients/views by tag
+    -l, --list                              List all tags
+    -I, --clients => -tI PATTERN            Show clients with tag
+    -k, --kill    => -tk PATTERN            Kill tag
 
             EOF
         end
@@ -421,9 +421,9 @@ module Subtle # {{{
         if(group.nil? or Subtlext::Tray == group)
           puts <<-EOF
   Actions for tray (-y, --Tray):
-    -f, --find    => PATTERN         Find all tray icons
-    -l, --list                       List all tray icons
-    -k, --kill    => PATTERN         Kill tray icon
+    -f, --find    => -yf PATTERN            Find all tray icons
+    -l, --list                              List all tray icons
+    -k, --kill    => -yk PATTERN            Kill tray icon
 
             EOF
         end
@@ -431,14 +431,14 @@ module Subtle # {{{
         if(group.nil? or Subtlext::View == group)
           puts <<-EOF
   Actions for views (-v, --View):
-    -a, --add     => NAME            Create new view
-    -f, --find    => PATTERN         Find a view
-    -l, --list                       List all views
-    -T, --tag     => PATTERN NAME    Add tag to view
-    -U, --untag   => PATTERN NAME    Remove tag from view
-    -G, --tags                       Show view tags
-    -I, --clients                    Show clients on view
-    -k, --kill    => PATTERN         Kill view
+    -a, --add     => -va NAME               Create new view
+    -f, --find    => -vf PATTERN            Find a view
+    -l, --list                              List all views
+    -T, --tag     => -v PATTERN -T NAME     Add tag to view
+    -U, --untag   => -v PATTERN -U NAME     Remove tag from view
+    -G, --tags                              Show view tags
+    -I, --clients                           Show clients on view
+    -k, --kill    => -vk PATTERN            Kill view
 
             EOF
         end
@@ -459,21 +459,33 @@ module Subtle # {{{
       If the PATTERN is '-' subtler will read from stdin.
 
   Output:
-    Client listing:  <window id> [-*] <view id> <geometry> <gravity> <flags> <instance name> (<class name>)
+    Client listing:  <window id> <visibility> <view id> <geometry> <gravity> <flags> <instance name> (<class name>)
     Gravity listing: <gravity id> <geometry>
     Screen listing:  <screen id> <geometry>
     Tag listing:     <tag name>
     Tray listing:    <window id> <instance name> (<class name>)
-    View listing:    <window id> [-*] <view id> <view name>
+    View listing:    <window id> <visibility> <view id> <view name>
+
+  Fields:
+    <window id>      Numeric (hex) id of window (e.g. 0xa00009)
+    <visibility>     - = not visible, * = visible
+    <view id>        Numeric id of view (e.g. 5)
+    <geometry>       x x y + width + height
+    <flags>          - = not set, + = fullscreen, ^ = float, * = stick, ~ = resize, = = zaphod, ! = fixed
+    <instance name>  Window instance/resource name
+    <class name>     Window class name
+    <gravity id>     Numeric id of gravity (e.g. 2)
+    <screen id>      Numeric id of a screen (e.g. 1)
+    <tag name>       Name of a tag (e.g. terms)
 
   Examples:
-    subtler -c -l                List all clients
-    subtler -t -a subtle         Add new tag 'subtle'
-    subtler -v subtle -T rocks   Tag view 'subtle' with tag 'rocks'
-    subtler -c xterm -G          Show tags of client 'xterm'
-    subtler -c -X -f             Select client and show info
-    subtler -c -C -Y 5           Set gravity 5 to current active client
-    subtler -t -f term           Show every client/view tagged with 'term'
+    subtler -c -l               List all clients
+    subtler -t -a subtle        Add new tag 'subtle'
+    subtler -v subtle -T rocks  Tag view 'subtle' with tag 'rocks'
+    subtler -c xterm -G         Show tags of client 'xterm'
+    subtler -c -X -f            Select client and show info
+    subtler -c -C -Y 5          Set gravity 5 to current active client
+    subtler -t -f term          Show every client/view tagged with 'term'
 
   Please report bugs at http://subforge.org/projects/subtle/issues
 
