@@ -44,8 +44,6 @@ SubtlextSweep(void)
 {
   if(display)
     {
-      subSharedLogDebugSubtlext("Connection closed (%s)\n", DisplayString(display));
-
       XCloseDisplay(display);
 
       display = NULL;
@@ -167,6 +165,25 @@ SubtlextStyle(VALUE self,
     }
 
   return Qnil;
+} /* }}} */
+
+ /* SubtlextXError {{{ */
+static int
+SubtlextXError(Display *disp,
+  XErrorEvent *ev)
+{
+#ifdef DEBUG
+  if(42 != ev->request_code) /* X_SetInputFocus */
+    {
+      char error[255] = { 0 };
+
+      XGetErrorText(disp, ev->error_code, error, sizeof(error));
+      printf("<XERROR> %s: win=%#lx, request=%d\n",
+        error, ev->resourceid, ev->request_code);
+    }
+#endif /* DEBUG */
+
+  return 0;
 } /* }}} */
 
 /* Tags */
@@ -1143,15 +1160,12 @@ subSubtlextConnect(char *display_string)
             display_string);
         }
 
-      XSetErrorHandler(subSharedLogXError);
+      XSetErrorHandler(SubtlextXError);
 
       if(!setlocale(LC_CTYPE, "")) XSupportsLocale();
 
       /* Register sweeper */
       atexit(SubtlextSweep);
-
-      subSharedLogDebugSubtlext("Connection opened (%s)\n",
-        DisplayString(display));
     }
 } /* }}} */
 
@@ -1176,7 +1190,7 @@ subSubtlextBacktrace(void)
       backtrace = rb_funcall(lasterr, rb_intern("backtrace"), 0, NULL);
 
       /* Print error and backtrace */
-      subSharedLogWarn("%s: %s\n", RSTRING_PTR(klass), RSTRING_PTR(message));
+      printf("%s: %s\n", RSTRING_PTR(klass), RSTRING_PTR(message));
       for(i = 0; Qnil != (entry = rb_ary_entry(backtrace, i)); ++i)
         printf("\tfrom %s\n", RSTRING_PTR(entry));
     }
@@ -1356,12 +1370,7 @@ subSubtlextWindowList(char *prop_name,
     {
       if(size) *size = len;
     }
-  else
-    {
-      if(size) *size = 0;
-
-      subSharedLogDebugSubtlext("Failed getting window list\n");
-    }
+  else if(size) *size = 0;
 
   return wins;
 } /* }}} */
@@ -1546,9 +1555,6 @@ subSubtlextFindString(char *prop_name,
               (preg && !(flags & SUB_MATCH_EXACT) &&
                 subSharedRegexMatch(preg, strings[i])))))
             {
-              subSharedLogDebugSubtlext("Found: prop=%s, source=%s, name=%s, id=%d\n",
-                prop_name, source, strings[i], i);
-
               if(name) *name = strdup(strings[i]);
 
               ret = i;
@@ -1556,7 +1562,6 @@ subSubtlextFindString(char *prop_name,
             }
         }
     }
-  else subSharedLogDebugSubtlext("Failed finding string `%s'\n", source);
 
   if(preg)    subSharedRegexKill(preg);
   if(strings) XFreeStringList(strings);

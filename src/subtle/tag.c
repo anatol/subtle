@@ -124,7 +124,7 @@ subTagNew(char *name,
       if(duplicate) *duplicate = False;
     }
 
-  subSharedLogDebugSubtle("new=tag, name=%s\n", name);
+  subSubtleLogDebugSubtle("new=tag, name=%s\n", name);
 
   return t;
 } /* }}} */
@@ -244,7 +244,7 @@ subTagKill(SubTag *t)
   free(t->name);
   free(t);
 
-  subSharedLogDebugSubtle("kill=tag\n");
+  subSubtleLogDebugSubtle("kill=tag\n");
 } /* }}} */
 
 /* All */
@@ -274,7 +274,7 @@ subTagPublish(void)
 
   free(names);
 
-  subSharedLogDebugSubtle("publish=tags, n=%d\n", i);
+  subSubtleLogDebugSubtle("publish=tags, n=%d\n", i);
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

@@ -46,7 +46,7 @@ subViewNew(char *name,
       subSharedRegexKill(preg);
     }
 
-  subSharedLogDebugSubtle("new=view, name=%s\n", name);
+  subSubtleLogDebugSubtle("new=view, name=%s\n", name);
 
   return v;
 } /* }}} */
@@ -127,7 +127,7 @@ subViewJump(SubView *v)
   subHookCall((SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_FOCUS), (void *)v);
   subHookCall(SUB_HOOK_TILE, NULL);
 
-  subSharedLogDebugSubtle("Jump: type=view\n");
+  subSubtleLogDebugSubtle("Jump: type=view\n");
 } /* }}} */
 
  /** subViewSwitch {{{
@@ -233,7 +233,7 @@ subViewPublish(void)
       free(names);
     }
 
-  subSharedLogDebugSubtle("publish=views, n=%d\n", subtle->views->ndata);
+  subSubtleLogDebugSubtle("publish=views, n=%d\n", subtle->views->ndata);
 } /* }}} */
 
  /** SubViewKill {{{
@@ -254,7 +254,7 @@ subViewKill(SubView *v)
   free(v->name);
   free(v);
 
-  subSharedLogDebugSubtle("kill=view\n");
+  subSubtleLogDebugSubtle("kill=view\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

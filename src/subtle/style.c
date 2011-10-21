@@ -97,7 +97,7 @@ subStyleNew(void)
   /* Init style values */
   subStyleReset(s, -1);
 
-  subSharedLogDebugSubtle("new=style\n");
+  subSubtleLogDebugSubtle("new=style\n");
 
   return s;
 } /* }}} */
@@ -224,7 +224,7 @@ subStyleKill(SubStyle *s)
   if(s->styles) subArrayKill(s->styles, True);
   free(s);
 
-  subSharedLogDebugSubtle("kill=style\n");
+  subSubtleLogDebugSubtle("kill=style\n");
 } /* }}} */
 
 /* All */

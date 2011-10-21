@@ -32,7 +32,7 @@ subHookNew(int type,
   h->flags = (SUB_TYPE_HOOK|type);
   h->proc  = proc;
 
-  subSharedLogDebugSubtle("new=hook, type=%d, proc=%ld\n", type, proc);
+  subSubtleLogDebugSubtle("new=hook, type=%d, proc=%ld\n", type, proc);
 
   return h;
 } /* }}} */
@@ -58,7 +58,7 @@ subHookCall(int type,
         {
           subRubyCall(SUB_CALL_HOOKS, h->proc, data);
 
-          subSharedLogDebug("call=hook, type=%d, proc=%ld, data=%p\n",
+          subSubtleLogDebug("call=hook, type=%d, proc=%ld, data=%p\n",
             type, h->proc, data);
         }
     }
@@ -76,7 +76,7 @@ subHookKill(SubHook *h)
 
   free(h);
 
-  subSharedLogDebugSubtle("kill=hook\n");
+  subSubtleLogDebugSubtle("kill=hook\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

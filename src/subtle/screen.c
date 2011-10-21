@@ -61,7 +61,7 @@ ScreenPublish(void)
 
   XSync(subtle->dpy, False); ///< Sync all changes
 
-  subSharedLogDebugSubtle("publish=screen, screens=%d\n",
+  subSubtleLogDebugSubtle("publish=screen, screens=%d\n",
     subtle->screens->ndata);
 } /* }}} */
 
@@ -165,7 +165,7 @@ subScreenInit(void)
   ScreenPublish();
   subScreenPublish();
 
-  subSharedLogDebugSubtle("init=screen\n");
+  subSubtleLogDebugSubtle("init=screen\n");
 } /* }}} */
 
  /** subScreenNew {{{
@@ -212,7 +212,7 @@ subScreenNew(int x,
   XSaveContext(subtle->dpy, s->panel1, SCREENID, (void *)s);
   XSaveContext(subtle->dpy, s->panel2, SCREENID, (void *)s);
 
-  subSharedLogDebugSubtle("new=screen, x=%d, y=%d, width=%u, height=%u\n",
+  subSubtleLogDebugSubtle("new=screen, x=%d, y=%d, width=%u, height=%u\n",
     s->geom.x, s->geom.y, s->geom.width, s->geom.height);
 
   return s;
@@ -394,7 +394,7 @@ subScreenConfigure(void)
   /* Hook: Configure */
   subHookCall(SUB_HOOK_TILE, NULL);
 
-  subSharedLogDebugSubtle("Configure: type=screen\n");
+  subSubtleLogDebugSubtle("Configure: type=screen\n");
 } /* }}} */
 
  /** subScreenUpdate {{{
@@ -632,7 +632,7 @@ subScreenJump(SubScreen *s)
 
   subViewFocus(VIEW(subArrayGet(subtle->views, s->vid)), True);
 
-  subSharedLogDebugSubtle("Jump: type=screen\n");
+  subSubtleLogDebugSubtle("Jump: type=screen\n");
 } /* }}} */
 
  /** SubScreenKill {{{
@@ -664,7 +664,7 @@ subScreenKill(SubScreen *s)
 
   free(s);
 
-  subSharedLogDebugSubtle("kill=screen\n");
+  subSubtleLogDebugSubtle("kill=screen\n");
 } /* }}} */
 
 /* All */
@@ -696,7 +696,7 @@ subScreenPublish(void)
 
   XSync(subtle->dpy, False); ///< Sync all changes
 
-  subSharedLogDebugSubtle("publish=screen, screens=%d\n",
+  subSubtleLogDebugSubtle("publish=screen, screens=%d\n",
     subtle->screens->ndata);
 } /* }}} */
 

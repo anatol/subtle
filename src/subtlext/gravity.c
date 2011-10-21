@@ -51,8 +51,6 @@ GravityFindId(char *match,
           if((isdigit(match[0]) && atoi(match) == i) ||
               (!isdigit(match[0]) && subSharedRegexMatch(preg, buf)))
             {
-              subSharedLogDebugSubtlext("Found: type=gravity, name=%s, id=%d\n", buf, i);
-
               if(geometry) *geometry = geom;
               if(name)
                 {
@@ -65,7 +63,6 @@ GravityFindId(char *match,
            }
        }
     }
-  else subSharedLogDebugSubtlext("Failed finding gravity `%s'\n", name);
 
   if(preg)       subSharedRegexKill(preg);
   if(gravities) XFreeStringList(gravities);

@@ -204,7 +204,7 @@ subPanelNew(int type)
         break; /* }}} */
     }
 
-  subSharedLogDebugSubtle("new=panel, type=%s\n",
+  subSubtleLogDebugSubtle("new=panel, type=%s\n",
     SUB_PANEL_VIEWS == type ? "views" : "title");
 
   return p;
@@ -673,7 +673,7 @@ subPanelPublish(void)
   for(i = 0; i < subtle->sublets->ndata; i++)
     free(sublets[i]);
 
-  subSharedLogDebugSubtle("publish=panel, n=%d\n", subtle->sublets->ndata);
+  subSubtleLogDebugSubtle("publish=panel, n=%d\n", subtle->sublets->ndata);
 
   XSync(subtle->dpy, False); ///< Sync all changes
 
@@ -753,7 +753,7 @@ subPanelKill(SubPanel *p)
 
   free(p);
 
-  subSharedLogDebugSubtle("kill=panel\n");
+  subSubtleLogDebugSubtle("kill=panel\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

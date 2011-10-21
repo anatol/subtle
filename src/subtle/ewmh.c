@@ -93,7 +93,7 @@ subEwmhInit(void)
   selection = (char *)subSharedMemoryAlloc(len, sizeof(char));
 
   snprintf(selection, len, "%s%u", names[SUB_EWMH_NET_SYSTEM_TRAY_SELECTION], SCRN);
-  subSharedLogDebug("Selection: len=%d, name=%s\n", len, selection);
+  subSubtleLogDebug("Selection: len=%d, name=%s\n", len, selection);
   names[SUB_EWMH_NET_SYSTEM_TRAY_SELECTION] = selection;
 
   /* Register atoms */
@@ -122,7 +122,7 @@ subEwmhInit(void)
   subEwmhSetWindows(ROOT, SUB_EWMH_NET_CLIENT_LIST, NULL, 0);
   subEwmhSetWindows(ROOT, SUB_EWMH_NET_CLIENT_LIST_STACKING, NULL, 0);
 
-  subSharedLogDebugSubtle("init=ewmh\n");
+  subSubtleLogDebugSubtle("init=ewmh\n");
 } /* }}} */
 
  /** subEwmhGet {{{
@@ -202,7 +202,7 @@ subEwmhGetXEmbedState(Window win)
     {
       flags = (long)info->flags;
 
-      subSharedLogDebug("XEmbedInfo: win=%#lx, version=%ld, flags=%ld, mapped=%ld\n",
+      subSubtleLogDebug("XEmbedInfo: win=%#lx, version=%ld, flags=%ld, mapped=%ld\n",
         win, info->version, info->flags, info->flags & XEMBED_MAPPED);
 
       XFree(info);
@@ -409,7 +409,7 @@ subEwmhFinish(void)
       subSharedPropertyDelete(subtle->dpy, ROOT, subEwmhGet(SUB_EWMH_SUBTLE_VISIBLE_TAGS));
     }
 
-  subSharedLogDebugSubtle("finish=ewmh\n");
+  subSubtleLogDebugSubtle("finish=ewmh\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

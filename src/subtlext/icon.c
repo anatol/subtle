@@ -249,9 +249,6 @@ subIconInit(int argc,
       rb_iv_set(i->instance, "@pixmap", LONG2NUM(i->pixmap));
 
       XSync(display, False); ///< Sync all changes
-
-      subSharedLogDebugSubtlext("new=icon, width=%03d, height=%03d\n",
-        i->width, i->height);
     }
 
   return Qnil;

@@ -43,7 +43,7 @@ subTrayNew(Window win)
   subEwmhMessage(t->win, SUB_EWMH_XEMBED, 0xFFFFFF, CurrentTime,
     XEMBED_EMBEDDED_NOTIFY, 0, subtle->windows.tray, 0);
 
-  subSharedLogDebugSubtle("new=tray, name=%s, win=%#lx\n", t->name, win);
+  subSubtleLogDebugSubtle("new=tray, name=%s, win=%#lx\n", t->name, win);
 
   return t;
 } /* }}} */
@@ -64,7 +64,7 @@ subTrayConfigure(SubTray *t)
   /* Size hints */
   if(!(hints = XAllocSizeHints()))
     {
-      subSharedLogError("Can't alloc memory. Exhausted?\n");
+      subSubtleLogError("Can't alloc memory. Exhausted?\n");
       abort();
     }
 
@@ -80,7 +80,7 @@ subTrayConfigure(SubTray *t)
     }
   XFree(hints);
 
-  subSharedLogDebug("Tray: width=%d, supplied=%ld\n", t->width, supplied);
+  subSubtleLogDebug("Tray: width=%d, supplied=%ld\n", t->width, supplied);
 } /* }}} */
 
  /** subTrayUpdate {{{
@@ -170,9 +170,9 @@ subTraySelect(void)
 
   if(XGetSelectionOwner(subtle->dpy, selection) == subtle->windows.tray)
     {
-      subSharedLogDebug("Selection: type=%ld\n", selection);
+      subSubtleLogDebug("Selection: type=%ld\n", selection);
     }
-  else subSharedLogError("Failed getting tray selection\n");
+  else subSubtleLogError("Failed getting tray selection\n");
 
   /* Send manager info */
   subEwmhMessage(ROOT, SUB_EWMH_MANAGER, 0xFFFFFF, CurrentTime,
@@ -217,7 +217,7 @@ subTrayPublish(void)
 
   free(wins);
 
-  subSharedLogDebugSubtle("publish=tray, trays=%d\n", subtle->trays->ndata);
+  subSubtleLogDebugSubtle("publish=tray, trays=%d\n", subtle->trays->ndata);
 } /* }}} */
 
  /** subTrayKill {{{
@@ -242,7 +242,7 @@ subTrayKill(SubTray *t)
   if(t->name) free(t->name);
   free(t);
 
-  subSharedLogDebugSubtle("kill=tray\n");
+  subSubtleLogDebugSubtle("kill=tray\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

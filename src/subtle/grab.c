@@ -64,7 +64,7 @@ subGrabInit(void)
     }
   if(modmap) XFreeModifiermap(modmap);
 
-  subSharedLogDebug("init=grab\n");
+  subSubtleLogDebug("init=grab\n");
 } /* }}} */
 
  /** subGrabNew {{{
@@ -101,10 +101,10 @@ subGrabNew(const char *keys,
         }
       else if(duplicate) *duplicate = True;
 
-      subSharedLogDebugSubtle("new=grab, type=%s, keys=%s, code=%03d, state=%02d\n",
+      subSubtleLogDebugSubtle("new=grab, type=%s, keys=%s, code=%03d, state=%02d\n",
         g->flags & SUB_GRAB_KEY ? "key" : "mouse", keys, g->code, g->state);
     }
-  else subSharedLogWarn("Failed assigning grab `%s'\n", keys);
+  else subSubtleLogWarn("Failed assigning grab `%s'\n", keys);
 
   return g;
 } /* }}} */
@@ -223,7 +223,7 @@ subGrabKill(SubGrab *g)
 
   free(g);
 
-  subSharedLogDebugSubtle("kill=grab\n");
+  subSubtleLogDebugSubtle("kill=grab\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

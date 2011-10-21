@@ -410,7 +410,7 @@ subClientNew(Window win)
   subEwmhSetCardinals(c->win, SUB_EWMH_NET_WM_DESKTOP, &vid, 1);
   subEwmhSetCardinals(c->win, SUB_EWMH_NET_FRAME_EXTENTS, extents, 4);
 
-  subSharedLogDebugSubtle("new=client, name=%s, instance=%s, "
+  subSubtleLogDebugSubtle("new=client, name=%s, instance=%s, "
     "class=%s, win=%#lx, input=%d, focus=%d\n",
     c->name, c->instance, c->klass, win, !!(c->flags & SUB_CLIENT_INPUT),
     !!(c->flags & SUB_CLIENT_FOCUS));
@@ -445,7 +445,7 @@ subClientConfigure(SubClient *c)
 
   XSendEvent(subtle->dpy, c->win, False, StructureNotifyMask, (XEvent *)&ev);
 
-  subSharedLogDebugSubtle("Configure: type=client, win=%#lx "
+  subSubtleLogDebugSubtle("Configure: type=client, win=%#lx "
     "x=%03d, y=%03d, width=%03d, height=%03d\n",
     c->win, c->geom.x, c->geom.y, c->geom.width, c->geom.height);
 } /* }}} */
@@ -894,7 +894,7 @@ subClientRestack(SubClient *c,
 
   subClientPublish(True);
 
-  subSharedLogDebugSubtle("Restack: instance=%s, win=%#lx, dir=%s\n",
+  subSubtleLogDebugSubtle("Restack: instance=%s, win=%#lx, dir=%s\n",
     c->instance, c->win, SUB_CLIENT_RESTACK_DOWN == dir ? "down" : "up");
 } /* }}} */
 
@@ -1199,7 +1199,7 @@ subClientSetStrut(SubClient *c)
           subScreenResize();
           subScreenConfigure();
 
-          subSharedLogDebug("Strut: left=%ld, right=%d, top=%d, bottom=%d\n",
+          subSubtleLogDebug("Strut: left=%ld, right=%d, top=%d, bottom=%d\n",
             subtle->styles.subtle.left, subtle->styles.subtle.right,
             subtle->styles.subtle.bottom, subtle->styles.subtle.top);
         }
@@ -1257,7 +1257,7 @@ subClientSetSizeHints(SubClient *c,
 
   if(!(size = XAllocSizeHints()))
     {
-      subSharedLogError("Can't alloc memory. Exhausted?\n");
+      subSubtleLogError("Can't alloc memory. Exhausted?\n");
       abort();
     }
 
@@ -1361,7 +1361,7 @@ subClientSetSizeHints(SubClient *c,
 
   XFree(size);
 
-  subSharedLogDebug("Size hints: x=%d, y=%d, width=%d, height=%d, "
+  subSubtleLogDebug("Size hints: x=%d, y=%d, width=%d, height=%d, "
     "minw=%d, minh=%d, maxw=%d, maxh=%d, minr=%.1f, maxr=%.1f, "
     "incw=%d, inch=%d, basew=%d, baseh=%d\n",
     c->geom.x, c->geom.y, c->geom.width, c->geom.height, c->minw, c->minh,
@@ -1624,7 +1624,7 @@ subClientKill(SubClient *c)
   if(c->role)      free(c->role);
   free(c);
 
-  subSharedLogDebugSubtle("kill=client\n");
+  subSubtleLogDebugSubtle("kill=client\n");
 } /* }}} */
 
 /* All */
@@ -1658,7 +1658,7 @@ subClientPublish(int restack)
 
   free(wins);
 
-  subSharedLogDebugSubtle("publish=client, clients=%d, restack=%d\n",
+  subSubtleLogDebugSubtle("publish=client, clients=%d, restack=%d\n",
     subtle->clients->ndata, restack);
 } /* }}} */
 

@@ -32,7 +32,7 @@ DisplayClaim(void)
     {
       if(!(subtle->flags & SUB_SUBTLE_REPLACE))
         {
-          subSharedLogError("Found a running window manager\n");
+          subSubtleLogError("Found a running window manager\n");
 
           return False;
         }
@@ -65,13 +65,13 @@ DisplayClaim(void)
               sleep(1);
             }
 
-          subSharedLogError("Giving up waiting for window managert\n");
+          subSubtleLogError("Giving up waiting for window managert\n");
           success = False;
         }
     }
   else
     {
-      subSharedLogWarn("Failed replacing current window manager\n");
+      subSubtleLogWarn("Failed replacing current window manager\n");
       success = False;
     }
 
@@ -90,6 +90,29 @@ DisplayStyleToColor(SubStyle *s,
   colors[(*pos)++] = s->right;
   colors[(*pos)++] = s->bottom;
   colors[(*pos)++] = s->left;
+} /* }}} */
+
+ /* DisplayXError {{{ */
+static int
+DisplayXError(Display *disp,
+  XErrorEvent *ev)
+{
+#ifdef DEBUG
+  if(subtle->loglevel & SUB_LOG_XERROR)
+    {
+      if(42 != ev->request_code) /* X_SetInputFocus */
+        {
+          char error[255] = { 0 };
+
+          XGetErrorText(disp, ev->error_code, error, sizeof(error));
+          subSubtleLog(SUB_LOG_XERROR, __FILE__, __LINE__,
+            "%s: win=%#lx, request=%d\n",
+            error, ev->resourceid, ev->request_code);
+        }
+    }
+#endif /* DEBUG */
+
+  return 0;
 } /* }}} */
 
 /* Public */
@@ -118,7 +141,7 @@ subDisplayInit(const char *display)
   /* Connect to display and setup error handler */
   if(!(subtle->dpy = XOpenDisplay(display)))
     {
-      subSharedLogError("Failed opening display `%s'\n",
+      subSubtleLogError("Failed opening display `%s'\n",
         (display) ? display : ":0.0");
 
       subSubtleFinish();
@@ -143,7 +166,7 @@ subDisplayInit(const char *display)
       exit(-1);
     }
 
-  XSetErrorHandler(subSharedLogXError);
+  XSetErrorHandler(DisplayXError);
   setenv("DISPLAY", DisplayString(subtle->dpy), True); ///< Set display for clients
 
   /* Create GCs */
@@ -205,7 +228,7 @@ subDisplayInit(const char *display)
   printf("Display (%s) is %dx%d\n", DisplayString(subtle->dpy),
     subtle->width, subtle->height);
 
-  subSharedLogDebugSubtle("init=display\n");
+  subSubtleLogDebugSubtle("init=display\n");
 } /* }}} */
 
  /** subDisplayConfigure {{{
@@ -326,7 +349,7 @@ subDisplayPublish(void)
 
   XSync(subtle->dpy, False); ///< Sync all changes
 
-  subSharedLogDebugSubtle("publish=colors, n=%d\n", NCOLORS);
+  subSubtleLogDebugSubtle("publish=colors, n=%d\n", NCOLORS);
 } /* }}} */
 
  /** subDisplayFinish {{{
@@ -360,7 +383,7 @@ subDisplayFinish(void)
       XCloseDisplay(subtle->dpy);
     }
 
-  subSharedLogDebugSubtle("finish=display\n");
+  subSubtleLogDebugSubtle("finish=display\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

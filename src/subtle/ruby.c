@@ -67,7 +67,7 @@ RubyBacktrace(void)
       backtrace = rb_funcall(lasterr, rb_intern("backtrace"), 0, NULL);
 
       /* Print error and backtrace */
-      subSharedLogWarn("%s: %s\n", RSTRING_PTR(klass), RSTRING_PTR(message));
+      subSubtleLogWarn("%s: %s\n", RSTRING_PTR(klass), RSTRING_PTR(message));
       for(i = 0; Qnil != (entry = rb_ary_entry(backtrace, i)); ++i)
         printf("\tfrom %s\n", RSTRING_PTR(entry));
     }
@@ -360,7 +360,7 @@ RubyValueToGravityString(VALUE value,
           /* We store gravity ids in a string to save a bit of memory */
           if(-1 != (id = RubyValueToGravity(entry)))
             (*string)[j++] = id+ GRAVITYSTRLIMIT;
-          else subSharedLogWarn("Failed finding gravity `%s'\n",
+          else subSubtleLogWarn("Failed finding gravity `%s'\n",
             SYM2CHAR(entry));
         }
     }
@@ -718,7 +718,7 @@ RubyEvalGrab(VALUE keys,
         rb_ary_push(shelter, value); ///< Protect from GC
         break; /* }}} */
       default:
-        subSharedLogWarn("Unknown value type for grab\n");
+        subSubtleLogWarn("Unknown value type for grab\n");
 
         return;
     }
@@ -984,7 +984,7 @@ RubyEvalConfig(void)
   /* Check and update grabs */
   if(0 == subtle->grabs->ndata)
     {
-      subSharedLogWarn("No grabs found\n");
+      subSubtleLogWarn("No grabs found\n");
       subSubtleFinish();
 
       exit(-1);
@@ -1015,7 +1015,7 @@ RubyEvalConfig(void)
   /* Check gravities */
   if(0 == subtle->gravities->ndata)
     {
-      subSharedLogError("No gravities found\n");
+      subSubtleLogError("No gravities found\n");
       subSubtleFinish();
 
       exit(-1);
@@ -1054,7 +1054,7 @@ RubyEvalConfig(void)
 
   subTagPublish();
 
-  if(1 == subtle->tags->ndata) subSharedLogWarn("No tags found\n");
+  if(1 == subtle->tags->ndata) subSubtleLogWarn("No tags found\n");
 
   /* Check and update views */
   if(0 == subtle->views->ndata) ///< Create default view
@@ -1062,7 +1062,7 @@ RubyEvalConfig(void)
       SubView *v = subViewNew("subtle", "default");
 
       subArrayPush(subtle->views, (void *)v);
-      subSharedLogWarn("No views found\n");
+      subSubtleLogWarn("No views found\n");
     }
   else ///< Check default tag
     {
@@ -1072,7 +1072,7 @@ RubyEvalConfig(void)
       for(i = subtle->views->ndata - 1; 0 <= i; i--)
         if((v = VIEW(subtle->views->data[i])) && v->tags & DEFAULTTAG)
           {
-            subSharedLogDebugRuby("Default view: name=%s\n", v->name);
+            subSubtleLogDebugRuby("Default view: name=%s\n", v->name);
             break;
           }
 
@@ -1187,7 +1187,7 @@ RubyEvalStyle(VALUE name,
   RubyHashToInt(params, "min_width", &s->min);
   s->min = MAX(0, s->min);
 
-  /* Style font */
+  /* Font */
   if(T_STRING == rb_type(value = rb_hash_lookup(params,
       CHAR2SYM("font"))) && !s->font)
     {
@@ -1582,7 +1582,7 @@ RubyObjectDispatcher(VALUE self,
       rb_protect(RubyWrapLoadSubtlext, Qnil, &state);
       if(state)
         {
-          subSharedLogWarn("Failed loading subtlext\n");
+          subSubtleLogWarn("Failed loading subtlext\n");
           RubyBacktrace();
           subSubtleFinish();
 
@@ -1779,7 +1779,7 @@ RubyConfigMissing(int argc,
 
   name = (char *)rb_id2name(SYM2ID(missing));
 
-  subSharedLogWarn("Unknown method `%s'\n", name);
+  subSubtleLogWarn("Unknown method `%s'\n", name);
 
   return Qnil;
 } /* }}} */
@@ -1796,7 +1796,7 @@ RubyConfigAdded(VALUE self,
   /* Append method name to methods list */
   rb_ary_push(config_methods, name);
 
-  subSharedLogDebugRuby("Singleton method `%s' added\n", SYM2CHAR(name));
+  subSubtleLogDebugRuby("Singleton method `%s' added\n", SYM2CHAR(name));
 
   return Qnil;
 } /* }}} */
@@ -1836,7 +1836,7 @@ RubyConfigSet(VALUE self,
                 if(!(subtle->flags & SUB_SUBTLE_CHECK))
                   subtle->gravity = value; ///< Store for later
               }
-            else subSharedLogWarn("Unknown option `:%s'\n", SYM2CHAR(option));
+            else subSubtleLogWarn("Unknown option `:%s'\n", SYM2CHAR(option));
             break; /* }}} */
           case T_SYMBOL: /* {{{ */
             if(CHAR2SYM("gravity") == option)
@@ -1844,11 +1844,11 @@ RubyConfigSet(VALUE self,
                 if(!(subtle->flags & SUB_SUBTLE_CHECK))
                   subtle->gravity = value; ///< Store for later
               }
-            else subSharedLogWarn("Unknown option `:%s'\n",
+            else subSubtleLogWarn("Unknown option `:%s'\n",
               SYM2CHAR(option));
             break; /* }}} */
           case T_ARRAY: /* {{{ */
-            subSharedLogWarn("Unknown option `:%s'\n", SYM2CHAR(option));
+            subSubtleLogWarn("Unknown option `:%s'\n", SYM2CHAR(option));
             break; /* }}} */
           case T_TRUE:
           case T_FALSE: /* {{{ */
@@ -1867,13 +1867,13 @@ RubyConfigSet(VALUE self,
                 if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
                   subtle->flags |= SUB_SUBTLE_TILING;
               }
-            else subSharedLogWarn("Unknown option `:%s'\n",
+            else subSubtleLogWarn("Unknown option `:%s'\n",
               SYM2CHAR(option));
             break; /* }}} */
           case T_STRING: /* {{{ */
            if(CHAR2SYM("font") == option)
             {
-              subSharedLogDeprecated("The :font option is deprecated, "
+              subSubtleLogDeprecated("The :font option is deprecated, "
                 "please use the styles font property.\n");
 
               if(!(subtle->flags & SUB_SUBTLE_CHECK) && !subtle->styles.all.font)
@@ -1907,7 +1907,7 @@ RubyConfigSet(VALUE self,
                       RSTRING_PTR(value));
                   }
               }
-            else subSharedLogWarn("Unknown option `:%s'\n",
+            else subSubtleLogWarn("Unknown option `:%s'\n",
               SYM2CHAR(option));
             break; /* }}} */
           default:
@@ -2433,7 +2433,7 @@ RubyConfigStyle(VALUE self,
       else if(CHAR2SYM("subtle")    == name) s = &subtle->styles.subtle;
       else
         {
-          subSharedLogWarn("Unknown style name `:%s'\n", SYM2CHAR(name));
+          subSubtleLogWarn("Unknown style name `:%s'\n", SYM2CHAR(name));
 
           return Qnil;
         }
@@ -3145,15 +3145,15 @@ RubySubletWatch(VALUE self,
 
                   XSaveContext(subtle->dpy, subtle->windows.support,
                     p->sublet->watch, (void *)p);
-                  subSharedLogDebug("Inotify: Adding watch on %s\n", buf);
+                  subSubtleLogDebug("Inotify: Adding watch on %s\n", buf);
 
                   ret = Qtrue;
                 }
-              else subSharedLogWarn("Failed adding watch on file `%s': %s\n",
+              else subSubtleLogWarn("Failed adding watch on file `%s': %s\n",
                 buf, strerror(errno));
             }
 #endif /* HAVE_SYS_INOTIFY_H */
-          else subSharedLogWarn("Failed handling unknown value type\n");
+          else subSubtleLogWarn("Failed handling unknown value type\n");
         }
     }
 
@@ -3226,7 +3226,7 @@ RubySubletWarn(VALUE self,
 
   Data_Get_Struct(self, SubPanel, p);
   if(p && T_STRING == rb_type(str))
-    subSharedLogSubletError(p->sublet->name, RSTRING_PTR(str));
+    subSubtleLogSubletError(p->sublet->name, RSTRING_PTR(str));
 
   return Qnil;
 } /* }}} */
@@ -3371,7 +3371,7 @@ subRubyInit(void)
   shelter = rb_ary_new();
   rb_gc_register_address(&shelter);
 
-  subSharedLogDebugSubtle("init=ruby\n");
+  subSubtleLogDebugSubtle("init=ruby\n");
 } /* }}} */
 
  /** subRubyLoadConfig {{{
@@ -3410,7 +3410,7 @@ subRubyLoadConfig(void)
           if(-1 != access(path, R_OK)) ///< Check if config file exists
             break;
 
-          subSharedLogDebugRuby("Checked config=%s\n", path);
+          subSubtleLogDebugRuby("Checked config=%s\n", path);
         }
     }
 
@@ -3447,7 +3447,7 @@ subRubyLoadConfig(void)
   str = rb_protect(RubyWrapRead, rb_str_new2(path), &state);
   if(state)
     {
-      subSharedLogWarn("Failed reading config `%s'\n", path);
+      subSubtleLogWarn("Failed reading config `%s'\n", path);
       RubyBacktrace();
 
       /* Exit when not checking only */
@@ -3473,7 +3473,7 @@ subRubyLoadConfig(void)
   rb_protect(RubyWrapEval, (VALUE)&rargs, &state);
   if(state)
     {
-      subSharedLogWarn("Failed loading config `%s'\n", path);
+      subSubtleLogWarn("Failed loading config `%s'\n", path);
       RubyBacktrace();
 
       /* Exit when not checking only */
@@ -3625,13 +3625,13 @@ subRubyLoadSublet(const char *file)
       snprintf(buf, sizeof(buf), "%s/%s/sublets/%s",
         home ? home : path, PKG_NAME, file);
     }
-  subSharedLogDebugRuby("sublet=%s\n", buf);
+  subSubtleLogDebugRuby("sublet=%s\n", buf);
 
   /* Carefully read sublet */
   str = rb_protect(RubyWrapRead, rb_str_new2(buf), &state);
   if(state)
     {
-      subSharedLogWarn("Failed loading sublet `%s'\n", file);
+      subSubtleLogWarn("Failed loading sublet `%s'\n", file);
       RubyBacktrace();
 
       return;
@@ -3652,7 +3652,7 @@ subRubyLoadSublet(const char *file)
   rb_protect(RubyWrapEval, (VALUE)&rargs, &state);
   if(state)
     {
-      subSharedLogWarn("Failed loading sublet `%s'\n", file);
+      subSubtleLogWarn("Failed loading sublet `%s'\n", file);
       RubyBacktrace();
 
       subRubyUnloadSublet(p);
@@ -3667,7 +3667,7 @@ subRubyLoadSublet(const char *file)
   rb_protect(RubyWrapSubletConfig, (VALUE)&rargs, &state);
   if(state)
     {
-      subSharedLogWarn("Failed configuring sublet `%s'\n", file);
+      subSubtleLogWarn("Failed configuring sublet `%s'\n", file);
       RubyBacktrace();
 
       subRubyUnloadSublet(p);
@@ -3762,7 +3762,7 @@ subRubyLoadPanels(void)
   rb_protect(RubyWrapLoadPanels, Qnil, &state);
   if(state)
     {
-      subSharedLogWarn("Failed loading panels\n");
+      subSubtleLogWarn("Failed loading panels\n");
       RubyBacktrace();
       subSubtleFinish();
 
@@ -3787,8 +3787,8 @@ subRubyLoadSublets(void)
     {
       if(0 > (subtle->notify = inotify_init()))
         {
-          subSharedLogWarn("Failed initing inotify\n");
-          subSharedLogDebug("Inotify: %s\n", strerror(errno));
+          subSubtleLogWarn("Failed initing inotify\n");
+          subSubtleLogDebug("Inotify: %s\n", strerror(errno));
 
           return;
         }
@@ -3822,7 +3822,7 @@ subRubyLoadSublets(void)
 
       subArraySort(subtle->grabs, subGrabCompare);
     }
-  else subSharedLogWarn("No sublets found\n");
+  else subSubtleLogWarn("No sublets found\n");
 } /* }}} */
 
  /** subRubyCall {{{
@@ -3852,7 +3852,7 @@ subRubyCall(int type,
   if(state) RubyBacktrace();
 
 #ifdef DEBUG
-  subSharedLogDebugRuby("GC RUN\n");
+  subSubtleLogDebugRuby("GC RUN\n");
   rb_gc_start();
 #endif /* DEBUG */
 
@@ -3890,7 +3890,7 @@ subRubyFinish(void)
 #endif /* HAVE_SYS_INOTIFY_H */
     }
 
-  subSharedLogDebugSubtle("finish=ruby\n");
+  subSubtleLogDebugSubtle("finish=ruby\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker
