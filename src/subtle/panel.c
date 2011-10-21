@@ -204,8 +204,7 @@ subPanelNew(int type)
         break; /* }}} */
     }
 
-  subSubtleLogDebugSubtle("new=panel, type=%s\n",
-    SUB_PANEL_VIEWS == type ? "views" : "title");
+  subSubtleLogDebugSubtle("New: type=%d\n", type);
 
   return p;
 } /* }}} */
@@ -320,6 +319,8 @@ subPanelUpdate(SubPanel *p)
           }
         break; /* }}} */
     }
+
+  subSubtleLogDebugSubtle("Update\n");
 } /* }}} */
 
  /** subPanelRender {{{
@@ -477,6 +478,8 @@ subPanelRender(SubPanel *p,
   /* Draw separator after panel */
   if(0 < subtle->separator.width && p->flags & SUB_PANEL_SEPARATOR2)
     PanelSeparator(SUB_PANEL_SEPARATOR2, p, drawable);
+
+  subSubtleLogDebugSubtle("Render\n");
 } /* }}} */
 
  /** subPanelCompare {{{
@@ -753,7 +756,7 @@ subPanelKill(SubPanel *p)
 
   free(p);
 
-  subSubtleLogDebugSubtle("kill=panel\n");
+  subSubtleLogDebugSubtle("Kill\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

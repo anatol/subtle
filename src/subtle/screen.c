@@ -61,7 +61,7 @@ ScreenPublish(void)
 
   XSync(subtle->dpy, False); ///< Sync all changes
 
-  subSubtleLogDebugSubtle("publish=screen, screens=%d\n",
+  subSubtleLogDebugSubtle("Publish: screens=%d\n",
     subtle->screens->ndata);
 } /* }}} */
 
@@ -212,7 +212,7 @@ subScreenNew(int x,
   XSaveContext(subtle->dpy, s->panel1, SCREENID, (void *)s);
   XSaveContext(subtle->dpy, s->panel2, SCREENID, (void *)s);
 
-  subSubtleLogDebugSubtle("new=screen, x=%d, y=%d, width=%u, height=%u\n",
+  subSubtleLogDebugSubtle("New: x=%d, y=%d, width=%u, height=%u\n",
     s->geom.x, s->geom.y, s->geom.width, s->geom.height);
 
   return s;
@@ -250,6 +250,8 @@ subScreenFind(int x,
         }
     }
 
+  subSubtleLogDebugSubtle("Find\n");
+
   return ret;
 } /* }}} */
 
@@ -282,6 +284,8 @@ subScreenCurrent(int *sid)
 
       ret = subScreenFind(rx, ry, sid);
     }
+
+  subSubtleLogDebugSubtle("Current\n");
 
   return ret;
 } /* }}} */
@@ -394,7 +398,7 @@ subScreenConfigure(void)
   /* Hook: Configure */
   subHookCall(SUB_HOOK_TILE, NULL);
 
-  subSubtleLogDebugSubtle("Configure: type=screen\n");
+  subSubtleLogDebugSubtle("Configure\n");
 } /* }}} */
 
  /** subScreenUpdate {{{
@@ -516,6 +520,8 @@ subScreenUpdate(void)
           x[offset] += p->width;
         }
     }
+
+  subSubtleLogDebugSubtle("Update\n");
 } /* }}} */
 
  /** subScreenRender {{{
@@ -558,6 +564,8 @@ subScreenRender(void)
     }
 
   XSync(subtle->dpy, False); ///< Sync before going on
+
+  subSubtleLogDebugSubtle("Render\n");
 } /* }}} */
 
  /** subScreenResize {{{
@@ -615,6 +623,8 @@ subScreenResize(void)
     }
 
   ScreenPublish();
+
+  subSubtleLogDebugSubtle("Resize\n");
 } /* }}} */
 
  /** subScreenJump {{{
@@ -632,7 +642,7 @@ subScreenJump(SubScreen *s)
 
   subViewFocus(VIEW(subArrayGet(subtle->views, s->vid)), True);
 
-  subSubtleLogDebugSubtle("Jump: type=screen\n");
+  subSubtleLogDebugSubtle("Jump\n");
 } /* }}} */
 
  /** SubScreenKill {{{
@@ -664,7 +674,7 @@ subScreenKill(SubScreen *s)
 
   free(s);
 
-  subSubtleLogDebugSubtle("kill=screen\n");
+  subSubtleLogDebugSubtle("Kill\n");
 } /* }}} */
 
 /* All */
@@ -696,7 +706,7 @@ subScreenPublish(void)
 
   XSync(subtle->dpy, False); ///< Sync all changes
 
-  subSubtleLogDebugSubtle("publish=screen, screens=%d\n",
+  subSubtleLogDebugSubtle("Publish: screens=%d\n",
     subtle->screens->ndata);
 } /* }}} */
 

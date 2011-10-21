@@ -171,8 +171,9 @@ subIconInit(int argc,
                    getenv("HOME"), RSTRING_PTR(data[0]));
                 }
 
+              /* Check if icon exists */
               if(-1 == access(buf, R_OK))
-                rb_raise(rb_eStandardError, "Icon not found `%s'",
+                rb_raise(rb_eStandardError, "Invalid icon `%s'",
                   RSTRING_PTR(data[0]));
             }
 
@@ -204,7 +205,7 @@ subIconInit(int argc,
               else
 #endif /* HAVE_X11_XPM_H */
                 {
-                  rb_raise(rb_eStandardError, "Malormed icon");
+                  rb_raise(rb_eStandardError, "Invalid icon data");
 
                   return Qnil;
                }

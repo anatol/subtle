@@ -42,7 +42,7 @@ subGravityNew(const char *name,
   g->geom.width  = MINMAX(geom->width,  1, 100);
   g->geom.height = MINMAX(geom->height, 1, 100);
 
-  subSubtleLogDebugSubtle("new=gravity, name=%s, quark=%d, x=%d, y=%d,"
+  subSubtleLogDebugSubtle("New: name=%s, quark=%d, x=%d, y=%d,"
     "width=%d, height=%d\n",
     name, g->quark, geom->x, geom->y, geom->width, geom->height);
 
@@ -82,7 +82,7 @@ subGravityKill(SubGravity *g)
 
   free(g);
 
-  subSubtleLogDebugSubtle("kill=gravity\n");
+  subSubtleLogDebugSubtle("Kill\n");
 } /* }}} */
 
 /* All */
@@ -165,10 +165,9 @@ subGravityPublish(void)
   for(i = 0; i < subtle->gravities->ndata; i++)
     free(gravities[i]);
 
-  subSubtleLogDebugSubtle("publish=gravities, n=%d\n",
-    subtle->gravities->ndata);
-
   XSync(subtle->dpy, False); ///< Sync all changes
 
   free(gravities);
+
+  subSubtleLogDebugSubtle("Publish: gravities=%d\n", subtle->gravities->ndata);
 } /* }}} */

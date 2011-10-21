@@ -926,8 +926,8 @@ SubView *subViewNew(char *name, char *tags);                      ///< Create vi
 void subViewFocus(SubView *v, int focus);                         ///< Restore view focus
 void subViewJump(SubView *v);                                     ///< Jump to view
 void subViewSwitch(SubView *v, int sid, int focus);               ///< Switch view
-void subViewPublish(void);                                        ///< Publish views
 void subViewKill(SubView *v);                                     ///< Kill view
+void subViewPublish(void);                                        ///< Publish views
 /* }}} */
 
 #endif /* SUBTLE_H */

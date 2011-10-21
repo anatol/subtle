@@ -97,7 +97,7 @@ subStyleNew(void)
   /* Init style values */
   subStyleReset(s, -1);
 
-  subSubtleLogDebugSubtle("new=style\n");
+  subSubtleLogDebugSubtle("New\n");
 
   return s;
 } /* }}} */
@@ -139,6 +139,8 @@ subStyleFind(SubStyle *s,
         }
     }
 
+  subSubtleLogDebugSubtle("Find\n");
+
   return found;
 } /* }}} */
 
@@ -174,6 +176,8 @@ subStyleReset(SubStyle *s,
   /* Remove states */
   if(s->styles) subArrayKill(s->styles, True);
   s->styles = NULL;
+
+  subSubtleLogDebugSubtle("Reset\n");
 } /* }}} */
 
  /** subStyleMerge {{{
@@ -204,6 +208,8 @@ subStyleMerge(SubStyle *s1,
   StyleInheritSides(&s1->border,  &s2->border,  True);
   StyleInheritSides(&s1->padding, &s2->padding, True);
   StyleInheritSides(&s1->margin,  &s2->margin,  True);
+
+  subSubtleLogDebugSubtle("Merge\n");
 } /* }}} */
 
  /** subStyleKill {{{
@@ -224,7 +230,7 @@ subStyleKill(SubStyle *s)
   if(s->styles) subArrayKill(s->styles, True);
   free(s);
 
-  subSubtleLogDebugSubtle("kill=style\n");
+  subSubtleLogDebugSubtle("Kill\n");
 } /* }}} */
 
 /* All */
@@ -241,6 +247,8 @@ subStyleInheritance(void)
   StyleInherit(&subtle->styles.title,     &subtle->styles.all);
   StyleInherit(&subtle->styles.sublets,   &subtle->styles.all);
   StyleInherit(&subtle->styles.separator, &subtle->styles.all);
+
+  subSubtleLogDebugSubtle("Inheritance\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

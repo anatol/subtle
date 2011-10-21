@@ -423,7 +423,7 @@ subWindowInit(VALUE self,
 
       /* Set window font */
       if(!w->font && !(w->font = subSharedFontNew(display, DEFFONT)))
-        rb_raise(rb_eStandardError, "Cannot load font `%s'", DEFFONT);
+        rb_raise(rb_eStandardError, "Invalid font `%s'", DEFFONT);
 
       /* Yield to block if given */
       if(rb_block_given_p())
@@ -935,7 +935,7 @@ subWindowWrite(VALUE self,
           len = subSharedTextParse(display, w->font, wt->text,
             RSTRING_PTR(text));
         }
-      else rb_raise(rb_eArgError, "Unknown value-types");
+      else rb_raise(rb_eArgError, "Unexpected value-types");
     }
 
   return INT2FIX(len);
@@ -979,7 +979,7 @@ subWindowRead(int argc,
       /* Check object type */
       if(T_FIXNUM != rb_type(x) || T_FIXNUM != rb_type(y))
         {
-          rb_raise(rb_eArgError, "Unknown value types");
+          rb_raise(rb_eArgError, "Unexpected value types");
 
           return Qnil;
         }
@@ -1197,7 +1197,7 @@ subWindowOn(int argc,
         {
           w->pointer = value;
         }
-      else rb_raise(rb_eArgError, "Unknown value type for on");
+      else rb_raise(rb_eArgError, "Unexpected value type for on");
     }
 
   return Qnil;

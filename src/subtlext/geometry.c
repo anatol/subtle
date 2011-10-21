@@ -143,8 +143,7 @@ subGeometryInit(int argc,
               }
           }
         break;
-      default:
-        rb_raise(rb_eArgError, "Unexpected value-type `%s'",
+      default: rb_raise(rb_eArgError, "Unexpected value-type `%s'",
           rb_obj_classname(value));
     }
 
@@ -157,7 +156,7 @@ subGeometryInit(int argc,
       rb_iv_set(self, "@width",  data[2]);
       rb_iv_set(self, "@height", data[3]);
     }
-  else rb_raise(rb_eStandardError, "Failed setting zero width or height");
+  else rb_raise(rb_eStandardError, "Invalid geometry");
 
   return self;
 } /* }}} */

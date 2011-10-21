@@ -122,7 +122,7 @@ subEwmhInit(void)
   subEwmhSetWindows(ROOT, SUB_EWMH_NET_CLIENT_LIST, NULL, 0);
   subEwmhSetWindows(ROOT, SUB_EWMH_NET_CLIENT_LIST_STACKING, NULL, 0);
 
-  subSubtleLogDebugSubtle("init=ewmh\n");
+  subSubtleLogDebugSubtle("Init\n");
 } /* }}} */
 
  /** subEwmhGet {{{
@@ -409,7 +409,7 @@ subEwmhFinish(void)
       subSharedPropertyDelete(subtle->dpy, ROOT, subEwmhGet(SUB_EWMH_SUBTLE_VISIBLE_TAGS));
     }
 
-  subSubtleLogDebugSubtle("finish=ewmh\n");
+  subSubtleLogDebugSubtle("Finish\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

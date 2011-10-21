@@ -231,7 +231,7 @@ SubtlextTagFind(VALUE value)
     }
 
   /* Check if tags were found */
-  if(0 == tags) rb_raise(rb_eStandardError, "Couldn't find tag");
+  if(0 == tags) rb_raise(rb_eStandardError, "Invalid tag");
 
   return tags;
 } /* }}} */
@@ -685,8 +685,7 @@ SubtlextSendKey(int argc,
           /* Check mouse */
           if(True == mouse)
             {
-              rb_raise(rb_eNotImpError,
-                "Please use #send_button / #click for button events");
+              rb_raise(rb_eNotImpError, "Use #send_button instead");
 
               return Qnil;
             }
@@ -1155,10 +1154,7 @@ subSubtlextConnect(char *display_string)
   if(!display)
     {
       if(!(display = XOpenDisplay(display_string)))
-        {
-          rb_raise(rb_eStandardError, "Failed opening display `%s'",
-            display_string);
-        }
+        rb_raise(rb_eStandardError, "Invalid display `%s'", display_string);
 
       XSetErrorHandler(SubtlextXError);
 
@@ -1222,7 +1218,7 @@ subSubtlextConcat(VALUE str1,
       if(T_STRING == rb_type(string))
         ret = rb_str_cat(str1, RSTRING_PTR(string), RSTRING_LEN(string));
     }
-  else rb_raise(rb_eArgError, "Unknown value type");
+  else rb_raise(rb_eArgError, "Unexpected value type");
 
   return ret;
 } /* }}} */
@@ -1630,7 +1626,7 @@ subSubtlextFindObjects(char *prop_name,
       if(preg) subSharedRegexKill(preg);
       XFreeStringList(strings);
     }
-  else rb_raise(rb_eStandardError, "Failed getting property list");
+  else rb_raise(rb_eStandardError, "Unknown property list `%s'", prop_name);
 
   return ret;
 } /* }}} */
@@ -1711,7 +1707,7 @@ subSubtlextFindObjectsGeometry(char *prop_name,
       if(preg) subSharedRegexKill(preg);
       XFreeStringList(strings);
     }
-  else rb_raise(rb_eStandardError, "Failed getting property list");
+  else rb_raise(rb_eStandardError, "Unknown property list `%s'", prop_name);
 
   return ret;
 } /* }}} */

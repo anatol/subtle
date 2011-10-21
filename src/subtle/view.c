@@ -46,7 +46,7 @@ subViewNew(char *name,
       subSharedRegexKill(preg);
     }
 
-  subSubtleLogDebugSubtle("new=view, name=%s\n", name);
+  subSubtleLogDebugSubtle("New: name=%s\n", name);
 
   return v;
 } /* }}} */
@@ -80,6 +80,8 @@ subViewFocus(SubView *v,
     }
 
   subSubtleFocus(focus);
+
+  subSubtleLogDebugSubtle("Focus: focus=%d\n", focus);
 } /* }}} */
 
  /** subViewJump {{{
@@ -127,7 +129,7 @@ subViewJump(SubView *v)
   subHookCall((SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_FOCUS), (void *)v);
   subHookCall(SUB_HOOK_TILE, NULL);
 
-  subSubtleLogDebugSubtle("Jump: type=view\n");
+  subSubtleLogDebugSubtle("Jump\n");
 } /* }}} */
 
  /** subViewSwitch {{{
@@ -184,6 +186,29 @@ subViewSwitch(SubView *v,
   subHookCall((SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_FOCUS), (void *)v);
 } /* }}} */
 
+ /** SubViewKill {{{
+  * @brief Kill a view
+  * @param[in]  v  A #SubView
+  **/
+
+void
+subViewKill(SubView *v)
+{
+  assert(v);
+
+  /* Hook: Kill */
+  subHookCall((SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_KILL),
+    (void *)v);
+
+  if(v->icon) free(v->icon);
+  free(v->name);
+  free(v);
+
+  subSubtleLogDebugSubtle("Kill\n");
+} /* }}} */
+
+/* All */
+
  /** subViewPublish {{{
   * @brief Update EWMH infos
   **/
@@ -233,28 +258,7 @@ subViewPublish(void)
       free(names);
     }
 
-  subSubtleLogDebugSubtle("publish=views, n=%d\n", subtle->views->ndata);
-} /* }}} */
-
- /** SubViewKill {{{
-  * @brief Kill a view
-  * @param[in]  v  A #SubView
-  **/
-
-void
-subViewKill(SubView *v)
-{
-  assert(v);
-
-  /* Hook: Kill */
-  subHookCall((SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_KILL),
-    (void *)v);
-
-  if(v->icon) free(v->icon);
-  free(v->name);
-  free(v);
-
-  subSubtleLogDebugSubtle("kill=view\n");
+  subSubtleLogDebugSubtle("Publish: views=%d\n", subtle->views->ndata);
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

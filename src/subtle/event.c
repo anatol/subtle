@@ -476,7 +476,7 @@ EventFocus(XFocusChangeEvent *ev)
       subScreenRender();
     }
 
-  subSubtleLogDebugEvents("Focus: %#lx\n", ev->window);
+  subSubtleLogDebugEvents("Focus: win=%#lx\n", ev->window);
 } /* }}} */
 
 /* EventGrab {{{ */
@@ -867,8 +867,7 @@ EventGrab(XEvent *ev)
                 subtle->flags |= SUB_SUBTLE_RESTART;
               }
             break; /* }}} */
-          default:
-            subSubtleLogWarn("Failed finding grab action!\n");
+          default: subSubtleLogWarn("Cannot find grab action!\n");
         }
     }
 } /* }}} */

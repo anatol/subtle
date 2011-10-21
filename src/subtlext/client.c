@@ -323,7 +323,7 @@ subClientSingCurrent(VALUE self)
 
       free(focus);
     }
-  else rb_raise(rb_eStandardError, "Failed getting current client");
+  else rb_raise(rb_eStandardError, "Invalid current window");
 
   return client;
 } /* }}} */
@@ -511,7 +511,8 @@ subClientInit(VALUE self,
   VALUE win)
 {
   if(!FIXNUM_P(win))
-    rb_raise(rb_eArgError, "Unexpected value-type `%s'", rb_obj_classname(win));
+    rb_raise(rb_eArgError, "Unexpected value-type `%s'",
+      rb_obj_classname(win));
 
   /* Init object */
   rb_iv_set(self, "@win",      win);
@@ -583,7 +584,7 @@ subClientUpdate(VALUE self)
       free(wminstance);
       free(wmclass);
     }
-  else rb_raise(rb_eStandardError, "Invalid client");
+  else rb_raise(rb_eStandardError, "Invalid client id `%#lx'", win);
 
   return Qnil;
 } /* }}} */

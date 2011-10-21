@@ -410,7 +410,7 @@ subClientNew(Window win)
   subEwmhSetCardinals(c->win, SUB_EWMH_NET_WM_DESKTOP, &vid, 1);
   subEwmhSetCardinals(c->win, SUB_EWMH_NET_FRAME_EXTENTS, extents, 4);
 
-  subSubtleLogDebugSubtle("new=client, name=%s, instance=%s, "
+  subSubtleLogDebugSubtle("New: name=%s, instance=%s, "
     "class=%s, win=%#lx, input=%d, focus=%d\n",
     c->name, c->instance, c->klass, win, !!(c->flags & SUB_CLIENT_INPUT),
     !!(c->flags & SUB_CLIENT_FOCUS));
@@ -445,7 +445,7 @@ subClientConfigure(SubClient *c)
 
   XSendEvent(subtle->dpy, c->win, False, StructureNotifyMask, (XEvent *)&ev);
 
-  subSubtleLogDebugSubtle("Configure: type=client, win=%#lx "
+  subSubtleLogDebugSubtle("Configure: win=%#lx "
     "x=%03d, y=%03d, width=%03d, height=%03d\n",
     c->win, c->geom.x, c->geom.y, c->geom.width, c->geom.height);
 } /* }}} */
@@ -1164,6 +1164,8 @@ subClientToggle(SubClient *c,
 
   /* Hook: Mode */
   subHookCall((SUB_HOOK_TYPE_CLIENT|SUB_HOOK_ACTION_MODE), (void *)c);
+
+  subSubtleLogDebugSubtle("Toggle: type=%d, gravity=%d\n", type, gravity);
 } /* }}} */
 
   /** subClientSetStrut {{{
@@ -1199,7 +1201,7 @@ subClientSetStrut(SubClient *c)
           subScreenResize();
           subScreenConfigure();
 
-          subSubtleLogDebug("Strut: left=%ld, right=%d, top=%d, bottom=%d\n",
+          subSubtleLogDebug("SetStrut: left=%ld, right=%d, top=%d, bottom=%d\n",
             subtle->styles.subtle.left, subtle->styles.subtle.right,
             subtle->styles.subtle.bottom, subtle->styles.subtle.top);
         }
@@ -1249,15 +1251,16 @@ subClientSetSizeHints(SubClient *c,
   int *flags)
 {
   long supplied = 0;
-  XSizeHints *size = NULL;
+  XSizeHints *hints = NULL;
   SubScreen *s = NULL;
 
   DEAD(c);
   assert(c);
 
-  if(!(size = XAllocSizeHints()))
+  if(!(hints = XAllocSizeHints()))
     {
-      subSubtleLogError("Can't alloc memory. Exhausted?\n");
+      subSubtleLogError("Cannot alloc memory. Exhausted?\n");
+
       abort();
     }
 
@@ -1276,63 +1279,63 @@ subClientSetSizeHints(SubClient *c,
   c->baseh = 0; /* }}} */
 
   /* Size hints - no idea why it's called normal hints */
-  if(XGetWMNormalHints(subtle->dpy, c->win, size, &supplied))
+  if(XGetWMNormalHints(subtle->dpy, c->win, hints, &supplied))
     {
       /* Program min size */
-      if(size->flags & PMinSize)
+      if(hints->flags & PMinSize)
         {
           /* Limit min size to screen size if larger */
-          if(size->min_width)
+          if(hints->min_width)
             c->minw = c->minw > s->geom.width ? s->geom.width :
-              MAX(MINW, size->min_width);
-          if(size->min_height)
+              MAX(MINW, hints->min_width);
+          if(hints->min_height)
             c->minh = c->minh > s->geom.height ? s->geom.height :
-              MAX(MINH, size->min_height);
+              MAX(MINH, hints->min_height);
         }
 
       /* Program max size */
-      if(size->flags & PMaxSize)
+      if(hints->flags & PMaxSize)
         {
           /* Limit max size to screen size if larger */
-          if(size->max_width)
-            c->maxw = size->max_width > s->geom.width ?
-              s->geom.width : size->max_width;
+          if(hints->max_width)
+            c->maxw = hints->max_width > s->geom.width ?
+              s->geom.width : hints->max_width;
 
-          if(size->max_height)
-            c->maxh = size->max_height > s->geom.height - subtle->ph ?
-              s->geom.height - subtle->ph : size->max_height;
+          if(hints->max_height)
+            c->maxh = hints->max_height > s->geom.height - subtle->ph ?
+              s->geom.height - subtle->ph : hints->max_height;
         }
 
       /* Set float when min == max size (EWMH: Fixed size windows) */
-      if(size->flags & PMinSize && size->flags & PMaxSize)
+      if(hints->flags & PMinSize && hints->flags & PMaxSize)
         {
-          if(size->min_width == size->max_width &&
-              size->min_height == size->max_height &&
+          if(hints->min_width == hints->max_width &&
+              hints->min_height == hints->max_height &&
               !(c->flags & SUB_CLIENT_TYPE_DESKTOP))
             *flags |= (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_FIXED);
         }
 
       /* Aspect ratios */
-      if(size->flags & PAspect)
+      if(hints->flags & PAspect)
         {
-          if(size->min_aspect.y)
-            c->minr = (float)size->min_aspect.x / size->min_aspect.y;
-          if(size->max_aspect.y)
-            c->maxr = (float)size->max_aspect.x / size->max_aspect.y;
+          if(hints->min_aspect.y)
+            c->minr = (float)hints->min_aspect.x / hints->min_aspect.y;
+          if(hints->max_aspect.y)
+            c->maxr = (float)hints->max_aspect.x / hints->max_aspect.y;
         }
 
       /* Resize increment steps */
-      if(size->flags & PResizeInc)
+      if(hints->flags & PResizeInc)
         {
-          if(size->width_inc)  c->incw = size->width_inc;
-          if(size->height_inc) c->inch = size->height_inc;
+          if(hints->width_inc)  c->incw = hints->width_inc;
+          if(hints->height_inc) c->inch = hints->height_inc;
         }
 
       /* Base sizes */
-      if(size->flags & PBaseSize)
+      if(hints->flags & PBaseSize)
         {
-          if(size->base_width)  c->basew = size->base_width;
-          if(size->base_height) c->baseh = size->base_height;
+          if(hints->base_width)  c->basew = hints->base_width;
+          if(hints->base_height) c->baseh = hints->base_height;
         }
 
       /* Check for specific position */
@@ -1340,28 +1343,28 @@ subClientSetSizeHints(SubClient *c,
           c->flags & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_RESIZE)))
         {
           /* User/program size */
-          if(size->flags & (USSize|PSize))
+          if(hints->flags & (USSize|PSize))
             {
-              c->geom.width  = size->width;
-              c->geom.height = size->height;
+              c->geom.width  = hints->width;
+              c->geom.height = hints->height;
             }
 
           /* User/program position */
-          if(size->flags & (USPosition|PPosition))
+          if(hints->flags & (USPosition|PPosition))
             {
-              c->geom.x = size->x;
-              c->geom.y = size->y;
+              c->geom.x = hints->x;
+              c->geom.y = hints->y;
             }
 
           /* Sanitize positions for stupid clients like GIMP */
-          if(size->flags & (USSize|PSize|USPosition|PPosition))
+          if(hints->flags & (USSize|PSize|USPosition|PPosition))
             subClientResize(c, &(s->geom), True);
         }
     }
 
-  XFree(size);
+  XFree(hints);
 
-  subSubtleLogDebug("Size hints: x=%d, y=%d, width=%d, height=%d, "
+  subSubtleLogDebug("SetSizeHints: x=%d, y=%d, width=%d, height=%d, "
     "minw=%d, minh=%d, maxw=%d, maxh=%d, minr=%.1f, maxr=%.1f, "
     "incw=%d, inch=%d, basew=%d, baseh=%d\n",
     c->geom.x, c->geom.y, c->geom.width, c->geom.height, c->minw, c->minh,
@@ -1409,6 +1412,8 @@ subClientSetWMHints(SubClient *c,
 
       XFree(hints);
     }
+
+  subSubtleLogDebugSubtle("SetWMHints\n");
 } /* }}} */
 
   /** subClientSetMWMHints {{{
@@ -1439,6 +1444,8 @@ subClientSetMWMHints(SubClient *c)
 
       free(hints);
     }
+
+  subSubtleLogDebugSubtle("SetMWMHints\n");
 } /* }}} */
 
   /** subClientSetState {{{
@@ -1466,6 +1473,8 @@ subClientSetState(SubClient *c,
 
       XFree(states);
     }
+
+  subSubtleLogDebugSubtle("SetState\n");
 } /* }}} */
 
  /** subClientSetTransient {{{
@@ -1494,6 +1503,8 @@ subClientSetTransient(SubClient *c,
       /* Find parent window */
       if((k = CLIENT(subSubtleFind(trans, CLIENTID)))) ClientCopy(c, k);
      }
+
+  subSubtleLogDebugSubtle("SetTransient\n");
 } /* }}} */
 
  /** subClientSetType {{{
@@ -1549,8 +1560,9 @@ subClientSetType(SubClient *c,
     }
 
   /* Set normal type */
-  if(!(c->flags & TYPES_ALL))
-    c->flags |= SUB_CLIENT_TYPE_NORMAL;
+  if(!(c->flags & TYPES_ALL)) c->flags |= SUB_CLIENT_TYPE_NORMAL;
+
+  subSubtleLogDebugSubtle("SetType\n");
 } /* }}} */
 
  /** subClientClose {{{
@@ -1587,6 +1599,8 @@ subClientClose(SubClient *c)
       /* Update focus if necessary */
       if(focus) subSubtleFocus(True);
     }
+
+  subSubtleLogDebugSubtle("Close\n");
 } /* }}} */
 
  /** subClientKill {{{
@@ -1624,12 +1638,12 @@ subClientKill(SubClient *c)
   if(c->role)      free(c->role);
   free(c);
 
-  subSubtleLogDebugSubtle("kill=client\n");
+  subSubtleLogDebugSubtle("Kill\n");
 } /* }}} */
 
 /* All */
 
- /** subClientPublish(False) {{{
+ /** subClientPublish {{{
   * @brief Publish clients
   * @param[in]  restack  Restack windows
   **/
@@ -1658,7 +1672,7 @@ subClientPublish(int restack)
 
   free(wins);
 
-  subSubtleLogDebugSubtle("publish=client, clients=%d, restack=%d\n",
+  subSubtleLogDebugSubtle("Publish: clients=%d, restack=%d\n",
     subtle->clients->ndata, restack);
 } /* }}} */
 

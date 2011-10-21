@@ -290,8 +290,7 @@ subScreenUpdate(VALUE self)
   /* Check ruby object */
   GET_ATTR(self, "@id", id);
 
-  screens = ScreenList();
-
+  /* Find screen */
   if((screens = ScreenList()) &&
       RTEST(screen = rb_ary_entry(screens, FIX2INT(id))))
     {
@@ -299,7 +298,7 @@ subScreenUpdate(VALUE self)
 
       rb_iv_set(self, "@geometry", geometry);
     }
-  else rb_raise(rb_eStandardError, "Failed finding screen");
+  else rb_raise(rb_eStandardError, "Invalid screen id `%d'", FIX2INT(id));
 
   return Qnil;
 } /* }}} */

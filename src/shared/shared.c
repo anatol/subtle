@@ -34,7 +34,9 @@ subSharedMemoryAlloc(size_t n,
   /* Check result */
   if(!(mem = calloc(n, size)))
     {
-      fprintf(stderr, "<CRITICAL> Failed allocating memory\n");
+      fprintf(stderr, "<ERROR> Failed allocating memory\n");
+
+      abort();
     }
 
   return mem;
@@ -53,9 +55,7 @@ subSharedMemoryRealloc(void *mem,
 {
   /* Check result */
   if(!(mem = realloc(mem, size)))
-    {
-      fprintf(stderr, "<CRITICAL> Memory has been freed. Expected?\n");
-    }
+    fprintf(stderr, "<ERROR> Memory has been freed. Expected?\n");
 
   return mem;
 } /* }}} */

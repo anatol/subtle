@@ -243,7 +243,7 @@ subTrayUpdate(VALUE self)
       free(wminstance);
       free(wmclass);
     }
-  else rb_raise(rb_eStandardError, "Invalid tray");
+  else rb_raise(rb_eStandardError, "Invalid tray id `%#lx`", win);
 
   return Qnil;
 } /* }}} */

@@ -141,7 +141,7 @@ subDisplayInit(const char *display)
   /* Connect to display and setup error handler */
   if(!(subtle->dpy = XOpenDisplay(display)))
     {
-      subSubtleLogError("Failed opening display `%s'\n",
+      subSubtleLogError("Cannot connect to display `%s'\n",
         (display) ? display : ":0.0");
 
       subSubtleFinish();
@@ -228,7 +228,7 @@ subDisplayInit(const char *display)
   printf("Display (%s) is %dx%d\n", DisplayString(subtle->dpy),
     subtle->width, subtle->height);
 
-  subSubtleLogDebugSubtle("init=display\n");
+  subSubtleLogDebugSubtle("Init\n");
 } /* }}} */
 
  /** subDisplayConfigure {{{
@@ -264,6 +264,8 @@ subDisplayConfigure(void)
   subScreenUpdate();
 
   XSync(subtle->dpy, False); ///< Sync all changes
+
+  subSubtleLogDebugSubtle("Configure\n");
 } /* }}} */
 
  /** subDisplayScan {{{
@@ -299,6 +301,8 @@ subDisplayScan(void)
   XFree(wins);
 
   subClientPublish(False);
+
+  subSubtleLogDebugSubtle("Scan\n");
 } /* }}} */
 
  /** subDisplayPublish {{{
@@ -349,7 +353,7 @@ subDisplayPublish(void)
 
   XSync(subtle->dpy, False); ///< Sync all changes
 
-  subSubtleLogDebugSubtle("publish=colors, n=%d\n", NCOLORS);
+  subSubtleLogDebugSubtle("Publish: colors=%d\n", NCOLORS);
 } /* }}} */
 
  /** subDisplayFinish {{{
@@ -383,7 +387,7 @@ subDisplayFinish(void)
       XCloseDisplay(subtle->dpy);
     }
 
-  subSubtleLogDebugSubtle("finish=display\n");
+  subSubtleLogDebugSubtle("Finish\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker
