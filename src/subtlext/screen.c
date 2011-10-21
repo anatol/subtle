@@ -298,7 +298,8 @@ subScreenUpdate(VALUE self)
 
       rb_iv_set(self, "@geometry", geometry);
     }
-  else rb_raise(rb_eStandardError, "Invalid screen id `%d'", FIX2INT(id));
+  else rb_raise(rb_eStandardError, "Invalid screen id `%d'",
+    (int)FIX2INT(id));
 
   return Qnil;
 } /* }}} */
