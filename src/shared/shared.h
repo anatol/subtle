@@ -49,29 +49,9 @@
 #define FONT(f)   ((SubFont *)f)                                  ///< Cast to SubFont
 #define TEXT(t)   ((SubText *)t)                                  ///< Cast to SubText
 #define ITEM(i)   ((SubTextItem *)i)                              ///< Cast to SubTextItem
-
-#define DEFAULT_LOGLEVEL \
-  (SUB_LOG_WARN|SUB_LOG_ERROR|SUB_LOG_SUBLET| \
-  SUB_LOG_DEPRECATED)                                             ///< Default loglevel
-
-#define DEBUG_LOGLEVEL \
-  (SUB_LOG_EVENTS|SUB_LOG_RUBY|SUB_LOG_XERROR| \
-  SUB_LOG_SUBTLE|SUB_LOG_SUBTLEXT|SUB_LOG_DEBUG)                  ///< Debug loglevel
 /* }}} */
 
 /* Flags {{{ */
-/* Logelevel flags */
-#define SUB_LOG_WARN        (1L << 0)                             ///< Log warning messages
-#define SUB_LOG_ERROR       (1L << 1)                             ///< Log error messages
-#define SUB_LOG_SUBLET      (1L << 2)                             ///< Log error messages
-#define SUB_LOG_DEPRECATED  (1L << 3)                             ///< Log deprecation messages
-#define SUB_LOG_EVENTS      (1L << 4)                             ///< Log event messages
-#define SUB_LOG_RUBY        (1L << 5)                             ///< Log ruby messages
-#define SUB_LOG_XERROR      (1L << 6)                             ///< Log X error messages
-#define SUB_LOG_SUBTLEXT    (1L << 7)                             ///< Log subtlext messages
-#define SUB_LOG_SUBTLE      (1L << 8)                             ///< Log subtle messages
-#define SUB_LOG_DEBUG       (1L << 9)                             ///< Log other debug messages
-
 /* View select flags */
 #define SUB_VIEW_NEXT       0L                                    ///< View next
 #define SUB_VIEW_PREV       1L                                    ///< View prev
@@ -144,42 +124,6 @@ typedef union submessagedata_t /* {{{ */
   short s[10];                                                    ///< MessageData short
   long  l[5];                                                     ///< MessageData long
 } SubMessageData; /* }}} */
-/* }}} */
-
-/* Log {{{ */
-/* Macros for convenience */
-#define subSharedLogError(...) \
-  subSharedLog(SUB_LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__);
-#define subSharedLogSubletError(SUBLET, ...) \
-  subSharedLog(SUB_LOG_SUBLET, SUBLET, __LINE__, __VA_ARGS__);
-#define subSharedLogWarn(...) \
-  subSharedLog(SUB_LOG_WARN, __FILE__, __LINE__, __VA_ARGS__);
-#define subSharedLogDeprecated(...) \
-  subSharedLog(SUB_LOG_DEPRECATED, __FILE__, __LINE__, __VA_ARGS__);
-
-#ifdef DEBUG
-#define subSharedLogDebugEvents(...)  \
-  subSharedLog(SUB_LOG_EVENTS, __FILE__, __LINE__, __VA_ARGS__);
-#define subSharedLogDebugRuby(...)  \
-  subSharedLog(SUB_LOG_RUBY, __FILE__, __LINE__, __VA_ARGS__);
-#define subSharedLogDebugSubtlext(...)  \
-  subSharedLog(SUB_LOG_SUBTLEXT, __FILE__, __LINE__, __VA_ARGS__);
-#define subSharedLogDebugSubtle(...)  \
-  subSharedLog(SUB_LOG_SUBTLE, __FILE__, __LINE__, __VA_ARGS__);
-#define subSharedLogDebug(...)  \
-  subSharedLog(SUB_LOG_DEBUG, __FILE__, __LINE__, __VA_ARGS__);
-#else /* DEBUG */
-#define subSharedLogDebugEvents(...)
-#define subSharedLogDebugRuby(...)
-#define subSharedLogDebugSubtlext(...)
-#define subSharedLogDebugSubtle(...)
-#define subSharedLogDebug(...)
-#endif /* DEBUG */
-
-void subSharedLogLevel(int level);                                ///< Set loglevel
-void subSharedLog(int level, const char *file,
-  int line, const char *format, ...);                             ///< Print messages
-int subSharedLogXError(Display *disp, XErrorEvent *ev);           ///< Print X error messages
 /* }}} */
 
 /* Memory {{{ */

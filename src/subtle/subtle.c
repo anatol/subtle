@@ -10,6 +10,7 @@
   * See the file COPYING for details.
   **/
 
+#include <stdarg.h>
 #include <getopt.h>
 #include <sys/wait.h>
 #include <sys/time.h>
@@ -115,8 +116,6 @@ SubtleLevel(const char *str)
         level |= SUB_LOG_RUBY;
       else if(0 == strncasecmp(tok, "xerror", 6))
         level |= SUB_LOG_XERROR;
-      else if(0 == strncasecmp(tok, "subtlext", 8))
-        level |= SUB_LOG_SUBTLEXT;
       else if(0 == strncasecmp(tok, "subtle", 6))
         level |= SUB_LOG_SUBTLE;
       else if(0 == strncasecmp(tok, "debug", 4))
@@ -236,6 +235,57 @@ subSubtleFocus(int focus)
   return ROOT;
 } /* }}} */
 
+ /** subSubtleLog {{{
+  * @brief Print messages depending on type
+  * @param[in]  level   Message level
+  * @param[in]  file    File name
+  * @param[in]  line    Line number
+  * @param[in]  format  Message format
+  * @param[in]  ...     Variadic arguments
+  **/
+
+void
+subSubtleLog(int level,
+  const char *file,
+  int line,
+  const char *format,
+  ...)
+{
+  va_list ap;
+  char buf[255];
+
+#ifdef DEBUG
+  if(!(subtle->loglevel & level)) return;
+#endif /* DEBUG */
+
+  /* Get variadic arguments */
+  va_start(ap, format);
+  vsnprintf(buf, sizeof(buf), format, ap);
+  va_end(ap);
+
+  /* Print according to loglevel */
+  if(level & SUB_LOG_WARN)
+    fprintf(stdout, "<WARNING> %s", buf);
+  else if(level & SUB_LOG_ERROR)
+    fprintf(stderr, "<ERROR> %s", buf);
+  else if(level & SUB_LOG_SUBLET)
+    fprintf(stderr, "<WARNING SUBLET %s> %s", file, buf);
+  else if(level & SUB_LOG_DEPRECATED)
+    fprintf(stdout, "<DEPRECATED> %s", buf);
+#ifdef DEBUG
+  else if(level & SUB_LOG_EVENTS)
+    fprintf(stderr, "<EVENTS> %s:%d: %s", file, line, buf);
+  else if(level & SUB_LOG_RUBY)
+    fprintf(stderr, "<RUBY> %s:%d: %s", file, line, buf);
+  else if(level & SUB_LOG_XERROR)
+    fprintf(stderr, "<XERROR> %s", buf);
+  else if(level & SUB_LOG_SUBTLE)
+    fprintf(stderr, "<SUBTLE> %s:%d: %s", file, line, buf);
+  else if(level & SUB_LOG_DEBUG)
+    fprintf(stderr, "<DEBUG> %s:%d: %s", file, line, buf);
+#endif /* DEBUG */
+} /* }}} */
+
  /** subSubtleFinish {{{
   * @brief Finish subtle
   **/
@@ -329,11 +379,11 @@ main(int argc,
           case 'v': SubtleVersion();                      return 0;
 #ifdef DEBUG
           case 'l':
-            subSharedLogLevel(SubtleLevel(optarg));
+            subtle->loglevel = SubtleLevel(optarg);
             break;
           case 'D':
-            subtle->flags |= SUB_SUBTLE_DEBUG;
-            subSharedLogLevel(DEFAULT_LOGLEVEL|DEBUG_LOGLEVEL);
+            subtle->flags    |= SUB_SUBTLE_DEBUG;
+            subtle->loglevel  = DEFAULT_LOGLEVEL|DEBUG_LOGLEVEL;
             break;
 #else /* DEBUG */
           case 'l':

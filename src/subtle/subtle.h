@@ -55,6 +55,14 @@
 
 #define GRAVITYSTRLIMIT 1                                         ///< Gravity string limit to ignore \0
 
+#define DEFAULT_LOGLEVEL \
+  (SUB_LOG_WARN|SUB_LOG_ERROR|SUB_LOG_SUBLET| \
+  SUB_LOG_DEPRECATED)                                             ///< Default loglevel
+
+#define DEBUG_LOGLEVEL \
+  (SUB_LOG_EVENTS|SUB_LOG_RUBY|SUB_LOG_XERROR| \
+  SUB_LOG_SUBTLE|SUB_LOG_DEBUG)                                   ///< Debug loglevel
+
 #define BORDER(c) \
   (c->flags & SUB_CLIENT_MODE_BORDERLESS ? 0 : \
   subtle->styles.clients.border.top)                              ///< Get border width
@@ -93,6 +101,35 @@
 
 #define ROOT DefaultRootWindow(subtle->dpy)                       ///< Root window
 #define SCRN DefaultScreen(subtle->dpy)                           ///< Default screen
+
+/* Logging macros */
+#define subSubtleLogError(...) \
+  subSubtleLog(SUB_LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__);
+#define subSubtleLogSubletError(SUBLET, ...) \
+  subSubtleLog(SUB_LOG_SUBLET, SUBLET, __LINE__, __VA_ARGS__);
+#define subSubtleLogWarn(...) \
+  subSubtleLog(SUB_LOG_WARN, __FILE__, __LINE__, __VA_ARGS__);
+#define subSubtleLogDeprecated(...) \
+  subSubtleLog(SUB_LOG_DEPRECATED, __FILE__, __LINE__, __VA_ARGS__);
+
+#ifdef DEBUG
+#define subSubtleLogDebugEvents(...)  \
+  subSubtleLog(SUB_LOG_EVENTS, __FILE__, __LINE__, __VA_ARGS__);
+#define subSubtleLogDebugRuby(...)  \
+  subSubtleLog(SUB_LOG_RUBY, __FILE__, __LINE__, __VA_ARGS__);
+#define subSubtleLogDebugSubtlext(...)  \
+  subSubtleLog(SUB_LOG_SUBTLEXT, __FILE__, __LINE__, __VA_ARGS__);
+#define subSubtleLogDebugSubtle(...)  \
+  subSubtleLog(SUB_LOG_SUBTLE, __FILE__, __LINE__, __VA_ARGS__);
+#define subSubtleLogDebug(...)  \
+  subSubtleLog(SUB_LOG_DEBUG, __FILE__, __LINE__, __VA_ARGS__);
+#else /* DEBUG */
+#define subSubtleLogDebugEvents(...)
+#define subSubtleLogDebugRuby(...)
+#define subSubtleLogDebugSubtlext(...)
+#define subSubtleLogDebugSubtle(...)
+#define subSubtleLogDebug(...)
+#endif /* DEBUG */
 /* }}} */
 
 /* Masks {{{ */
@@ -139,6 +176,17 @@
 #define SUB_TYPE_TAG                  (1L << 7)                   ///< Tag
 #define SUB_TYPE_TRAY                 (1L << 8)                   ///< Tray
 #define SUB_TYPE_VIEW                 (1L << 9)                   ///< View
+
+/* Loglevel flags */
+#define SUB_LOG_WARN                  (1L << 0)                   ///< Log warning messages
+#define SUB_LOG_ERROR                 (1L << 1)                   ///< Log error messages
+#define SUB_LOG_SUBLET                (1L << 2)                   ///< Log error messages
+#define SUB_LOG_DEPRECATED            (1L << 3)                   ///< Log deprecation messages
+#define SUB_LOG_EVENTS                (1L << 4)                   ///< Log event messages
+#define SUB_LOG_RUBY                  (1L << 5)                   ///< Log ruby messages
+#define SUB_LOG_XERROR                (1L << 6)                   ///< Log X error messages
+#define SUB_LOG_SUBTLE                (1L << 7)                   ///< Log subtle messages
+#define SUB_LOG_DEBUG                 (1L << 8)                   ///< Log other debug messages
 
 /* Call flags */
 #define SUB_CALL_HOOKS                (1L << 10)                  ///< Call generic hook
@@ -581,7 +629,7 @@ typedef struct subsides_t /* {{{ */
 
 typedef struct substyle_t /* {{{ */
 {
-  FLAGS             flags;                                        ///< Styke flags
+  FLAGS             flags;                                        ///< Style flags
   char              *name;                                        ///< Style name
   int               min;                                          ///< Style min width
   long              fg, bg, icon, top, right, bottom, left;       ///< Style colors
@@ -594,7 +642,7 @@ typedef struct subsubtle_t /* {{{ */
 {
   FLAGS                flags;                                     ///< Subtle flags
 
-  int                  width, height;                             ///< Subtle screen size
+  int                  loglevel, width, height;                   ///< Subtle loglevel and screen size
   int                  ph, step, snap;                            ///< Subtle properties
   int                  visible_tags, visible_views;               ///< Subtle visible tags and views
   int                  client_tags, urgent_tags;                  ///< Subtle clients and urgent tags
@@ -848,6 +896,8 @@ void subStyleInheritance(void);                                   ///< Inherit v
 XPointer * subSubtleFind(Window win, XContext id);                ///< Find window
 time_t subSubtleTime(void);                                       ///< Get current time
 Window subSubtleFocus(int focus);                                 ///< Focus window
+void subSubtleLog(int level, const char *file,
+  int line, const char *format, ...);                             ///< Print messages
 void subSubtleFinish(void);                                       ///< Finish subtle
 /* }}} */
 

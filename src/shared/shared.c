@@ -10,109 +10,11 @@
   * See the file COPYING for details.
   **/
 
-#include <stdarg.h>
 #include <ctype.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include "shared.h"
-
-/* Log */
-
-/* Enable default messages */
-static int loglevel = DEFAULT_LOGLEVEL;
-
- /** subSharedLogLevel {{{
-  * @brief Set loglevel
-  **/
-
-void
-subSharedLogLevel(int level)
-{
-  loglevel |= level;
-} /* }}} */
-
- /** subSharedLog {{{
-  * @brief Print messages depending on type
-  * @param[in]  level   Message level
-  * @param[in]  file    File name
-  * @param[in]  line    Line number
-  * @param[in]  format  Message format
-  * @param[in]  ...     Variadic arguments
-  **/
-
-void
-subSharedLog(int level,
-  const char *file,
-  int line,
-  const char *format,
-  ...)
-{
-  va_list ap;
-  char buf[255];
-
-#ifdef DEBUG
-  if(!(loglevel & level)) return;
-#endif /* DEBUG */
-
-  /* Get variadic arguments */
-  va_start(ap, format);
-  vsnprintf(buf, sizeof(buf), format, ap);
-  va_end(ap);
-
-  /* Print according to loglevel */
-  if(level & SUB_LOG_WARN)
-    fprintf(stdout, "<WARNING> %s", buf);
-  else if(level & SUB_LOG_ERROR)
-    fprintf(stderr, "<ERROR> %s", buf);
-  else if(level & SUB_LOG_SUBLET)
-    fprintf(stderr, "<WARNING SUBLET %s> %s", file, buf);
-  else if(level & SUB_LOG_DEPRECATED)
-    fprintf(stdout, "<DEPRECATED> %s", buf);
-#ifdef DEBUG
-  else if(level & SUB_LOG_EVENTS)
-    fprintf(stderr, "<EVENTS> %s:%d: %s", file, line, buf);
-  else if(level & SUB_LOG_RUBY)
-    fprintf(stderr, "<RUBY> %s:%d: %s", file, line, buf);
-  else if(level & SUB_LOG_XERROR)
-    fprintf(stderr, "<XERROR> %s", buf);
-  else if(level & SUB_LOG_SUBTLEXT)
-    fprintf(stderr, "<SUBTLEXT> %s:%d: %s", file, line, buf);
-  else if(level & SUB_LOG_SUBTLE)
-    fprintf(stderr, "<SUBTLE> %s:%d: %s", file, line, buf);
-  else if(level & SUB_LOG_DEBUG)
-    fprintf(stderr, "<DEBUG> %s:%d: %s", file, line, buf);
-#endif /* DEBUG */
-} /* }}} */
-
- /** subSharedLogXError {{{
-  * @brief Print X error messages
-  * @params[in]  disp  Display
-  * @params[in]  ev    A #XErrorEvent
-  * @return Returns zero
-  * @retval  0  Default return value
-  **/
-
-int
-subSharedLogXError(Display *disp,
-  XErrorEvent *ev)
-{
-#ifdef DEBUG
-  if(loglevel) return 0;
-#endif /* DEBUG */
-
-  if(42 != ev->request_code) /* X_SetInputFocus */
-    {
-      char error[255] = { 0 };
-
-      XGetErrorText(disp, ev->error_code, error, sizeof(error));
-      subSharedLog(SUB_LOG_XERROR, __FILE__, __LINE__,
-        "%s: win=%#lx, request=%d\n",
-        error, ev->resourceid, ev->request_code);
-    }
-
-  return 0;
-} /* }}} */
 
 /* Memory */
 
@@ -132,7 +34,7 @@ subSharedMemoryAlloc(size_t n,
   /* Check result */
   if(!(mem = calloc(n, size)))
     {
-      subSharedLogError("Failed allocating memory\n");
+      fprintf(stderr, "<CRITICAL> Failed allocating memory\n");
     }
 
   return mem;
@@ -152,7 +54,7 @@ subSharedMemoryRealloc(void *mem,
   /* Check result */
   if(!(mem = realloc(mem, size)))
     {
-      subSharedLogDebug("Memory has been freed. Expected?\n");
+      fprintf(stderr, "<CRITICAL> Memory has been freed. Expected?\n");
     }
 
   return mem;
@@ -188,7 +90,8 @@ subSharedRegexNew(char *pattern)
 
       onig_error_code_to_str((UChar*)ebuf, ecode, &einfo);
 
-      subSharedLogWarn("Failed compiling regex `%s': %s\n", pattern, ebuf);
+      fprintf(stderr, "<CRITICAL> Failed compiling regex `%s': %s\n",
+        pattern, ebuf);
 
       free(preg);
 
@@ -259,17 +162,11 @@ subSharedPropertyGet(Display *disp,
   /* Get property */
   if(Success != XGetWindowProperty(disp, win, prop, 0L, 4096,
       False, type, &rtype, &format, &nitems, &bytes, &data))
-    {
-      subSharedLogDebug("Failed getting property `%ld'\n", prop);
-
-      return NULL;
-    }
+    return NULL;
 
   /* Check result */
   if(type != rtype)
     {
-      subSharedLogDebug("Property: prop=%ld, type=%ld, rtype=%ld\n",
-        prop, type, rtype);
       XFree(data);
 
       return NULL;
@@ -862,9 +759,16 @@ subSharedFontNew(Display *disp,
       /* Load XFT font */
       if(!(f->xft = XftFontOpenName(disp, DefaultScreen(disp), name + 4)))
         {
-          subSharedLogWarn("Failed loading font `%s' - using default\n", name);
+          fprintf(stderr, "<CRITICAL> Failed loading font `%s' "
+            "- using default\n", name);
 
-          f->xft = XftFontOpenXlfd(disp, DefaultScreen(disp), name + 4);
+          if(!(f->xft = XftFontOpenXlfd(disp, DefaultScreen(disp), DEFFONT)))
+            {
+              fprintf(stderr, "<CRITICAL> Failed loading fallback font `%s`\n",
+                DEFFONT);
+
+              return NULL;
+            }
         }
 
       if(f->xft)
@@ -885,11 +789,12 @@ subSharedFontNew(Display *disp,
       /* Load font set */
       if(!(f->xfs = XCreateFontSet(disp, name, &missing, &n, &def)))
         {
-          subSharedLogWarn("Failed loading font `%s' - using default\n", name);
+          fprintf(stderr, "<CRITICAL> Failed loading font `%s' "
+            "- using default\n", name);
 
           if(!(f->xfs = XCreateFontSet(disp, DEFFONT, &missing, &n, &def)))
             {
-              subSharedLogError("Failed loading fallback font `%s`\n",
+              fprintf(stderr, "<CRITICAL> Failed loading fallback font `%s`\n",
                 DEFFONT);
 
               if(missing) XFreeStringList(missing); ///< Ignore this
@@ -960,11 +865,11 @@ subSharedParseColor(Display *disp,
   if(!XParseColor(disp, DefaultColormap(disp, DefaultScreen(disp)),
       name, &xcolor))
     {
-      subSharedLogWarn("Failed loading color `%s'\n", name);
+      fprintf(stderr, "<CRITICAL> Failed loading color `%s'\n", name);
     }
   else if(!XAllocColor(disp, DefaultColormap(disp, DefaultScreen(disp)),
       &xcolor))
-    subSharedLogWarn("Failed allocating color `%s'\n", name);
+    fprintf(stderr, "<CRITICAL> Failed allocating color `%s'\n", name);
 
   return xcolor.pixel;
 } /* }}} */
@@ -1061,15 +966,18 @@ subSharedSpawn(char *cmd)
 {
   pid_t pid = fork();
 
+  /* Handle fork pids */
   switch(pid)
     {
       case 0:
         setsid();
         execlp("/bin/sh", "sh", "-c", cmd, NULL);
 
-        subSharedLogWarn("Failed executing command `%s'\n", cmd); ///< Never to be reached
+        /* Never to be reached */
+        fprintf(stderr, "<CRITICAL> Failed executing command `%s'\n", cmd);
         exit(1);
-      case -1: subSharedLogWarn("Failed forking `%s'\n", cmd);
+      case -1:
+        fprintf(stderr, "<CRITICAL> Failed forking command `%s'\n", cmd);
     }
 
   return pid;
@@ -1100,7 +1008,7 @@ subSharedMessage(Display *disp,
   XEvent ev;
   long mask = SubstructureRedirectMask|SubstructureNotifyMask;
 
-  assert(win);
+  assert(disp && win);
 
   /* Assemble event */
   ev.xclient.type         = ClientMessage;
@@ -1117,9 +1025,7 @@ subSharedMessage(Display *disp,
   ev.xclient.data.l[3] = data.l[3];
   ev.xclient.data.l[4] = data.l[4];
 
-  if(!disp || !((status = XSendEvent(disp, DefaultRootWindow(disp),
-      False, mask, &ev))))
-    subSharedLogWarn("Failed sending client message `%s'\n", type);
+  status = XSendEvent(disp, DefaultRootWindow(disp), False, mask, &ev);
 
   if(True == xsync) XSync(disp, False);
 
