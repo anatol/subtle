@@ -98,21 +98,25 @@ RubyReceiver(unsigned long instance,
 static SubFont *
 RubyFont(const char *fontname)
 {
-  SubFont *font = NULL;
+  SubFont *f = NULL;
 
   /* Load font */
-  if(!(font = subSharedFontNew(subtle->dpy, fontname)))
+  if(!(f = subSharedFontNew(subtle->dpy, fontname)))
     {
+      subSubtleLogWarn("Cannot load font `%s'\n", fontname);
+
       /* Load fallback font */
-      if(!(font = subSharedFontNew(subtle->dpy, DEFFONT)))
+      if(!(f = subSharedFontNew(subtle->dpy, DEFFONT)))
         {
+          subSubtleLogError("Cannot load fallback font `%s'\n", DEFFONT);
+
           subSubtleFinish();
 
           exit(-1); ///< Should never happen
         }
     }
 
-  return font;
+  return f;
 } /* }}} */
 
 /* Type converter */

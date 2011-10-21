@@ -744,35 +744,20 @@ SubFont *
 subSharedFontNew(Display *disp,
   const char *name)
 {
-  int n = 0;
-  char *def = NULL, **missing = NULL, **names = NULL;
-  XFontStruct **xfonts = NULL;
   SubFont *f = NULL;
-
-  /* Create new font */
-  f = FONT(subSharedMemoryAlloc(1, sizeof(SubFont)));
 
   /* Load font */
 #ifdef HAVE_X11_XFT_XFT_H
   if(!strncmp(name, "xft:", 4))
     {
+      XftFont *xft = NULL;
+
       /* Load XFT font */
-      if(!(f->xft = XftFontOpenName(disp, DefaultScreen(disp), name + 4)))
+      if((xft = XftFontOpenName(disp, DefaultScreen(disp), name + 4)))
         {
-          fprintf(stderr, "<CRITICAL> Failed loading font `%s' "
-            "- using default\n", name);
-
-          if(!(f->xft = XftFontOpenXlfd(disp, DefaultScreen(disp), DEFFONT)))
-            {
-              fprintf(stderr, "<CRITICAL> Failed loading fallback font `%s`\n",
-                DEFFONT);
-
-              return NULL;
-            }
-        }
-
-      if(f->xft)
-        {
+          /* Create new font */
+          f = FONT(subSharedMemoryAlloc(1, sizeof(SubFont)));
+          f->xft  = xft;
           f->draw = XftDrawCreate(disp, DefaultRootWindow(disp),
             DefaultVisual(disp, DefaultScreen(disp)),
             DefaultColormap(disp, DefaultScreen(disp)));
@@ -781,37 +766,31 @@ subSharedFontNew(Display *disp,
           f->height = f->xft->ascent + f->xft->descent + 2;
           f->y      = (f->height - 2 + f->xft->ascent) / 2;
         }
-
     }
   else
 #endif /* HAVE_X11_XFT_XFT_H */
     {
+      int n = 0;
+      char *def = NULL, **missing = NULL, **names = NULL;
+      XFontStruct **xfonts = NULL;
+      XFontSet xfs;
+
       /* Load font set */
-      if(!(f->xfs = XCreateFontSet(disp, name, &missing, &n, &def)))
+      if((xfs = XCreateFontSet(disp, name, &missing, &n, &def)))
         {
-          fprintf(stderr, "<CRITICAL> Failed loading font `%s' "
-            "- using default\n", name);
+          /* Create new font */
+          f = FONT(subSharedMemoryAlloc(1, sizeof(SubFont)));
+          f->xfs = xfs;
 
-          if(!(f->xfs = XCreateFontSet(disp, DEFFONT, &missing, &n, &def)))
-            {
-              fprintf(stderr, "<CRITICAL> Failed loading fallback font `%s`\n",
-                DEFFONT);
+          XFontsOfFontSet(f->xfs, &xfonts, &names);
 
-              if(missing) XFreeStringList(missing); ///< Ignore this
-              free(f);
+          /* Font metrics */
+          f->height = xfonts[0]->max_bounds.ascent +
+            xfonts[0]->max_bounds.descent + 2;
+          f->y      = (f->height - 2 + xfonts[0]->max_bounds.ascent) / 2;
 
-              return NULL;
-            }
+          if(missing) XFreeStringList(missing); ///< Ignore this
         }
-
-      XFontsOfFontSet(f->xfs, &xfonts, &names);
-
-      /* Font metrics */
-      f->height = xfonts[0]->max_bounds.ascent +
-        xfonts[0]->max_bounds.descent + 2;
-      f->y      = (f->height - 2 + xfonts[0]->max_bounds.ascent) / 2;
-
-      if(missing) XFreeStringList(missing); ///< Ignore this
     }
 
   return f;

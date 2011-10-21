@@ -409,8 +409,7 @@ subWindowInit(VALUE self,
                 if(XGetGeometry(display, w->win, &root,
                     &x, &y, &width, &height, &bw, &depth))
                   geometry = subGeometryInstantiate(x, y, width, height);
-                else rb_raise(rb_eArgError,
-                  "Unable to get geometry of window `%#lx'", w->win);
+                else rb_raise(rb_eArgError, "Invalid window `%#lx'", w->win);
               }
             break;
           default: rb_raise(rb_eArgError, "Unexpected value-type `%s'",
@@ -423,8 +422,8 @@ subWindowInit(VALUE self,
       rb_iv_set(w->instance, "@hidden",   Qtrue);
 
       /* Set window font */
-      if(!w->font) w->font = subSharedFontNew(display,
-          "-*-fixed-*-*-*-*-10-*-*-*-*-*-*-*");
+      if(!w->font && !(w->font = subSharedFontNew(display, DEFFONT)))
+        rb_raise(rb_eStandardError, "Cannot load font `%s'", DEFFONT);
 
       /* Yield to block if given */
       if(rb_block_given_p())
@@ -549,24 +548,24 @@ subWindowFontWriter(VALUE self,
   Data_Get_Struct(self, SubtlextWindow, w);
   if(w)
     {
-      char *font = NULL;
-      SubFont *f = NULL;
-
       /* Check object type */
       if(T_STRING == rb_type(value))
         {
-          font = RSTRING_PTR(value);
+          SubFont *f = NULL;
+          char *font = RSTRING_PTR(value);
 
           /* Create window font */
-          if(!(f = subSharedFontNew(display, font)))
-            rb_raise(rb_eStandardError, "Failed loading font");
+          if((f = subSharedFontNew(display, font)))
+            {
+              /* Replace font */
+              if(w->font) subSharedFontKill(display, w->font);
 
-          /* Replace font */
-          if(w->font) subSharedFontKill(display, w->font);
-
-          w->font = f;
+              w->font = f;
+            }
+          else rb_raise(rb_eStandardError, "Invalid font `%s'", font);
         }
-      else rb_raise(rb_eStandardError, "Failed creating font");
+      else rb_raise(rb_eArgError, "Unexpected value-type `%s'",
+        rb_obj_classname(value));
     }
 
   return Qnil;
