@@ -333,9 +333,6 @@ subDisplayPublish(void)
   if(subtle->styles.occupied)
     DisplayStyleToColor(subtle->styles.occupied, colors, &pos);
 
-  if(subtle->styles.unoccupied)
-    DisplayStyleToColor(subtle->styles.unoccupied, colors, &pos);
-
   DisplayStyleToColor(&subtle->styles.sublets,   colors, &pos);
   DisplayStyleToColor(&subtle->styles.separator, colors, &pos);
 

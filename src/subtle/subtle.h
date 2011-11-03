@@ -689,9 +689,8 @@ typedef struct subsubtle_t /* {{{ */
 
   struct
   {
-    struct substyle_t all, views, title, sublets,
-                      separator, clients, subtle,
-                      *urgent, *occupied, *unoccupied, *focus, *visible; ///< For faster access
+    struct substyle_t all, views, title, sublets, separator, clients, subtle,
+                      *urgent, *occupied, *focus, *visible; ///< For faster access
   } styles;                                                       ///< Subtle styles
 
   struct

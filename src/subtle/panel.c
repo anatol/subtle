@@ -134,8 +134,6 @@ PanelViewStyle(SubView *v,
           else if(subtle->styles.occupied &&
               subtle->client_tags & v->tags)
             style = subtle->styles.occupied;
-          else if(subtle->styles.unoccupied)
-            style = subtle->styles.unoccupied;
         }
 
       /* Merge base style or default */

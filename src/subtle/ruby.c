@@ -1294,9 +1294,18 @@ RubyForeachStyle(VALUE key,
     {
       if(CHAR2SYM("urgent")          == key) subtle->styles.urgent     = style;
       else if(CHAR2SYM("occupied")   == key) subtle->styles.occupied   = style;
-      else if(CHAR2SYM("unoccupied") == key) subtle->styles.unoccupied = style;
       else if(CHAR2SYM("focus")      == key) subtle->styles.focus      = style;
       else if(CHAR2SYM("visible")    == key) subtle->styles.visible    = style;
+      else if(CHAR2SYM("unoccupied") == key)
+        {
+          subSubtleLogDeprecated("The :unoccupied style is deprecated, "
+            "please use the :view style for normal views.\n");
+
+          subStyleMerge(&subtle->styles.views, style);
+          subStyleKill(style);
+
+          return ST_CONTINUE;
+        }
     }
 
   /* Finally add style */
@@ -3445,7 +3454,6 @@ subRubyLoadConfig(void)
   subtle->styles.subtle.bg  = -1; ///< Must be -1 for wallpaper
   subtle->styles.urgent     = NULL;
   subtle->styles.occupied   = NULL;
-  subtle->styles.unoccupied = NULL;
   subtle->styles.focus      = NULL;
 
   /* Create and register config values */
