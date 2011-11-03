@@ -130,8 +130,9 @@ style :all do
   #font        "xft:sans-8"
 end
 
-# Style for the views
+# Style for the all views
 style :views do
+  foreground  "#757575"
 
   # Style for the active views
   style :focus do
@@ -146,11 +147,6 @@ style :views do
   # Style for occupied views (views with clients)
   style :occupied do
     foreground  "#b8b8b8"
-  end
-
-  # Style for unoccupied views (views without clients)
-  style :unoccupied do
-    foreground  "#757575"
   end
 end
 
