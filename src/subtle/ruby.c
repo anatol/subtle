@@ -973,18 +973,6 @@ RubyEvalConfig(void)
   /* Inherit style values */
   subStyleInheritance();
 
-  /* Set separator */
-  if(subtle->separator.string)
-    {
-      subtle->separator.width = subSharedTextWidth(subtle->dpy,
-        subtle->styles.separator.font, subtle->separator.string,
-        strlen(subtle->separator.string), NULL, NULL, True);
-
-      /* Add spacing for separator */
-      if(0 < subtle->separator.width)
-        subtle->separator.width += STYLE_WIDTH(subtle->styles.separator);
-    }
-
   /* Check and update grabs */
   if(0 == subtle->grabs->ndata)
     {
@@ -1197,7 +1185,7 @@ RubyEvalStyle(VALUE name,
   RubyHashToInt(params, "min_width", &s->min);
   s->min = MAX(0, s->min);
 
-  /* Font */
+  /* Style font */
   if(T_STRING == rb_type(value = rb_hash_lookup(params,
       CHAR2SYM("font"))) && !s->font)
     {
@@ -1208,6 +1196,15 @@ RubyEvalStyle(VALUE name,
       if(CHAR2SYM("all") == name)
         subEwmhSetString(ROOT, SUB_EWMH_SUBTLE_FONT, RSTRING_PTR(value));
   }
+
+  /* Style separator */
+  if(T_STRING == rb_type(value = rb_hash_lookup(params,
+      CHAR2SYM("separator"))) && !s->separator)
+    {
+      /* Create new separator */
+      s->separator = (SubSeparator *)subSharedMemoryAlloc(1, sizeof(SubSeparator));
+      s->separator->string = strdup(RSTRING_PTR(value));
+   }
 } /* }}} */
 
 /* Foreach */
@@ -1289,17 +1286,18 @@ RubyForeachStyle(VALUE key,
   style->name = strdup(SYM2CHAR(key));
   RubyEvalStyle(key, style, rb_iv_get(value, "@params"));
 
-  /* Special styles for views */
+  /* Ease access to sub-styles */
   if(&subtle->styles.views == s)
     {
-      if(CHAR2SYM("urgent")          == key) subtle->styles.urgent     = style;
-      else if(CHAR2SYM("occupied")   == key) subtle->styles.occupied   = style;
-      else if(CHAR2SYM("focus")      == key) subtle->styles.focus      = style;
-      else if(CHAR2SYM("visible")    == key) subtle->styles.visible    = style;
+      if(CHAR2SYM("urgent")          == key) subtle->styles.urgent   = style;
+      else if(CHAR2SYM("occupied")   == key) subtle->styles.occupied = style;
+      else if(CHAR2SYM("focus")      == key) subtle->styles.focus    = style;
+      else if(CHAR2SYM("visible")    == key) subtle->styles.visible  = style;
+      else if(CHAR2SYM("separator")  == key) subtle->styles.viewsep  = style;
       else if(CHAR2SYM("unoccupied") == key)
         {
-          subSubtleLogDeprecated("The :unoccupied style is deprecated, "
-            "please use the :view style for normal views.\n");
+          subSubtleLogDeprecated("The `unoccupied' style is deprecated, "
+            "please use the `views' style for normal views instead.\n");
 
           subStyleMerge(&subtle->styles.views, style);
           subStyleKill(style);
@@ -1307,6 +1305,8 @@ RubyForeachStyle(VALUE key,
           return ST_CONTINUE;
         }
     }
+  else if(&subtle->styles.sublets == s)
+    if(CHAR2SYM("separator") == key) subtle->styles.subletsep = style;
 
   /* Finally add style */
   if(!s->styles) s->styles = subArrayNew();
@@ -1890,25 +1890,24 @@ RubyConfigSet(VALUE self,
           case T_STRING: /* {{{ */
            if(CHAR2SYM("font") == option)
             {
-              subSubtleLogDeprecated("The :font option is deprecated, "
-                "please use the styles font property.\n");
+              subSubtleLogDeprecated("The `font' option is deprecated, "
+                "please use the styles `font' property instead.\n");
 
-              if(!(subtle->flags & SUB_SUBTLE_CHECK) && !subtle->styles.all.font)
+              if(!(subtle->flags & SUB_SUBTLE_CHECK) &&
+                  !subtle->styles.all.font)
                 {
                   subtle->styles.all.font   = RubyFont(RSTRING_PTR(value));
                   subtle->styles.all.flags |= SUB_STYLE_FONT;
 
                   /* EWMH: Font */
-                  subEwmhSetString(ROOT, SUB_EWMH_SUBTLE_FONT, RSTRING_PTR(value));
+                  subEwmhSetString(ROOT, SUB_EWMH_SUBTLE_FONT,
+                    RSTRING_PTR(value));
                 }
             }
            else if(CHAR2SYM("separator") == option)
               {
-                if(!(subtle->flags & SUB_SUBTLE_CHECK))
-                  {
-                    if(subtle->separator.string) free(subtle->separator.string);
-                    subtle->separator.string = strdup(RSTRING_PTR(value));
-                  }
+                subSubtleLogDeprecated("The `separator' option is deprecated, "
+                  "please use the styles `separator' property instead.\n");
               }
             else if(CHAR2SYM("wmname") == option)
               {
@@ -1924,11 +1923,11 @@ RubyConfigSet(VALUE self,
                       RSTRING_PTR(value));
                   }
               }
-            else subSubtleLogWarn("Cannot find option `:%s'\n",
+            else subSubtleLogWarn("Cannot find option `%s'\n",
               SYM2CHAR(option));
             break; /* }}} */
           default:
-            rb_raise(rb_eArgError, "Unexpected value type for option `:%s'",
+            rb_raise(rb_eArgError, "Unexpected value type for option `%s'",
               SYM2CHAR(option));
         }
     }
@@ -3455,6 +3454,8 @@ subRubyLoadConfig(void)
   subtle->styles.urgent     = NULL;
   subtle->styles.occupied   = NULL;
   subtle->styles.focus      = NULL;
+  subtle->styles.viewsep    = NULL;
+  subtle->styles.subletsep  = NULL;
 
   /* Create and register config values */
   config_sublets = rb_hash_new();
