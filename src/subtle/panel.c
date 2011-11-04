@@ -472,7 +472,7 @@ subPanelRender(SubPanel *p,
                 vx += v->width;
 
                 /* Draw view separator if any */
-                if(subtle->styles.viewsep)
+                if(subtle->styles.viewsep && i < subtle->views->ndata - 1)
                   {
                     PanelSeparator(vx, subtle->styles.viewsep, drawable);
 
@@ -606,7 +606,10 @@ subPanelAction(SubArray *panels,
                             break;
                           }
 
-                        vx += v->width;
+                        /* Add view separator width if any */
+                        if(subtle->styles.viewsep && i < subtle->views->ndata - 1)
+                          vx += v->width + subtle->styles.viewsep->separator->width;
+                        else vx += v->width;
                       }
                   }
                 break; /* }}} */
