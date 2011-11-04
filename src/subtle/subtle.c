@@ -329,8 +329,6 @@ subSubtleFinish(void)
       subEwmhFinish();
       subDisplayFinish();
 
-      if(subtle->separator.string) free(subtle->separator.string);
-
       free(subtle);
     }
 } /* }}} */
@@ -353,19 +351,19 @@ main(int argc,
     { "replace",  no_argument,       0, 'r' },
     { "sublets",  required_argument, 0, 's' },
     { "version",  no_argument,       0, 'v' },
-#ifdef DEBUG
     { "level",    required_argument, 0, 'l' },
     { "debug",    no_argument,       0, 'D' },
-#endif /* DEBUG */
     { 0, 0, 0, 0}
   };
 
   /* Create subtle */
   subtle = (SubSubtle *)(subSharedMemoryAlloc(1, sizeof(SubSubtle)));
-  subtle->flags |= (SUB_SUBTLE_XRANDR|SUB_SUBTLE_XINERAMA);
+  subtle->flags    |= (SUB_SUBTLE_XRANDR|SUB_SUBTLE_XINERAMA);
+  subtle->loglevel  = DEFAULT_LOGLEVEL;
 
   /* Parse arguments */
-  while(-1 != (c = getopt_long(argc, argv, "c:d:hknrs:vl:D", long_options, NULL)))
+  while(-1 != (c = getopt_long(argc, argv, "c:d:hknrs:vl:D",
+      long_options, NULL)))
     {
       switch(c)
         {
@@ -383,7 +381,7 @@ main(int argc,
             break;
           case 'D':
             subtle->flags    |= SUB_SUBTLE_DEBUG;
-            subtle->loglevel  = DEFAULT_LOGLEVEL|DEBUG_LOGLEVEL;
+            subtle->loglevel |= DEBUG_LOGLEVEL;
             break;
 #else /* DEBUG */
           case 'l':
