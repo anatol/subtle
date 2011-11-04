@@ -607,7 +607,7 @@ subPanelAction(SubArray *panels,
                           }
 
                         /* Add view separator width if any */
-                        if(subtle->styles.viewsep && i < subtle->views->ndata - 1)
+                        if(subtle->styles.viewsep)
                           vx += v->width + subtle->styles.viewsep->separator->width;
                         else vx += v->width;
                       }
