@@ -49,25 +49,17 @@ PanelRect(Drawable drawable,
 
 /* PanelSeparator {{{ */
 static void
-PanelSeparator(int type,
-  SubPanel *p,
+PanelSeparator(int x,
+  SubStyle *s,
   Drawable drawable)
 {
-  int x = 0;
-
-  if(SUB_PANEL_SEPARATOR1 == type)
-    x = p->x - subtle->separator.width;
-  else x = p->x + p->width;
-
   /* Set window background and border*/
-  PanelRect(drawable, x, subtle->separator.width, &subtle->styles.separator);
+  PanelRect(drawable, x, s->separator->width, s);
 
   subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
-    subtle->styles.separator.font, drawable,
-    x + STYLE_LEFT(subtle->styles.separator),
-    subtle->styles.separator.font->y + STYLE_TOP(subtle->styles.separator),
-    subtle->styles.separator.fg, subtle->styles.separator.bg,
-    subtle->separator.string, strlen(subtle->separator.string));
+    s->font, drawable, x + STYLE_LEFT((*s)),
+    s->font->y + STYLE_TOP((*s)), s->fg, s->bg,
+    s->separator->string, strlen(s->separator->string));
 } /* }}} */
 
 /* PanelClientModes {{{ */
@@ -311,8 +303,15 @@ subPanelUpdate(SubPanel *p)
                       STYLE_WIDTH((s)) + (v->icon ? v->icon->width + 3 : 0);
                   }
 
-                /* Ensure min width */
+                /* Ensure panel min width */
                 p->width += MAX(s.min, v->width);
+              }
+
+            /* Add width of view separator if any */
+            if(subtle->styles.viewsep)
+              {
+                p->width += (subtle->views->ndata - 1) *
+                  subtle->styles.viewsep->separator->width;
               }
           }
         break; /* }}} */
@@ -334,8 +333,11 @@ subPanelRender(SubPanel *p,
   assert(p);
 
   /* Draw separator before panel */
-  if(0 < subtle->separator.width && p->flags & SUB_PANEL_SEPARATOR1)
-    PanelSeparator(SUB_PANEL_SEPARATOR1, p, drawable);
+  if(p->flags & SUB_PANEL_SEPARATOR1 && subtle->styles.separator.separator)
+    {
+      PanelSeparator(p->x - subtle->styles.separator.separator->width,
+        &subtle->styles.separator, drawable);
+    }
 
   /* Handle panel item type */
   switch(p->flags & (SUB_PANEL_ICON|SUB_PANEL_KEYCHAIN|
@@ -468,14 +470,27 @@ subPanelRender(SubPanel *p,
                   }
 
                 vx += v->width;
+
+                /* Draw view separator if any */
+                if(subtle->styles.viewsep)
+                  {
+                    PanelSeparator(vx, subtle->styles.viewsep, drawable);
+
+                    vx += subtle->styles.viewsep->separator->width;
+                  }
               }
           }
         break; /* }}} */
     }
 
   /* Draw separator after panel */
-  if(0 < subtle->separator.width && p->flags & SUB_PANEL_SEPARATOR2)
-    PanelSeparator(SUB_PANEL_SEPARATOR2, p, drawable);
+  if(p->flags & SUB_PANEL_SEPARATOR2 && subtle->styles.separator.separator)
+    {
+      SubStyle *s = p->flags & SUB_PANEL_SUBLET && subtle->styles.subletsep ?
+        subtle->styles.subletsep : &subtle->styles.separator;
+
+      PanelSeparator(p->x + p->width, s, drawable);
+    }
 
   subSubtleLogDebugSubtle("Render\n");
 } /* }}} */

@@ -440,10 +440,12 @@ subScreenUpdate(void)
 
           if(p->flags & SUB_PANEL_SPACER1) spacer[offset]++;
           if(p->flags & SUB_PANEL_SPACER2) spacer[offset]++;
-          if(p->flags & SUB_PANEL_SEPARATOR1)
-              width[offset] += subtle->separator.width;
-          if(p->flags & SUB_PANEL_SEPARATOR2)
-              width[offset] += subtle->separator.width;
+          if(p->flags & SUB_PANEL_SEPARATOR1 &&
+              subtle->styles.separator.separator)
+            width[offset] += subtle->styles.separator.separator->width;
+          if(p->flags & SUB_PANEL_SEPARATOR2 &&
+              subtle->styles.separator.separator)
+            width[offset] += subtle->styles.separator.separator->width;
 
           width[offset] += p->width;
         }
@@ -459,7 +461,8 @@ subScreenUpdate(void)
         }
 
       /* Pass 2: Move and resize windows */
-      for(j = 0, npanel = 0, center = False; s->panels && j < s->panels->ndata; j++)
+      for(j = 0, npanel = 0, center = False;
+          s->panels && j < s->panels->ndata; j++)
         {
           p = PANEL(s->panels->data[j]);
 
@@ -485,8 +488,9 @@ subScreenUpdate(void)
             x[offset] = (s->base.width - width[offset]) / 2;
 
           /* Add separator before panel item */
-          if(p->flags & SUB_PANEL_SEPARATOR1)
-            x[offset] += subtle->separator.width;
+          if(p->flags & SUB_PANEL_SEPARATOR1 &&
+              subtle->styles.separator.separator)
+            x[offset] += subtle->styles.separator.separator->width;
 
           /* Add spacer before item */
           if(p->flags & SUB_PANEL_SPACER1)
@@ -504,8 +508,9 @@ subScreenUpdate(void)
           p->x = x[offset];
 
           /* Add separator after panel item */
-          if(p->flags & SUB_PANEL_SEPARATOR2)
-            x[offset] += subtle->separator.width;
+          if(p->flags & SUB_PANEL_SEPARATOR2 &&
+              subtle->styles.separator.separator)
+            x[offset] += subtle->styles.separator.separator->width;
 
           /* Add spacer after item */
           if(p->flags & SUB_PANEL_SPACER2)
