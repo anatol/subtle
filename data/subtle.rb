@@ -37,9 +37,6 @@ set :resize, false
 # Enable gravity tiling
 set :tiling, false
 
-# Separator between sublets
-set :separator, "|"
-
 # Set the WM_NAME of subtle (Java quirk)
 # set :wmname, "LG3D"
 
@@ -158,6 +155,7 @@ end
 # Style for separator
 style :separator do
   foreground  "#757575"
+  separator   "|"
 end
 
 # Style for focus window title
@@ -167,10 +165,10 @@ end
 
 # Style for active/inactive windows
 style :clients do
-  active      "#303030", 2
-  inactive    "#202020", 2
-  margin      0
-  width       50
+  active    "#303030", 2
+  inactive  "#202020", 2
+  margin    0
+  width     50
 end
 
 # Style for subtle
