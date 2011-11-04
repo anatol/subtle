@@ -47,12 +47,25 @@ StyleInherit(SubStyle *s1,
   /* Inherit font */
   if(NULL == s1->font) s1->font = s2->font;
 
-  /* Check max height */
-  if(s1->font && (s1 != &subtle->styles.clients || s1 != &subtle->styles.subtle))
+  /* Check max height of style */
+  if(s1->font && (s1 != &subtle->styles.clients ||
+      s1 != &subtle->styles.subtle))
     {
       int height = STYLE_HEIGHT((*s1)) + s1->font->height;
 
       if(height > subtle->ph) subtle->ph = height;
+    }
+
+  /* Update separator width after font */
+  if(s1->font && s1->separator)
+    {
+      s1->separator->width = subSharedTextWidth(subtle->dpy,
+        s1->font, s1->separator->string,
+        strlen(s1->separator->string), NULL, NULL, True);
+
+      /* Add style width to calculate that only once */
+      if(0 < s1->separator->width)
+        s1->separator->width += STYLE_WIDTH((*s1));
     }
 
   /* Check nested styles */
@@ -225,6 +238,13 @@ subStyleKill(SubStyle *s)
   /* Free font */
   if(s->flags & SUB_STYLE_FONT && s->font)
     subSharedFontKill(subtle->dpy, s->font);
+
+  /* Free separator */
+  if(s->flags & SUB_STYLE_SEPARATOR && s->separator)
+    {
+      free(s->separator->string);
+      free(s);
+    }
 
   if(s->name)   free(s->name);
   if(s->styles) subArrayKill(s->styles, True);
