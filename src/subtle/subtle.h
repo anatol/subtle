@@ -319,6 +319,7 @@
 
 /* Style flags */
 #define SUB_STYLE_FONT                (1L << 10)                  ///< Style has custom font
+#define SUB_STYLE_SEPARATOR           (1L << 11)                  ///< Style has separator
 
 /* Subtle flags */
 #define SUB_SUBTLE_DEBUG              (1L << 0)                   ///< Debug enabled
@@ -612,6 +613,12 @@ typedef struct subscreen_t /* {{{ */
   unsigned long     top, bottom;                                  ///< Screen panel values
 } SubScreen; /* }}} */
 
+typedef struct subseparator_t /* {{{ */
+{
+  char *string;                                                   ///< Separator string
+  int  width;                                                     ///< Separator width
+} SubSeparator; /* }}} */
+
 typedef struct subsublet_t { /* {{{ */
   FLAGS             flags;                                        ///< Sublet flags
   int               watch, width, style;                          ///< Sublet watch id, width and style state
@@ -629,13 +636,14 @@ typedef struct subsides_t /* {{{ */
 
 typedef struct substyle_t /* {{{ */
 {
-  FLAGS             flags;                                        ///< Style flags
-  char              *name;                                        ///< Style name
-  int               min;                                          ///< Style min width
-  long              fg, bg, icon, top, right, bottom, left;       ///< Style colors
-  struct subsides_t border, padding, margin;                      ///< Style border, padding and margin
-  struct subarray_t *styles;                                      ///< Style state list
-  struct subfont_t  *font;                                        ///< Style font
+  FLAGS                 flags;                                        ///< Style flags
+  char                  *name;                                        ///< Style name
+  int                   min;                                          ///< Style min width
+  long                  fg, bg, icon, top, right, bottom, left;       ///< Style colors
+  struct subsides_t     border, padding, margin;                      ///< Style border, padding and margin
+  struct subarray_t     *styles;                                      ///< Style state list
+  struct subfont_t      *font;                                        ///< Style font
+  struct subseparator_t *separator;                                   ///< Style separator
 } SubStyle; /* }}} */
 
 typedef struct subsubtle_t /* {{{ */
@@ -668,12 +676,6 @@ typedef struct subsubtle_t /* {{{ */
 
   struct
   {
-    char               *string;                                   ///< Subtle sublet separator
-    int                width;
-  } separator;
-
-  struct
-  {
     char               *config, *sublets;                         ///< Subtle paths
   } paths;
 
@@ -689,8 +691,11 @@ typedef struct subsubtle_t /* {{{ */
 
   struct
   {
-    struct substyle_t all, views, title, sublets, separator, clients, subtle,
-                      *urgent, *occupied, *focus, *visible; ///< For faster access
+    struct substyle_t all, views, title, sublets, separator,
+                      clients, subtle;                            ///< Subtle base styles
+
+    struct substyle_t *urgent, *occupied, *focus, *visible,
+                      *viewsep, *subletsep;                       ///< For faster access to sub-styles
   } styles;                                                       ///< Subtle styles
 
   struct
