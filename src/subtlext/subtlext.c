@@ -12,6 +12,7 @@
 
 #include <unistd.h>
 #include <locale.h>
+#include <ctype.h>
 #include "subtlext.h"
 
 #ifdef HAVE_X11_EXTENSIONS_XTEST_H
@@ -482,7 +483,7 @@ SubtlextTagAsk(VALUE self,
     }
 
   /* Find tag */
-  if(RTEST(tag = subTagSingFind(Qnil, sym)))
+  if(RTEST(tag = subTagSingFirst(Qnil, sym)))
     {
       VALUE id = rb_iv_get(tag, "@id");
       int tags = SubtlextTagGet(self);
@@ -1140,6 +1141,134 @@ SubtlextEqualSpaceId(VALUE self,
   return SubtlextSpaceship(self, other, "@id");
 } /* }}} */
 
+/* SubtlextWindowMatch {{{ */
+static int
+SubtlextWindowMatch(Window win,
+  regex_t *preg,
+  const char *source,
+  char **name,
+  int flags)
+{
+  int ret = False;
+  char *wminstance = NULL, *wmclass = NULL;
+
+  /* Fetch when needed */
+  if(name || flags & (SUB_MATCH_INSTANCE|SUB_MATCH_CLASS))
+    subSharedPropertyClass(display, win, &wminstance, &wmclass);
+
+  /* Check window WM_NAME */
+  if(!ret && flags & SUB_MATCH_NAME)
+    {
+      char *wmname = NULL;
+
+      subSharedPropertyName(display, win, &wmname, "subtle");
+
+      if(wmname)
+        {
+          ret = (flags & SUB_MATCH_EXACT ? 0 == strcmp(source, wmname) :
+            subSharedRegexMatch(preg, wmname));
+
+          free(wmname);
+        }
+    }
+
+  /* Check window WM_CLASS */
+  if(!ret && flags & (SUB_MATCH_INSTANCE|SUB_MATCH_CLASS))
+    {
+      /* Check instance */
+      if(wminstance && flags & SUB_MATCH_INSTANCE)
+        {
+          ret = (flags & SUB_MATCH_EXACT ?
+            0 == strcmp(source, wminstance) :
+            subSharedRegexMatch(preg, wminstance));
+        }
+
+      /* Check class */
+      if(!ret && wmclass && flags & SUB_MATCH_CLASS)
+        {
+          ret = (flags & SUB_MATCH_EXACT ?
+            0 == strcmp(source, wmclass) :
+            subSharedRegexMatch(preg, wmclass));
+
+          free(wmclass);
+        }
+    }
+
+  /* Check window role */
+  if(!ret && flags & SUB_MATCH_ROLE)
+    {
+      char *role = NULL;
+
+      if((role = subSharedPropertyGet(display, win, XA_STRING,
+          XInternAtom(display, "WM_WINDOW_ROLE", False), NULL)))
+        {
+          ret = (flags & SUB_MATCH_EXACT ? 0 == strcmp(source, role) :
+            subSharedRegexMatch(preg, role));
+
+          free(role);
+        }
+     }
+
+  /* Check window gravity */
+  if(!ret && flags & SUB_MATCH_GRAVITY)
+    {
+      int *gravity = NULL, ngravities = 0;
+      char **gravities = NULL;
+
+      /* Fetch gravities */
+      gravities = subSharedPropertyGetStrings(display,
+        ROOT, XInternAtom(display, "SUBTLE_GRAVITY_LIST",
+        False), &ngravities);
+      gravity = (int *)subSharedPropertyGet(display, win,
+        XA_CARDINAL, XInternAtom(display, "SUBTLE_CLIENT_GRAVITY",
+        False), NULL);
+
+      /* Finally compare gravities */
+      if(gravities && gravity && 0 <= *gravity && *gravity < ngravities)
+        {
+          ret = (flags & SUB_MATCH_EXACT ?
+            0 == strcmp(source, gravities[*gravity]) :
+            subSharedRegexMatch(preg, gravities[*gravity]));
+        }
+
+      if(gravities) XFreeStringList(gravities);
+      if(gravity)   free(gravity);
+    }
+
+  /* Check window pid */
+  if(!ret && flags & SUB_MATCH_PID)
+    {
+      int *pid = NULL;
+
+      /* Fetch pid from window */
+      if((pid = (int *)subSharedPropertyGet(display, win, XA_CARDINAL,
+          XInternAtom(display, "_NET_WM_PID", False), NULL)))
+        {
+          char pidbuf[10] = { 0 };
+
+          /* Convert pid to string */
+          snprintf(pidbuf, sizeof(pidbuf), "%d", (int)*pid);
+
+          ret = (flags & SUB_MATCH_EXACT ? 0 == strcmp(source, pidbuf) :
+            subSharedRegexMatch(preg, pidbuf));
+
+          free(pid);
+        }
+    }
+
+  /* Copy instance name */
+  if(ret && name)
+    {
+      *name = (char *)subSharedMemoryAlloc(
+        strlen(wminstance) + 1, sizeof(char));
+      strncpy(*name, wminstance, strlen(wminstance));
+    }
+
+  if(wminstance) free(wminstance);
+
+  return ret;
+} /* }}} */
+
 /* Exported */
 
  /** subSubtlextConnect {{{
@@ -1371,144 +1500,6 @@ subSubtlextWindowList(char *prop_name,
   return wins;
 } /* }}} */
 
- /** subSubtlextWindowMatch {{{
-  * @brief Check if window matches flags and regexp
-  * @param[in]     win     Window id
-  * @param[in]     preg    Compiled regexp
-  * @param[in]     source  Regexp source
-  * @param[inout]  name    Real window name
-  * @param[in]     flags   Match flags
-  * @retval  True   Window matches
-  * @retval  False  Window doesn't match
-  **/
-
-int
-subSubtlextWindowMatch(Window win,
-  regex_t *preg,
-  const char *source,
-  char **name,
-  int flags)
-{
-  int ret = False;
-  char *wminstance = NULL, *wmclass = NULL;
-
-  /* Fetch when needed */
-  if(name || flags & (SUB_MATCH_INSTANCE|SUB_MATCH_CLASS))
-    subSharedPropertyClass(display, win, &wminstance, &wmclass);
-
-  /* Check window WM_NAME */
-  if(!ret && flags & SUB_MATCH_NAME)
-    {
-      char *wmname = NULL;
-
-      subSharedPropertyName(display, win, &wmname, "subtle");
-
-      if(wmname)
-        {
-          ret = (flags & SUB_MATCH_EXACT ? 0 == strcmp(source, wmname) :
-            subSharedRegexMatch(preg, wmname));
-
-          free(wmname);
-        }
-    }
-
-  /* Check window WM_CLASS */
-  if(!ret && flags & (SUB_MATCH_INSTANCE|SUB_MATCH_CLASS))
-    {
-      /* Check instance */
-      if(wminstance && flags & SUB_MATCH_INSTANCE)
-        {
-          ret = (flags & SUB_MATCH_EXACT ?
-            0 == strcmp(source, wminstance) :
-            subSharedRegexMatch(preg, wminstance));
-        }
-
-      /* Check class */
-      if(!ret && wmclass && flags & SUB_MATCH_CLASS)
-        {
-          ret = (flags & SUB_MATCH_EXACT ?
-            0 == strcmp(source, wmclass) :
-            subSharedRegexMatch(preg, wmclass));
-
-          free(wmclass);
-        }
-    }
-
-  /* Check window role */
-  if(!ret && flags & SUB_MATCH_ROLE)
-    {
-      char *role = NULL;
-
-      if((role = subSharedPropertyGet(display, win, XA_STRING,
-          XInternAtom(display, "WM_WINDOW_ROLE", False), NULL)))
-        {
-          ret = (flags & SUB_MATCH_EXACT ? 0 == strcmp(source, role) :
-            subSharedRegexMatch(preg, role));
-
-          free(role);
-        }
-     }
-
-  /* Check window gravity */
-  if(!ret && flags & SUB_MATCH_GRAVITY)
-    {
-      int *gravity = NULL, ngravities = 0;
-      char **gravities = NULL;
-
-      /* Fetch gravities */
-      gravities = subSharedPropertyGetStrings(display,
-        ROOT, XInternAtom(display, "SUBTLE_GRAVITY_LIST",
-        False), &ngravities);
-      gravity = (int *)subSharedPropertyGet(display, win,
-        XA_CARDINAL, XInternAtom(display, "SUBTLE_CLIENT_GRAVITY",
-        False), NULL);
-
-      /* Finally compare gravities */
-      if(gravities && gravity && 0 <= *gravity && *gravity < ngravities)
-        {
-          ret = (flags & SUB_MATCH_EXACT ?
-            0 == strcmp(source, gravities[*gravity]) :
-            subSharedRegexMatch(preg, gravities[*gravity]));
-        }
-
-      if(gravities) XFreeStringList(gravities);
-      if(gravity)   free(gravity);
-    }
-
-  /* Check window pid */
-  if(!ret && flags & SUB_MATCH_PID)
-    {
-      int *pid = NULL;
-
-      /* Fetch pid from window */
-      if((pid = (int *)subSharedPropertyGet(display, win, XA_CARDINAL,
-          XInternAtom(display, "_NET_WM_PID", False), NULL)))
-        {
-          char pidbuf[10] = { 0 };
-
-          /* Convert pid to string */
-          snprintf(pidbuf, sizeof(pidbuf), "%d", (int)*pid);
-
-          ret = (flags & SUB_MATCH_EXACT ? 0 == strcmp(source, pidbuf) :
-            subSharedRegexMatch(preg, pidbuf));
-
-          free(pid);
-        }
-    }
-
-  /* Copy instance name */
-  if(ret && name)
-    {
-      *name = (char *)subSharedMemoryAlloc(
-        strlen(wminstance) + 1, sizeof(char));
-      strncpy(*name, wminstance, strlen(wminstance));
-    }
-
-  if(wminstance) free(wminstance);
-
-  return ret;
-} /* }}} */
-
  /** subSubtlextFindString {{{
   * @brief Find string in property list
   * @param[in]     prop_name  Property name
@@ -1571,6 +1562,7 @@ subSubtlextFindString(char *prop_name,
   * @param[in]  class_name  Class name
   * @param[in]  source      Regexp source
   * @param[in]  flags       Match flags
+  * @param[in]  first       Return first or all
   * @retval  Qnil    No match
   * @retval  Object  One match
   * @retval  Array   Multiple matches
@@ -1580,11 +1572,12 @@ VALUE
 subSubtlextFindObjects(char *prop_name,
   char *class_name,
   char *source,
-  int flags)
+  int flags,
+  int first)
 {
   int i, nstrings = 0;
   char **strings = NULL;
-  VALUE ret = Qnil;
+  VALUE ret = first ? Qnil : rb_ary_new();
 
   assert(prop_name && class_name && source);
 
@@ -1618,7 +1611,14 @@ subSubtlextFindObjects(char *prop_name,
                 {
                   rb_iv_set(obj, "@id", INT2FIX(i));
 
-                  ret = subSubtlextOneOrMany(obj, ret);
+                  /* Select first or many */
+                  if(first)
+                    {
+                      ret = obj;
+
+                      break;
+                    }
+                  else ret = subSubtlextOneOrMany(obj, ret);
                 }
             }
         }
@@ -1631,13 +1631,88 @@ subSubtlextFindObjects(char *prop_name,
   return ret;
 } /* }}} */
 
+ /** subSubtlextFindWindows {{{
+  * @brief Find match in propery list and create objects
+  * @param[in]  prop_name   Property name
+  * @param[in]  class_name  Class name
+  * @param[in]  source      Regexp source
+  * @param[in]  flags       Match flags
+  * @retval  Qnil    No match
+  * @retval  Object  One match
+  * @retval  Array   Multiple matches
+  **/
+
+VALUE
+subSubtlextFindWindows(char *prop_name,
+  char *class_name,
+  char *source,
+  int flags,
+  int first)
+{
+  int i, size = 0;
+  Window *wins = NULL;
+  VALUE ret = first ? Qnil : rb_ary_new();
+
+  /* Get window list */
+  if((wins = subSubtlextWindowList(prop_name, &size)))
+    {
+      int selid = -1;
+      Window selwin = None;
+      VALUE meth_new = Qnil, meth_update = Qnil, klass = Qnil, obj = Qnil;
+      regex_t *preg = NULL;
+
+      /* Create regexp when required */
+      if(!(flags & SUB_MATCH_EXACT)) preg = subSharedRegexNew(source);
+
+      /* Special values */
+      if(isdigit(source[0])) selid  = atoi(source);
+      if('#' == source[0])   selwin = subSubtleSingSelect(Qnil);
+
+      /* Fetch data */
+      meth_new    = rb_intern("new");
+      meth_update = rb_intern("update");
+      klass       = rb_const_get(mod, rb_intern(class_name));
+
+      /* Check results */
+      for(i = 0; i < size; i++)
+        {
+          if(selid == i || selid == wins[i] || selwin == wins[i] ||
+              (-1 == selid && SubtlextWindowMatch(wins[i], preg,
+              source, NULL, flags)))
+            {
+              /* Create new obj */
+              if(RTEST((obj = rb_funcall(klass, meth_new,
+                  1, LONG2NUM(wins[i])))))
+                {
+                  /* Call update method of object */
+                  rb_funcall(obj, meth_update, 0, Qnil);
+
+                  /* Select first or many */
+                  if(first)
+                    {
+                      ret = obj;
+
+                      break;
+                    }
+                  else ret = subSubtlextOneOrMany(obj, ret);
+                }
+            }
+        }
+
+      if(preg) subSharedRegexKill(preg);
+      free(wins);
+    }
+
+  return ret;
+} /* }}} */
+
  /** subSubtlextFindObjectsGeometry {{{
   * @brief Find match in propery list and create objects
   * @param[in]  prop_name   Property name
   * @param[in]  class_name  Class name
   * @param[in]  source      Regexp source
   * @param[in]  flags       Match flags
-  * @param[in]  many        Return one or many
+  * @param[in]  first       Return first or all
   * @retval  Qnil    No match
   * @retval  Object  One match
   * @retval  Array   Multiple matches
@@ -1648,11 +1723,11 @@ subSubtlextFindObjectsGeometry(char *prop_name,
   char *class_name,
   char *source,
   int flags,
-  int many)
+  int first)
 {
   int nstrings = 0;
   char **strings = NULL;
-  VALUE ret = many ? rb_ary_new() : Qnil;
+  VALUE ret = first ? Qnil : rb_ary_new();
 
   subSubtlextConnect(NULL); ///< Implicit open connection
 
@@ -1700,7 +1775,14 @@ subSubtlextFindObjectsGeometry(char *prop_name,
               rb_iv_set(obj, "@id",       INT2FIX(i));
               rb_iv_set(obj, "@geometry", geom);
 
-              ret = subSubtlextOneOrMany(obj, ret);
+              /* Select first or many */
+              if(first)
+                {
+                  ret = obj;
+
+                  break;
+                }
+              else ret = subSubtlextOneOrMany(obj, ret);
             }
         }
 
@@ -1765,6 +1847,7 @@ Init_subtlext(void)
   /* Singleton methods */
   rb_define_singleton_method(client, "select",  subClientSingSelect,  0);
   rb_define_singleton_method(client, "find",    subClientSingFind,    1);
+  rb_define_singleton_method(client, "first",   subClientSingFirst,   1);
   rb_define_singleton_method(client, "current", subClientSingCurrent, 0);
   rb_define_singleton_method(client, "visible", subClientSingVisible, 0);
   rb_define_singleton_method(client, "list",    subClientSingList,    0);
@@ -1920,8 +2003,9 @@ Init_subtlext(void)
   rb_define_attr(gravity, "geometry", 1, 0);
 
   /* Singleton methods */
-  rb_define_singleton_method(gravity, "find", subGravitySingFind, 1);
-  rb_define_singleton_method(gravity, "list", subGravitySingList, 0);
+  rb_define_singleton_method(gravity, "find",  subGravitySingFind,  1);
+  rb_define_singleton_method(gravity, "list",  subGravitySingList,  0);
+  rb_define_singleton_method(gravity, "first", subGravitySingFirst, 1);
 
   /* General methods */
   rb_define_method(gravity, "<=>",  SubtlextEqualSpaceId, 1);
@@ -2072,8 +2156,9 @@ Init_subtlext(void)
   rb_define_attr(sublet, "geometry", 1, 0);
 
   /* Singleton methods */
-  rb_define_singleton_method(sublet, "find", subSubletSingFind, 1);
-  rb_define_singleton_method(sublet, "list", subSubletSingList, 0);
+  rb_define_singleton_method(sublet, "find",  subSubletSingFind,  1);
+  rb_define_singleton_method(sublet, "first", subSubletSingFirst, 1);
+  rb_define_singleton_method(sublet, "list",  subSubletSingList,  0);
 
   /* General methods */
   rb_define_method(sublet, "<=>",    SubtlextEqualSpaceId, 1);
@@ -2114,6 +2199,7 @@ Init_subtlext(void)
 
   /* Singleton methods */
   rb_define_singleton_method(tag, "find",    subTagSingFind,    1);
+  rb_define_singleton_method(tag, "first",   subTagSingFirst,   1);
   rb_define_singleton_method(tag, "visible", subTagSingVisible, 0);
   rb_define_singleton_method(tag, "list",    subTagSingList,    0);
 
@@ -2159,8 +2245,9 @@ Init_subtlext(void)
   rb_define_attr(tray, "klass",    1, 0);
 
   /* Singleton methods */
-  rb_define_singleton_method(tray, "find", subTraySingFind, 1);
-  rb_define_singleton_method(tray, "list", subTraySingList, 0);
+  rb_define_singleton_method(tray, "find",  subTraySingFind,  1);
+  rb_define_singleton_method(tray, "first", subTraySingFirst, 1);
+  rb_define_singleton_method(tray, "list",  subTraySingList,  0);
 
   /* General methods */
   rb_define_method(tray, "send_button", SubtlextSendButton,      -1);
@@ -2204,6 +2291,7 @@ Init_subtlext(void)
 
   /* Singleton methods */
   rb_define_singleton_method(view, "find",    subViewSingFind,    1);
+  rb_define_singleton_method(view, "first",   subViewSingFirst,   1);
   rb_define_singleton_method(view, "current", subViewSingCurrent, 0);
   rb_define_singleton_method(view, "visible", subViewSingVisible, 0);
   rb_define_singleton_method(view, "list",    subViewSingList,    0);
