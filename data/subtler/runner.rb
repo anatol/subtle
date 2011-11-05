@@ -10,15 +10,15 @@
 # See the file COPYING for details.
 #
 
-require "getoptlong"
-require "subtle/subtlext"
+require 'getoptlong'
+require 'subtle/subtlext'
 
 module Subtle # {{{
   module Subtler # {{{
     class Runner # {{{
 
     # Signals
-    trap "INT" do
+    trap 'INT' do
       exit
     end
 
@@ -35,50 +35,50 @@ module Subtle # {{{
         # Getopt options
         @opts = GetoptLong.new(
           # Groups
-          [ "--Client",  "-c", GetoptLong::NO_ARGUMENT ],
-          [ "--Gravity", "-g", GetoptLong::NO_ARGUMENT ],
-          [ "--Screen",  "-e", GetoptLong::NO_ARGUMENT ],
-          [ "--Sublet",  "-s", GetoptLong::NO_ARGUMENT ],
-          [ "--Tag",     "-t", GetoptLong::NO_ARGUMENT ],
-          [ "--Tray",    "-y", GetoptLong::NO_ARGUMENT ],
-          [ "--View",    "-v", GetoptLong::NO_ARGUMENT ],
+          [ '--Client',  '-c', GetoptLong::NO_ARGUMENT ],
+          [ '--Gravity', '-g', GetoptLong::NO_ARGUMENT ],
+          [ '--Screen',  '-e', GetoptLong::NO_ARGUMENT ],
+          [ '--Sublet',  '-s', GetoptLong::NO_ARGUMENT ],
+          [ '--Tag',     '-t', GetoptLong::NO_ARGUMENT ],
+          [ '--Tray',    '-y', GetoptLong::NO_ARGUMENT ],
+          [ '--View',    '-v', GetoptLong::NO_ARGUMENT ],
 
           # Actions
-          [ "--add",     "-a", GetoptLong::NO_ARGUMENT ],
-          [ "--kill",    "-k", GetoptLong::NO_ARGUMENT ],
-          [ "--find",    "-f", GetoptLong::NO_ARGUMENT ],
-          [ "--focus",   "-o", GetoptLong::NO_ARGUMENT ],
-          [ "--full",    "-F", GetoptLong::NO_ARGUMENT ],
-          [ "--float",   "-O", GetoptLong::NO_ARGUMENT ],
-          [ "--stick",   "-S", GetoptLong::NO_ARGUMENT ],
-          [ "--urgent",  "-N", GetoptLong::NO_ARGUMENT ],
-          [ "--jump",    "-j", GetoptLong::NO_ARGUMENT ],
-          [ "--list",    "-l", GetoptLong::NO_ARGUMENT ],
-          [ "--tag",     "-T", GetoptLong::NO_ARGUMENT ],
-          [ "--untag",   "-U", GetoptLong::NO_ARGUMENT ],
-          [ "--tags",    "-G", GetoptLong::NO_ARGUMENT ],
-          [ "--retag",   "-A", GetoptLong::NO_ARGUMENT ],
-          [ "--clients", "-I", GetoptLong::NO_ARGUMENT ],
-          [ "--views",   "-W", GetoptLong::NO_ARGUMENT ],
-          [ "--update",  "-u", GetoptLong::NO_ARGUMENT ],
-          [ "--data",    "-D", GetoptLong::NO_ARGUMENT ],
-          [ "--gravity", "-Y", GetoptLong::NO_ARGUMENT ],
-          [ "--screen",  "-n", GetoptLong::NO_ARGUMENT ],
-          [ "--raise",   "-E", GetoptLong::NO_ARGUMENT ],
-          [ "--lower",   "-L", GetoptLong::NO_ARGUMENT ],
+          [ '--add',     '-a', GetoptLong::NO_ARGUMENT ],
+          [ '--kill',    '-k', GetoptLong::NO_ARGUMENT ],
+          [ '--find',    '-f', GetoptLong::NO_ARGUMENT ],
+          [ '--focus',   '-o', GetoptLong::NO_ARGUMENT ],
+          [ '--full',    '-F', GetoptLong::NO_ARGUMENT ],
+          [ '--float',   '-O', GetoptLong::NO_ARGUMENT ],
+          [ '--stick',   '-S', GetoptLong::NO_ARGUMENT ],
+          [ '--urgent',  '-N', GetoptLong::NO_ARGUMENT ],
+          [ '--jump',    '-j', GetoptLong::NO_ARGUMENT ],
+          [ '--list',    '-l', GetoptLong::NO_ARGUMENT ],
+          [ '--tag',     '-T', GetoptLong::NO_ARGUMENT ],
+          [ '--untag',   '-U', GetoptLong::NO_ARGUMENT ],
+          [ '--tags',    '-G', GetoptLong::NO_ARGUMENT ],
+          [ '--retag',   '-A', GetoptLong::NO_ARGUMENT ],
+          [ '--clients', '-I', GetoptLong::NO_ARGUMENT ],
+          [ '--views',   '-W', GetoptLong::NO_ARGUMENT ],
+          [ '--update',  '-u', GetoptLong::NO_ARGUMENT ],
+          [ '--data',    '-D', GetoptLong::NO_ARGUMENT ],
+          [ '--gravity', '-Y', GetoptLong::NO_ARGUMENT ],
+          [ '--screen',  '-n', GetoptLong::NO_ARGUMENT ],
+          [ '--raise',   '-E', GetoptLong::NO_ARGUMENT ],
+          [ '--lower',   '-L', GetoptLong::NO_ARGUMENT ],
 
           # Modifiers
-          [ "--reload",  "-r", GetoptLong::NO_ARGUMENT       ],
-          [ "--restart", "-R", GetoptLong::NO_ARGUMENT       ],
-          [ "--quit",    "-q", GetoptLong::NO_ARGUMENT       ],
-          [ "--current", "-C", GetoptLong::NO_ARGUMENT       ],
-          [ "--select",  "-X", GetoptLong::NO_ARGUMENT       ],
-          [ "--proc",    "-p", GetoptLong::REQUIRED_ARGUMENT ],
+          [ '--reload',  '-r', GetoptLong::NO_ARGUMENT       ],
+          [ '--restart', '-R', GetoptLong::NO_ARGUMENT       ],
+          [ '--quit',    '-q', GetoptLong::NO_ARGUMENT       ],
+          [ '--current', '-C', GetoptLong::NO_ARGUMENT       ],
+          [ '--select',  '-X', GetoptLong::NO_ARGUMENT       ],
+          [ '--proc',    '-p', GetoptLong::REQUIRED_ARGUMENT ],
 
           # Other
-          [ "--display", "-d", GetoptLong::REQUIRED_ARGUMENT ],
-          [ "--help",    "-h", GetoptLong::NO_ARGUMENT       ],
-          [ "--version", "-V", GetoptLong::NO_ARGUMENT       ]
+          [ '--display', '-d', GetoptLong::REQUIRED_ARGUMENT ],
+          [ '--help',    '-h', GetoptLong::NO_ARGUMENT       ],
+          [ '--version', '-V', GetoptLong::NO_ARGUMENT       ]
         )
       end # }}}
 
@@ -91,53 +91,53 @@ module Subtle # {{{
         @opts.each do |opt, arg|
           case opt
             # Groups
-            when "--Client"  then @group  = Subtlext::Client
-            when "--Gravity" then @group  = Subtlext::Gravity
-            when "--Screen"  then @group  = Subtlext::Screen
-            when "--Sublet"  then @group  = Subtlext::Sublet
-            when "--Tag"     then @group  = Subtlext::Tag
-            when "--Tray"    then @group  = Subtlext::Tray
-            when "--View"    then @group  = Subtlext::View
+            when '--Client'  then @group  = Subtlext::Client
+            when '--Gravity' then @group  = Subtlext::Gravity
+            when '--Screen'  then @group  = Subtlext::Screen
+            when '--Sublet'  then @group  = Subtlext::Sublet
+            when '--Tag'     then @group  = Subtlext::Tag
+            when '--Tray'    then @group  = Subtlext::Tray
+            when '--View'    then @group  = Subtlext::View
 
             # Actions
-            when "--add"     then @action = :new
-            when "--kill"    then @action = :kill
-            when "--find"    then @action = :find
-            when "--focus"   then @action = :focus
-            when "--full"    then @action = :toggle_full
-            when "--float"   then @action = :toggle_float
-            when "--stick"   then @action = :toggle_stick
-            when "--urgent"  then @action = :toggle_urgent
-            when "--jump"    then @action = :jump
-            when "--list"    then @action = :list
-            when "--tag"     then @action = :tag
-            when "--untag"   then @action = :untag
-            when "--tags"    then @action = :tags
-            when "--retag"   then @action = :retag
-            when "--clients" then @action = :clients
-            when "--views"   then @action = :views
-            when "--update"  then @action = :update
-            when "--data"    then @action = :data=
-            when "--gravity" then @action = :gravity=
-            when "--raise"   then @action = :raise
-            when "--lower"   then @action = :lower
+            when '--add'     then @action = :new
+            when '--kill'    then @action = :kill
+            when '--find'    then @action = :find
+            when '--focus'   then @action = :focus
+            when '--full'    then @action = :toggle_full
+            when '--float'   then @action = :toggle_float
+            when '--stick'   then @action = :toggle_stick
+            when '--urgent'  then @action = :toggle_urgent
+            when '--jump'    then @action = :jump
+            when '--list'    then @action = :list
+            when '--tag'     then @action = :tag
+            when '--untag'   then @action = :untag
+            when '--tags'    then @action = :tags
+            when '--retag'   then @action = :retag
+            when '--clients' then @action = :clients
+            when '--views'   then @action = :views
+            when '--update'  then @action = :update
+            when '--data'    then @action = :data=
+            when '--gravity' then @action = :gravity=
+            when '--raise'   then @action = :raise
+            when '--lower'   then @action = :lower
 
             # Modifiers
-            when "--reload"  then @mod = :reload
-            when "--restart" then @mod = :restart
-            when "--quit"    then @mod = :quit
-            when "--current" then @mod = :current
-            when "--select"  then @mod = :select
+            when '--reload'  then @mod = :reload
+            when '--restart' then @mod = :restart
+            when '--quit'    then @mod = :quit
+            when '--current' then @mod = :current
+            when '--select'  then @mod = :select
 
             # Other
-            when "--proc"
+            when '--proc'
               @proc = Proc.new { |param| eval(arg) }
-            when "--display"
+            when '--display'
               Subtlext::Subtle.display = arg 
-            when "--help"
+            when '--help'
               usage(@group)
               exit
-            when "--version"
+            when '--version'
               version
               exit
             else
@@ -155,12 +155,12 @@ module Subtle # {{{
         arg2 = Integer(arg2) rescue arg2
 
         # Pipes?
-        arg1 = ARGF.read.chop if("-" == arg1)
+        arg1 = ARGF.read.chop if('-' == arg1)
 
-        if("-" == arg2)
+        if '-' == arg2
           # Read pipe until EOF
           begin
-            while((arg2 = ARGF.readline)) do
+            while (arg2 = ARGF.readline) do
               handle_command(arg1, arg2.chop)
             end
           rescue EOFError
@@ -189,32 +189,32 @@ module Subtle # {{{
 
         # Call method
         begin
-          if(!@group.nil? and !@action.nil?)
+          if !@group.nil? and !@action.nil?
             # Check singleton and instance methods
-            if((@group.singleton_methods << :new).include?(@action))
+            if (@group.singleton_methods << :new).include?(@action)
               obj   = @group
               arg   = arg1
               arity = obj.method(@action).arity
-            elsif(@group.instance_methods.include?(@action))
+            elsif @group.instance_methods.include?(@action)
               obj   = @group.send(:find, arg1)
               arg   = arg2
               arity = @group.instance_method(@action).arity
             end
 
-            # Check arity
+            # Handle different arities
             case arity
               when 1
                 # Handle different return types
-                if(obj.is_a?(Array))
+                if obj.is_a?(Array)
                   obj.each do |o|
-                    p "%s:" % o
+                    p '%s:' % o if 1 < obj.size
                     handle_result(o.send(@action, arg))
                   end
                 else
                   handle_result(obj.send(@action, arg))
                 end
               when -1
-                if([ Subtlext::View, Subtlext::Tag ].include?(@group))
+                if [ Subtlext::View, Subtlext::Tag ].include?(@group)
                   # Create new object
                   ret = obj.send(@action, arg)
                   ret.save
@@ -228,16 +228,16 @@ module Subtle # {{{
                 exit
               else
                 # Handle different return types
-                if(obj.is_a?(Array))
+                if obj.is_a?(Array)
                   obj.each do |o|
-                    p "%s:" % o
+                    p '%s:' % o if 1 < obj.size
                     handle_result(o.send(@action))
                   end
                 else
                   handle_result(obj.send(@action))
                 end
             end
-          elsif(:reload != @mod and :restart != @mod and :quit != @mod)
+          elsif :reload != @mod and :restart != @mod and :quit != @mod
             usage(@group)
             exit
           end
@@ -248,7 +248,7 @@ module Subtle # {{{
       end # }}}
 
       def call_or_print(value) # {{{
-        unless(@proc.nil?)
+        unless @proc.nil?
           @proc.call(value)
         else
           printer(value)
@@ -269,26 +269,26 @@ module Subtle # {{{
       def printer(value) # {{{
         case value
           when Subtlext::Client # {{{
-            puts "%#10x %s %d %4d x %4d + %4d + %-4d %12.12s %s%s%s%s%s%s %s (%s)" % [
+            puts '%#10x %s %d %4d x %4d + %4d + %-4d %12.12s %s%s%s%s%s%s %s (%s)' % [
               value.win,
-              value.views.map { |v| v.name }.include?(Subtlext::View.current.name) ? "*" : "-",
+              value.views.map { |v| v.name }.include?(Subtlext::View.current.name) ? '*' : '-',
               Subtlext::View.current.id,
               value.geometry.x,
               value.geometry.y,
               value.geometry.width,
               value.geometry.height,
               value.gravity.name,
-              (value.is_full?)   ? "+" : "-",
-              (value.is_float?)  ? "^" : "-",
-              (value.is_stick?)  ? "*" : "-",
-              (value.is_resize?) ? "~" : "-",
-              (value.is_zaphod?) ? "=" : "-",
-              (value.is_fixed?)  ? "!" : "-",
+              (value.is_full?)   ? '+' : '-',
+              (value.is_float?)  ? '^' : '-',
+              (value.is_stick?)  ? '*' : '-',
+              (value.is_resize?) ? '~' : '-',
+              (value.is_zaphod?) ? '=' : '-',
+              (value.is_fixed?)  ? '!' : '-',
               value.instance,
               value.klass
             ] # }}}
           when Subtlext::Gravity # {{{
-            puts "%15s %3d x %-3d %3d + %-3d" % [
+            puts '%15s %3d x %-3d %3d + %-3d' % [
               value.name,
               value.geometry.x,
               value.geometry.y,
@@ -296,7 +296,7 @@ module Subtle # {{{
               value.geometry.height,
             ] # }}}
           when Subtlext::Screen # {{{
-            puts "%d %4d x %-4d %4d + %-4d" % [
+            puts '%d %4d x %-4d %4d + %-4d' % [
               value.id,
               value.geometry.x,
               value.geometry.y,
@@ -306,29 +306,29 @@ module Subtle # {{{
           when Subtlext::Tag # {{{
             puts value.name # }}}
           when Subtlext::Tray # {{{
-            puts "%#10x %s (%s)" % [
+            puts '%#10x %s (%s)' % [
               value.win,
               value.instance,
               value.klass
             ] # }}}
           when Subtlext::Sublet # {{{
-            puts "%s" % [ value.name ] # }}}
+            puts '%s' % [ value.name ] # }}}
           when Subtlext::View # {{{
-            puts "%2d %s %s" % [
+            puts '%2d %s %s' % [
               value.id,
-              Subtlext::View.visible.include?(value) ? "*" : "-",
+              Subtlext::View.visible.include?(value) ? '*' : '-',
               value.name
             ] # }}}
         end
       end # }}}
 
       def usage(group) # {{{
-        puts "Usage: subtler [GENERIC|MODIFIER] GROUP ACTION [ARG1] [ARG2]\n\n"
+        puts 'Usage: subtler [GENERIC|MODIFIER] GROUP ACTION [ARG1] [ARG2]\n\n'
 
-        if(group.nil?)
+        if group.nil?
           puts <<-EOF
   Generic:
-    -d, --display=DISPLAY  Connect to DISPLAY (default: #{ENV["DISPLAY"]})
+    -d, --display=DISPLAY  Connect to DISPLAY (default: #{ENV['DISPLAY']})
     -h, --help             Show this help and exit
     -V, --version          Show version info and exit
 
@@ -350,10 +350,10 @@ module Subtle # {{{
     -y, --Tray             Use tray group
     -v, --View             Use views group
 
-            EOF
+          EOF
         end
 
-        if(group.nil? or Subtlext::Client == group)
+        if group.nil? or Subtlext::Client == group
           puts <<-EOF
   Actions for clients (-c, --Client):
     -f, --find    => -cf PATTERN            Find client
@@ -371,10 +371,10 @@ module Subtle # {{{
     -L, --lower   => -cL PATTERN            Lower client window
     -k, --kill    => -ck PATTERN            Kill client
 
-            EOF
+          EOF
         end
 
-        if(group.nil? or Subtlext::Gravity == group)
+        if group.nil? or Subtlext::Gravity == group
           puts <<-EOF
   Actions for gravities (-g, --Gravity):
     -a, --add     => -g NAME -a GEOMETRY    Create new gravity
@@ -382,19 +382,19 @@ module Subtle # {{{
     -f, --find    => -gf PATTERN            Find a gravity
     -k, --kill    => -gk PATTERN            Kill gravity
 
-            EOF
+          EOF
         end
 
-        if(group.nil? or Subtlext::Screen == group)
+        if group.nil? or Subtlext::Screen == group
           puts <<-EOF
   Actions for screens (-e, --Screen):
     -l, --list                              List all screens
     -f, --find    => -ef ID                 Find a screen
 
-            EOF
+          EOF
         end
 
-        if(group.nil? or Subtlext::Sublet == group)
+        if group.nil? or Subtlext::Sublet == group
           puts <<-EOF
   Actions for sublets (-s, --Sublet):
     -a, --add     => -sa PATH               Create new sublet
@@ -403,10 +403,10 @@ module Subtle # {{{
     -D, --data    => -s PATTERN -D DATA     Set data of sublet
     -k, --kill    => -sk PATTERN            Kill sublet
 
-            EOF
+          EOF
         end
 
-        if(group.nil? or Subtlext::Tag == group)
+        if group.nil? or Subtlext::Tag == group
           puts <<-EOF
   Actions for tags (-t, --Tag):
     -a, --add     => -ta NAME               Create new tag
@@ -415,20 +415,20 @@ module Subtle # {{{
     -I, --clients => -tI PATTERN            Show clients with tag
     -k, --kill    => -tk PATTERN            Kill tag
 
-            EOF
+          EOF
         end
 
-        if(group.nil? or Subtlext::Tray == group)
+        if group.nil? or Subtlext::Tray == group
           puts <<-EOF
   Actions for tray (-y, --Tray):
     -f, --find    => -yf PATTERN            Find all tray icons
     -l, --list                              List all tray icons
     -k, --kill    => -yk PATTERN            Kill tray icon
 
-            EOF
+          EOF
         end
 
-        if(group.nil? or Subtlext::View == group)
+        if group.nil? or Subtlext::View == group
           puts <<-EOF
   Actions for views (-v, --View):
     -a, --add     => -va NAME               Create new view
@@ -440,7 +440,7 @@ module Subtle # {{{
     -I, --clients                           Show clients on view
     -k, --kill    => -vk PATTERN            Kill view
 
-            EOF
+          EOF
         end
 
         puts <<-EOF
@@ -489,15 +489,15 @@ module Subtle # {{{
 
   Please report bugs at http://subforge.org/projects/subtle/issues
 
-          EOF
+        EOF
       end # }}}
 
       def version # {{{
-        puts <<EOF
+        puts <<-EOF
   subtler #{Subtlext::VERSION} - Copyright (c) 2005-2011 Christoph Kappel
   Released under the GNU General Public License
   Using Ruby #{RUBY_VERSION}
-EOF
+        EOF
       end # }}}
     end # }}}
   end # }}}
