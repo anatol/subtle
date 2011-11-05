@@ -15,7 +15,7 @@ context 'Gravity' do
   GRAVITY_NAME  = 'center'
 
   setup do # {{{
-    Subtlext::Gravity[GRAVITY_ID]
+    Subtlext::Gravity.first(GRAVITY_ID)
   end # }}}
 
   asserts 'Check attributes' do # {{{
@@ -35,13 +35,22 @@ context 'Gravity' do
     string = Subtlext::Gravity[GRAVITY_NAME + '$']
     sym    = Subtlext::Gravity[GRAVITY_NAME.to_sym]
     all    = Subtlext::Gravity['.*']
+    none   = Subtlext::Gravity['abcdef']
 
     index == string and index == sym and
-      all.is_a? Array and GRAVITY_COUNT == all.size
+      all.is_a? Array and GRAVITY_COUNT == all.size and
+      none.empty?
+  end # }}}
+
+  asserts 'First' do # {{{
+    index  = Subtlext::Gravity.first(GRAVITY_ID)
+    string = Subtlext::Gravity.first(GRAVITY_NAME)
+
+    index == string
   end # }}}
 
   asserts 'Equal and compare' do # {{{
-    topic.eql? Subtlext::Gravity[GRAVITY_ID] and topic == topic
+    topic.eql? Subtlext::Gravity.first(GRAVITY_ID) and topic == topic
   end # }}}
 
   asserts 'Check associations' do # {{{
@@ -72,7 +81,7 @@ context 'Gravity' do
   end # }}}
 
   asserts 'Kill a gravity' do # {{{
-    Subtlext::Gravity['test'].kill
+    Subtlext::Gravity.first('test').kill
 
     sleep 0.5
 

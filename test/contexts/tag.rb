@@ -15,7 +15,7 @@ context 'Tag' do
   TAG_NAME  = 'terms'
 
   setup do # {{{
-    Subtlext::Tag[TAG_ID]
+    Subtlext::Tag.first(TAG_ID)
   end # }}}
 
   asserts 'Check attributes' do # {{{
@@ -34,21 +34,30 @@ context 'Tag' do
     string = Subtlext::Tag[TAG_NAME]
     sym    = Subtlext::Tag[TAG_NAME.to_sym]
     all    = Subtlext::Tag['.*']
+    none   = Subtlext::Tag['abcdef']
 
     index == string and index == sym and
-      all.is_a? Array and TAG_COUNT == all.size
+      all.is_a?(Array) and TAG_COUNT == all.size and
+      none.empty?
+  end # }}}
+
+  asserts 'First' do # {{{
+    index  = Subtlext::Tag.first(TAG_ID)
+    string = Subtlext::Tag.first(TAG_NAME)
+
+    index == string
   end # }}}
 
   asserts 'Equal and compare' do # {{{
-    topic.eql? Subtlext::Tag[TAG_ID] and topic == topic
+    topic.eql?(Subtlext::Tag.first(TAG_ID)) and topic == topic
   end # }}}
 
   asserts 'Check associations' do # {{{
     clients = topic.clients
     views   = topic.views
 
-    clients.is_a? Array and 1 == clients.size and
-      views.is_a? Array and 1 == views.size
+    clients.is_a?(Array) and 1 == clients.size and
+      views.is_a?(Array) and 1 == views.size
   end # }}}
 
   asserts 'Convert to string' do # {{{
@@ -56,7 +65,7 @@ context 'Tag' do
   end # }}}
 
   asserts 'Create new tag' do # {{{
-    t = Subtlext::Tag.new 'test'
+    t = Subtlext::Tag.new('test')
     t.save
 
     sleep 1
@@ -65,7 +74,7 @@ context 'Tag' do
   end # }}}
 
   asserts 'Kill a tag' do # {{{
-    Subtlext::Tag['test'].kill
+    Subtlext::Tag.first('test').kill
 
     sleep 1
 

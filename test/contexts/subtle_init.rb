@@ -10,7 +10,7 @@
 #
 
 context 'Subtle - Init' do
-  COLORS_COUNT = 54
+  COLORS_COUNT = 48
 
   asserts 'Check running' do # {{{
     Subtlext::Subtle.running?
@@ -22,7 +22,7 @@ context 'Subtle - Init' do
   end # }}}
 
   asserts 'Check font' do # {{{
-    '-*-*-medium-*-*-*-14-*-*-*-*-*-*-*' == Subtlext::Subtle.font
+    '-*-*-*-*-*-*-14-*-*-*-*-*-*-*' == Subtlext::Subtle.font
   end # }}}
 
   asserts 'Check spawn' do # {{{

@@ -15,7 +15,7 @@ context 'Tray' do
   TRAY_NAME  = 'test.rb'
 
   setup do # {{{
-    Subtlext::Tray[TRAY_ID]
+    Subtlext::Tray.first(TRAY_ID)
   end # }}}
 
   asserts 'Check attributes' do # {{{
@@ -26,7 +26,7 @@ context 'Tray' do
   asserts 'Get list' do # {{{
     list = Subtlext::Tray.list
 
-    list.is_a? Array and TRAY_COUNT == list.size and
+    list.is_a?(Array) and TRAY_COUNT == list.size and
       Subtlext::Tray.method(:all) == Subtlext::Tray.method(:list)
   end # }}}
 
@@ -35,12 +35,21 @@ context 'Tray' do
     string = Subtlext::Tray[TRAY_NAME]
     sym    = Subtlext::Tray[TRAY_NAME.to_sym]
     all    = Subtlext::Tray['.*']
+    none   = Subtlext::Tray['abcdef']
 
-    index == string and index == sym and index == all
+    index == string and index == sym and index == all and
+      none.empty?
+  end # }}}
+
+  asserts 'First' do # {{{
+    index  = Subtlext::Tray.first(TRAY_ID)
+    string = Subtlext::Tray.first(TRAY_NAME)
+
+    index == string
   end # }}}
 
   asserts 'Equal and compare' do # {{{
-    topic.eql? Subtlext::Tray[TRAY_ID] and topic == topic
+    topic.eql?(Subtlext::Tray.first(TRAY_ID)) and topic == topic
   end # }}}
 
   asserts 'Convert to string' do # {{{

@@ -11,6 +11,7 @@
 
 context 'Client' do
   CLIENT_COUNT = 1
+  CLIENT_ID    = 0
   CLIENT_NAME  = 'xterm'
   CLIENT_TAG   = :default
 
@@ -26,21 +27,30 @@ context 'Client' do
   asserts 'Get list' do # {{{
     list = Subtlext::Client.list
 
-    list.is_a? Array  and CLIENT_COUNT == list.size and
+    list.is_a?(Array) and CLIENT_COUNT == list.size and
       Subtlext::Client.method(:all) == Subtlext::Client.method(:list)
   end # }}}
 
   asserts 'Finder' do # {{{
-    index  = Subtlext::Client[0]
+    index  = Subtlext::Client[CLIENT_ID]
     string = Subtlext::Client[CLIENT_NAME]
     sym    = Subtlext::Client[CLIENT_NAME.to_sym]
     all    = Subtlext::Client['.*']
+    none   = Subtlext::Client['abcdef']
 
-    index == string and index == sym and index == all
+    index == string and index == sym and index == all and
+      none.empty?
+  end # }}}
+
+  asserts 'First' do # {{{
+    index  = Subtlext::Client.first(CLIENT_ID)
+    string = Subtlext::Client.first(CLIENT_NAME)
+
+    index == string
   end # }}}
 
   asserts 'Equal and compare' do # {{{
-    topic.eql? Subtlext::Client.current and topic == topic
+    topic.eql?(Subtlext::Client.current) and topic == topic
   end # }}}
 
   asserts 'Convert to string' do # {{{
@@ -76,7 +86,7 @@ context 'Client' do
       :full ,:float, :stick, :resize,
       :urgent, :zaphod, :fixed, :borderless
     ].map { |flag|
-      p.call topic, "is_#{flag}?".to_sym, "toggle_#{flag}".to_sym
+      p.call(topic, "is_#{flag}?".to_sym, "toggle_#{flag}".to_sym)
     }
 
     results.all? { |r| r == expected }
@@ -115,22 +125,22 @@ context 'Client' do
 
     sleep 0.5
 
-    index = topic.gravity == Subtlext::Gravity[12]
+    index = topic.gravity == Subtlext::Gravity.first(12)
     topic.gravity = :center
 
     sleep 0.5
 
-    sym = topic.gravity == Subtlext::Gravity[:center]
-    topic.gravity = "center"
+    sym = topic.gravity == Subtlext::Gravity.first(:center)
+    topic.gravity = 'center'
 
     sleep 0.5
 
-    string = topic.gravity == Subtlext::Gravity['center']
-    topic.gravity = Subtlext::Gravity[:center]
+    string = topic.gravity == Subtlext::Gravity.first('center')
+    topic.gravity = Subtlext::Gravity.first(:center)
 
     sleep 0.5
 
-    string = topic.gravity == Subtlext::Gravity[:center]
+    string = topic.gravity == Subtlext::Gravity.first(:center)
 
     # Set gravity on www view
     topic.toggle_stick
@@ -139,14 +149,14 @@ context 'Client' do
     sleep 0.5
 
     # Jump to www vew and check gravity
-    Subtlext::View[:www].jump
-    left = topic.gravity == Subtlext::Gravity[:left]
+    Subtlext::View.first(:www).jump
+    left = topic.gravity == Subtlext::Gravity.first(:left)
 
     index and sym and string and left
   end # }}}
 
   asserts 'Get Screen' do # {{{
-    topic.screen.is_a? Subtlext::Screen
+    topic.screen.is_a?(Subtlext::Screen)
   end # }}}
 
   asserts 'Store values' do # {{{

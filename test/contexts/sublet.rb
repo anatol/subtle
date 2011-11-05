@@ -15,7 +15,7 @@ context 'Sublet' do
   SUBLET_NAME  = 'dummy'
 
   setup do # {{{
-    Subtlext::Sublet[0]
+    Subtlext::Sublet.first(SUBLET_ID)
   end # }}}
 
   asserts 'Check attributes' do # {{{
@@ -34,8 +34,17 @@ context 'Sublet' do
     string = Subtlext::Sublet[SUBLET_NAME]
     sym    = Subtlext::Sublet[SUBLET_NAME.to_sym]
     all    = Subtlext::Sublet['.*']
+    none   = Subtlext::Sublet['abcdef']
 
-    index == string and index == sym and index == all
+    index == string and index == sym and index == all and
+      none.empty?
+  end # }}}
+
+  asserts 'First' do # {{{
+    index  = Subtlext::Sublet.first(SUBLET_ID)
+    string = Subtlext::Sublet.first(SUBLET_NAME)
+
+    index == string
   end # }}}
 
   asserts 'Update sublet' do # {{{
