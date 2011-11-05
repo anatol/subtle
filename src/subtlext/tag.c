@@ -11,40 +11,10 @@
 
 #include "subtlext.h"
 
-/* Singleton */
-
-/* subTagSingFind {{{ */
-/*
- * call-seq: find(value) -> Subtlext::Tag, Array or nil
- *           [value]     -> Subtlext::Tag, Array or nil
- *
- * Find Tag by a given <i>value</i> which can be of following type:
- *
- * [Fixnum] Array index of the <code>SUBTLE_TAG_LIST</code> property list.
- * [String] Regexp match against name of Tags, returns a Tag on single
- *          match or an Array on multiple matches.
- * [Symbol] Either <i>:all</i> for an array of all Tags or any string for
- *          an <b>exact</b> match.
- *
- *  Subtlext::Tag.find(1)
- *  => #<Subtlext::Tag:xxx>
- *
- *  Subtlext::Tag.find("subtle")
- *  => #<Subtlext::Tag:xxx>
- *
- *  Subtlext::Tag[".*"]
- *  => [#<Subtlext::Tag:xxx>, #<Subtlext::Tag:xxx>]
- *
- *  Subtlext::Tag["subtle"]
- *  => nil
- *
- *  Subtlext::Tag[:terms]
- *  => #<Subtlext::Tag:xxx>
- */
-
-VALUE
-subTagSingFind(VALUE self,
-  VALUE value)
+/* TagFind {{{ */
+static VALUE
+TagFind(VALUE value,
+  int first)
 {
   int flags = 0;
   VALUE parsed = Qnil;
@@ -67,7 +37,71 @@ subTagSingFind(VALUE self,
           return parsed;
     }
 
-  return subSubtlextFindObjects("SUBTLE_TAG_LIST", "Tag", buf, flags);
+  return subSubtlextFindObjects("SUBTLE_TAG_LIST", "Tag", buf, flags, first);
+} /* }}} */
+
+/* Singleton */
+
+/* subTagSingFind {{{ */
+/*
+ * call-seq: find(value) -> Array
+ *           [value]     -> Array
+ *
+ * Find Tag by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>SUBTLE_TAG_LIST</code> property list.
+ * [String] Regexp match against name of Tags, returns a Tag on single
+ *          match or an Array on multiple matches.
+ * [Symbol] Either <i>:all</i> for an array of all Tags or any string for
+ *          an <b>exact</b> match.
+ *
+ *  Subtlext::Tag.find(1)
+ *  => [#<Subtlext::Tag:xxx>]
+ *
+ *  Subtlext::Tag.find("subtle")
+ *  => [#<Subtlext::Tag:xxx>]
+ *
+ *  Subtlext::Tag[".*"]
+ *  => [#<Subtlext::Tag:xxx>, #<Subtlext::Tag:xxx>]
+ *
+ *  Subtlext::Tag["subtle"]
+ *  => []
+ *
+ *  Subtlext::Tag[:terms]
+ *  => [#<Subtlext::Tag:xxx>]
+ */
+
+VALUE
+subTagSingFind(VALUE self,
+  VALUE value)
+{
+  return TagFind(value, False);
+} /* }}} */
+
+/* subTagSingFirst {{{ */
+/*
+ * call-seq: first(value) -> Subtlext::Tag or nil
+ *
+ * Find first Tag by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>SUBTLE_TAG_LIST</code> property list.
+ * [String] Regexp match against name of Tags, returns a Tag on single
+ *          match or an Array on multiple matches.
+ * [Symbol] Either <i>:all</i> for an array of all Tags or any string for
+ *          an <b>exact</b> match.
+ *
+ *  Subtlext::Tag.first(1)
+ *  => #<Subtlext::Tag:xxx>
+ *
+ *  Subtlext::Tag.first("subtle")
+ *  => #<Subtlext::Tag:xxx>
+ */
+
+VALUE
+subTagSingFirst(VALUE self,
+  VALUE value)
+{
+  return TagFind(value, True);
 } /* }}} */
 
 /* subTagSingVisible {{{ */

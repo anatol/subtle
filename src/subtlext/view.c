@@ -52,40 +52,10 @@ ViewSelect(VALUE self,
   return ret;
 } /* }}} */
 
-/* Singleton */
-
-/* subViewSingFind {{{ */
-/*
- * call-seq: find(value) -> Subtlext::View, Array or nil
- *           [value]     -> Subtlext::View, Array or nil
- *
- * Find View by a given <i>value</i> which can be of following type:
- *
- * [Fixnum] Array index of the <code>_NET_DESKTOP_NAMES</code> property list.
- * [String] Regexp match against name of Views, returns a View on single
- *          match or an Array on multiple matches.
- * [Symbol] Either <i>:current</i> for current View, <i>:all</i> for an
- *          array of all Views or any string for an <b>exact</b> match.
- *
- *  Subtlext::View.find(1)
- *  => #<Subtlext::View:xxx>
- *
- *  Subtlext::View.find("subtle")
- *  => #<Subtlext::View:xxx>
- *
- *  Subtlext::View[".*"]
- *  => [#<Subtlext::View:xxx>, #<Subtlext::View:xxx>]
- *
- *  Subtlext::View["subtle"]
- *  => nil
- *
- *  Subtlext::View[:terms]
- *  => #<Subtlext::View:xxx>
- */
-
-VALUE
-subViewSingFind(VALUE self,
-  VALUE value)
+/* ViewFind {{{ */
+static VALUE
+ViewFind(VALUE value,
+  int first)
 {
   int flags = 0;
   VALUE parsed = Qnil;
@@ -110,7 +80,72 @@ subViewSingFind(VALUE self,
           return parsed;
     }
 
-  return subSubtlextFindObjects("_NET_DESKTOP_NAMES", "View", buf, flags);
+  return subSubtlextFindObjects("_NET_DESKTOP_NAMES", "View",
+    buf, flags, first);
+} /* }}} */
+
+/* Singleton */
+
+/* subViewSingFind {{{ */
+/*
+ * call-seq: find(value) -> Array
+ *           [value]     -> Array
+ *
+ * Find View by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>_NET_DESKTOP_NAMES</code> property list.
+ * [String] Regexp match against name of Views, returns a View on single
+ *          match or an Array on multiple matches.
+ * [Symbol] Either <i>:current</i> for current View, <i>:all</i> for an
+ *          array of all Views or any string for an <b>exact</b> match.
+ *
+ *  Subtlext::View.find(1)
+ *  => [#<Subtlext::View:xxx>]
+ *
+ *  Subtlext::View.find("subtle")
+ *  => [#<Subtlext::View:xxx>]
+ *
+ *  Subtlext::View[".*"]
+ *  => [#<Subtlext::View:xxx>, #<Subtlext::View:xxx>]
+ *
+ *  Subtlext::View["subtle"]
+ *  => []
+ *
+ *  Subtlext::View[:terms]
+ *  => #<Subtlext::View:xxx>]
+ */
+
+VALUE
+subViewSingFind(VALUE self,
+  VALUE value)
+{
+  return ViewFind(value, False);
+} /* }}} */
+
+/* subViewSingFirst {{{ */
+/*
+ * call-seq: first(value) -> Subtlext::View or nil
+ *
+ * Find first View by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>_NET_DESKTOP_NAMES</code> property list.
+ * [String] Regexp match against name of Views, returns a View on single
+ *          match or an Array on multiple matches.
+ * [Symbol] Either <i>:current</i> for current View, <i>:all</i> for an
+ *          array of all Views or any string for an <b>exact</b> match.
+ *
+ *  Subtlext::View.first(1)
+ *  => #<Subtlext::View:xxx>
+ *
+ *  Subtlext::View.first("subtle")
+ *  => #<Subtlext::View:xxx>
+ */
+
+VALUE
+subViewSingFirst(VALUE self,
+  VALUE value)
+{
+  return ViewFind(value, True);
 } /* }}} */
 
 /* subViewSingCurrent {{{ */

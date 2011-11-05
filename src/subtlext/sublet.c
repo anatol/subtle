@@ -11,41 +11,10 @@
 
 #include "subtlext.h"
 
-/* Singleton */
-
-/* subSubletSingFind {{{ */
-/*
- * call-seq: find(value) -> Subtlext::Sublet, Array or nil
- *           [value]     -> Subtlext::Sublet, Array or nil
- *
- * Find Sublet by a given <i>value</i> which can be of following type:
- *
- * [Fixnum] Array index of the <code>SUBTLE_SUBLET_LIST</code> property list.
- * [String] Regexp match against name of Sublets, returns a Sublet on single
- *          match or an Array on multiple matches.
- * [Symbol] Either <i>:all</i> for an array of all Sublets or any string for
- *          an <b>exact</b> match.
- *
- *  Subtlext::Sublet.find(1)
- *  => #<Subtlext::Sublet:xxx>
- *
- *  Subtlext::Sublet.find("subtle")
- *  => #<Subtlext::Sublet:xxx>
- *
- *  Subtlext::Sublet[".*"]
- *  => [#<Subtlext::Sublet:xxx>, #<Subtlext::Sublet:xxx>]
- *
- *  Subtlext::Sublet["subtle"]
- *  => nil
- *
- *  Subtlext::Sublet[:clock]
- *  => #<Subtlext::Sublet:xxx>
-
- */
-
-VALUE
-subSubletSingFind(VALUE self,
-  VALUE value)
+/* SubletFind {{{ */
+static VALUE
+SubletFind(VALUE value,
+  int first)
 {
   int flags = 0;
   VALUE parsed = Qnil;
@@ -67,7 +36,72 @@ subSubletSingFind(VALUE self,
     }
 
   return subSubtlextFindObjectsGeometry("SUBTLE_SUBLET_LIST",
-    "Sublet", buf, flags, False);
+    "Sublet", buf, flags, first);
+} /* }}} */
+
+/* Singleton */
+
+/* subSubletSingFind {{{ */
+/*
+ * call-seq: find(value) -> Array
+ *           [value]     -> Array
+ *
+ * Find Sublet by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>SUBTLE_SUBLET_LIST</code> property list.
+ * [String] Regexp match against name of Sublets, returns a Sublet on single
+ *          match or an Array on multiple matches.
+ * [Symbol] Either <i>:all</i> for an array of all Sublets or any string for
+ *          an <b>exact</b> match.
+ *
+ *  Subtlext::Sublet.find(1)
+ *  => [#<Subtlext::Sublet:xxx>]
+ *
+ *  Subtlext::Sublet.find("subtle")
+ *  => [#<Subtlext::Sublet:xxx>]
+ *
+ *  Subtlext::Sublet[".*"]
+ *  => [#<Subtlext::Sublet:xxx>, #<Subtlext::Sublet:xxx>]
+ *
+ *  Subtlext::Sublet["subtle"]
+ *  => []
+ *
+ *  Subtlext::Sublet[:clock]
+ *  => [#<Subtlext::Sublet:xxx>]
+
+ */
+
+VALUE
+subSubletSingFind(VALUE self,
+  VALUE value)
+{
+  return SubletFind(value, False);
+} /* }}} */
+
+/* subSubletSingFirst {{{ */
+/*
+ * call-seq: first(value) -> Subtlext::Sublet or nil
+ *
+ * Find first Sublet by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>SUBTLE_SUBLET_LIST</code> property list.
+ * [String] Regexp match against name of Sublets, returns a Sublet on single
+ *          match or an Array on multiple matches.
+ * [Symbol] Either <i>:all</i> for an array of all Sublets or any string for
+ *          an <b>exact</b> match.
+ *
+ *  Subtlext::Sublet.first(1)
+ *  => #<Subtlext::Sublet:xxx>
+ *
+ *  Subtlext::Sublet.first("subtle")
+ *  => #<Subtlext::Sublet:xxx>
+ */
+
+VALUE
+subSubletSingFirst(VALUE self,
+  VALUE value)
+{
+  return SubletFind(value, True);
 } /* }}} */
 
 /* subSubletSingList {{{ */
@@ -88,7 +122,7 @@ VALUE
 subSubletSingList(VALUE self)
 {
   return subSubtlextFindObjectsGeometry("SUBTLE_SUBLET_LIST",
-    "Sublet", NULL, 0, True);
+    "Sublet", NULL, 0, False);
 } /* }}} */
 
 /* Class */

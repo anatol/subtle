@@ -160,6 +160,38 @@ ClientGravity(VALUE key,
   return ST_CONTINUE;
 } /* }}} */
 
+/* ClientFind {{{ */
+static VALUE
+ClientFind(VALUE value,
+  int first)
+{
+  int flags = 0;
+  VALUE parsed = Qnil;
+  char buf[50] = { 0 };
+
+  subSubtlextConnect(NULL); ///< Implicit open connection
+
+  /* Check object type */
+  switch(rb_type(parsed = subSubtlextParse(
+      value, buf, sizeof(buf), &flags)))
+    {
+      case T_SYMBOL:
+        if(CHAR2SYM("visible") == parsed)
+          return subClientSingVisible(Qnil);
+        else if(CHAR2SYM("all") == parsed)
+          return subClientSingList(Qnil);
+        else if(CHAR2SYM("current") == parsed)
+          return subClientSingCurrent(Qnil);
+        break;
+      case T_OBJECT:
+        if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("Client"))))
+          return parsed;
+    }
+
+  return subSubtlextFindWindows("_NET_CLIENT_LIST", "Client",
+    buf, flags, first);
+} /* }}} */
+
 /* Singleton */
 
 /* subClientSingSelect {{{ */
@@ -182,8 +214,8 @@ subClientSingSelect(VALUE self)
 
 /* subClientSingFind {{{ */
 /*
- * call-seq: find(value) -> Subtlext::Client, Array or nil
- *           [value]     -> Subtlext::Client, Array or nil
+ * call-seq: find(value) -> Array
+ *           [value]     -> Array
  *
  * Find Client by a given <i>value</i> which can be of following type:
  *
@@ -204,94 +236,68 @@ subClientSingSelect(VALUE self)
  *          array of all Views or any string for an <b>exact</b> match.
  *
  *  Subtlext::Client.find(1)
- *  => #<Subtlext::Client:xxx>
+ *  => [#<Subtlext::Client:xxx>]
  *
  *  Subtlext::Client.find("subtle")
- *  => #<Subtlext::Client:xxx>
+ *  => [#<Subtlext::Client:xxx>]
  *
  *  Subtlext::Client[".*"]
  *  => [#<Subtlext::Client:xxx>, #<Subtlext::Client:xxx>]
  *
  *  Subtlext::Client["subtle"]
- *  => nil
+ *  => []
  *
  *  Subtlext::Client[:terms]
- *  => #<Subtlext::Client:xxx>
+ *  => [#<Subtlext::Client:xxx>]
  *
  *  Subtlext::Client[name: "subtle"]
- *  => #<Subtlext::Client:xxx>
+ *  => [#<Subtlext::Client:xxx>]
  */
 
 VALUE
 subClientSingFind(VALUE self,
   VALUE value)
 {
-  int i, flags = 0, size = 0;
-  VALUE ret = Qnil, parsed = Qnil, client = Qnil;
-  char buf[50] = { 0 };
-  Window *wins = NULL;
+  return ClientFind(value, False);
+} /* }}} */
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+/* subClientSingFirst {{{ */
+/*
+ * call-seq: first(value) -> Subtlext::Client or nil
+ *
+ * Find first Client by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>_NET_CLIENT_LIST</code> property list.
+ * [String] Regexp match against both <code>WM_CLASS</code> values.
+ * [Hash]   Instead of just match <code>WM_CLASS</code> match against
+ *          following properties:
+ *
+ *          [:name]     Match against <code>WM_NAME</code>
+ *          [:instance] Match against first value of <code>WM_NAME</code>
+ *          [:class]    Match against second value of <code>WM_NAME</code>
+ *          [:gravity]  Match against window Gravity
+ *          [:role]     Match against <code>WM_ROLE</code>
+ *          [:pid]      Match against window pid
+ *
+ *          With one of following keys: :title, :name, :class, :gravity
+ * [Symbol] Either <i>:current</i> for current View, <i>:all</i> for an
+ *          array of all Views or any string for an <b>exact</b> match.
+ *
+ *  Subtlext::Client.first(1)
+ *  => #<Subtlext::Client:xxx>
+ *
+ *  Subtlext::Client.first("subtle")
+ *  => #<Subtlext::Client:xxx>
+ *
+ *  Subtlext::Client.first(name: "subtle")
+ *  => #<Subtlext::Client:xxx>
+ */
 
-  /* Check object type */
-  switch(rb_type(parsed = subSubtlextParse(
-      value, buf, sizeof(buf), &flags)))
-    {
-      case T_SYMBOL:
-        if(CHAR2SYM("visible") == parsed)
-          return subClientSingVisible(Qnil);
-        else if(CHAR2SYM("all") == parsed)
-          return subClientSingList(Qnil);
-        else if(CHAR2SYM("current") == parsed)
-          return subClientSingCurrent(Qnil);
-        break;
-      case T_OBJECT:
-        if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("Client"))))
-          return parsed;
-    }
-
-  /* Get client list */
-  if((wins = subSubtlextWindowList("_NET_CLIENT_LIST", &size)))
-    {
-      int selid = -1;
-      Window selwin = None;
-      VALUE meth = Qnil, klass = Qnil;
-      regex_t *preg = NULL;
-
-      /* Create regexp when required */
-      if(!(flags & SUB_MATCH_EXACT)) preg = subSharedRegexNew(buf);
-
-      /* Special values */
-      if(FIXNUM_P(value)) selid  = (int)FIX2INT(value);
-      if('#' == buf[0])   selwin = subSubtleSingSelect(Qnil);
-
-      /* Fetch data */
-      meth  = rb_intern("new");
-      klass = rb_const_get(mod, rb_intern("Client"));
-
-      /* Check each client */
-      for(i = 0; i < size; i++)
-        {
-          if(selid == i || selid == wins[i] || selwin == wins[i] ||
-              (-1 == selid && subSubtlextWindowMatch(wins[i],
-                preg, buf, NULL, flags)))
-            {
-              /* Create new client */
-              if(RTEST((client = rb_funcall(klass, meth,
-                  1, LONG2NUM(wins[i])))))
-                {
-                  subClientUpdate(client);
-
-                  ret = subSubtlextOneOrMany(client, ret);
-                }
-            }
-        }
-
-      if(preg) subSharedRegexKill(preg);
-      free(wins);
-    }
-
-  return ret;
+VALUE
+subClientSingFirst(VALUE self,
+  VALUE value)
+{
+  return ClientFind(value, True);
 } /* }}} */
 
 /* subClientSingCurrent {{{ */

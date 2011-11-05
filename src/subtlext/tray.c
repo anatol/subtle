@@ -11,53 +11,14 @@
 
 #include "subtlext.h"
 
-/* Singleton */
-
-/* subTraySingFind {{{ */
-/*
- * call-seq: find(value) -> Subtlext::Tray, Array or nil
- *           [value]     -> Subtlext::Tray, Array or nil
- *
- * Find Tray by a given <i>value</i> which can be of following type:
- *
- * [Fixnum] Array index of the <code>SUBTLE_TRAY_LIST</code> property list.
- * [String] Regexp match against both <code>WM_CLASS</code> values.
- * [Hash]   Instead of just match <code>WM_CLASS</code> match against
- *          following properties:
- *
- *          [:name]     Match against <code>WM_NAME</code>
- *          [:instance] Match against first value of <code>WM_NAME</code>
- *          [:class]    Match against second value of <code>WM_NAME</code>
- * [Symbol] Either <i>:all</i> for an array of all Trays or any string for
- *          an <b>exact</b> match.
-
- *  Subtlext::Tray.find(1)
- *  => #<Subtlext::Tray:xxx>
- *
- *  Subtlext::Tray.find("subtle")
- *  => #<Subtlext::Tray:xxx>
- *
- *  Subtlext::Tray[".*"]
- *  => [#<Subtlext::Tray:xxx>, #<Subtlext::Tray:xxx>]
- *
- *  Subtlext::Tray["subtle"]
- *  => nil
- *
- *  Subtlext::Tray[:terms]
- *  => #<Subtlext::Tray:xxx>
- *
- *  Subtlext::Tray[name: "subtle"]
- *  => #<Subtlext::Tray:xxx>
- */
-
-VALUE
-subTraySingFind(VALUE self,
-  VALUE value)
+/* TrayFind {{{ */
+static VALUE
+TrayFind(VALUE value,
+  int first)
 {
-  int i, flags = 0, size = 0;
-  VALUE ret = Qnil, parsed = Qnil, tray = Qnil;
+  int flags = 0;
+  VALUE parsed = Qnil;
   char buf[50] = { 0 };
-  Window *wins = NULL;
 
   subSubtlextConnect(NULL); ///< Implicit open connection
 
@@ -74,41 +35,85 @@ subTraySingFind(VALUE self,
           return parsed;
     }
 
-  /* Get tray list */
-  if((wins = subSubtlextWindowList("SUBTLE_TRAY_LIST", &size)))
-    {
-      int selid = -1;
-      VALUE meth = Qnil, klass = Qnil;
-      regex_t *preg = subSharedRegexNew(buf);
+  return subSubtlextFindWindows("SUBTLE_TRAY_LIST", "Tray",
+    buf, flags, first);
+} /* }}} */
 
-      /* Special values */
-      if(FIXNUM_P(value)) selid = (int)FIX2INT(value);
+/* Singleton */
 
-      /* Fetch data */
-      meth  = rb_intern("new");
-      klass = rb_const_get(mod, rb_intern("Tray"));
+/* subTraySingFind {{{ */
+/*
+ * call-seq: find(value) -> Array
+ *           [value]     -> Array
+ *
+ * Find Tray by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>SUBTLE_TRAY_LIST</code> property list.
+ * [String] Regexp match against both <code>WM_CLASS</code> values.
+ * [Hash]   Instead of just match <code>WM_CLASS</code> match against
+ *          following properties:
+ *
+ *          [:name]     Match against <code>WM_NAME</code>
+ *          [:instance] Match against first value of <code>WM_NAME</code>
+ *          [:class]    Match against second value of <code>WM_NAME</code>
+ * [Symbol] Either <i>:all</i> for an array of all Trays or any string for
+ *          an <b>exact</b> match.
 
-      /* Check each tray */
-      for(i = 0; i < size; i++)
-        {
-          if(selid == i || selid == wins[i] || (-1 == selid &&
-              preg && subSubtlextWindowMatch(wins[i], preg, buf, NULL, flags)))
-            {
-              /* Create new tray */
-              if(RTEST((tray = rb_funcall(klass, meth, 1, LONG2NUM(wins[i])))))
-                {
-                  subTrayUpdate(tray);
+ *  Subtlext::Tray.find(1)
+ *  => [#<Subtlext::Tray:xxx>]
+ *
+ *  Subtlext::Tray.find("subtle")
+ *  => [#<Subtlext::Tray:xxx>]
+ *
+ *  Subtlext::Tray[".*"]
+ *  => [#<Subtlext::Tray:xxx>, #<Subtlext::Tray:xxx>]
+ *
+ *  Subtlext::Tray["subtle"]
+ *  => []
+ *
+ *  Subtlext::Tray[:terms]
+ *  => [#<Subtlext::Tray:xxx>]
+ *
+ *  Subtlext::Tray[name: "subtle"]
+ *  => [#<Subtlext::Tray:xxx>]
+ */
 
-                  ret = subSubtlextOneOrMany(tray, ret);
-                }
-            }
-        }
+VALUE
+subTraySingFind(VALUE self,
+  VALUE value)
+{
+  return TrayFind(value, False);
+} /* }}} */
 
-      subSharedRegexKill(preg);
-      free(wins);
-    }
+/* subTraySingFirst {{{ */
+/*
+ * call-seq: find(value) -> Subtlext::Tray or nil
+ *
+ * Find first Tray by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>SUBTLE_TRAY_LIST</code> property list.
+ * [String] Regexp match against both <code>WM_CLASS</code> values.
+ * [Hash]   Instead of just match <code>WM_CLASS</code> match against
+ *          following properties:
+ *
+ *          [:name]     Match against <code>WM_NAME</code>
+ *          [:instance] Match against first value of <code>WM_NAME</code>
+ *          [:class]    Match against second value of <code>WM_NAME</code>
+ * [Symbol] Either <i>:all</i> for an array of all Trays or any string for
+ *          an <b>exact</b> match.
 
-  return ret;
+ *  Subtlext::Tray.first(1)
+ *  => #<Subtlext::Tray:xxx>
+ *
+ *  Subtlext::Tray.first("subtle")
+ *  => #<Subtlext::Tray:xxx>
+ */
+
+VALUE
+subTraySingFirst(VALUE self,
+  VALUE value)
+{
+  return TrayFind(value, True);
 } /* }}} */
 
 /* subTraySingList {{{ */

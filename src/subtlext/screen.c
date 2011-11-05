@@ -414,7 +414,7 @@ subScreenViewWriter(VALUE self,
   /* Check instance type */
   if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("View"))))
     view = value;
-  else view = subViewSingFind(Qnil, value);
+  else view = subViewSingFirst(Qnil, value);
 
   GET_ATTR(view, "@id", vid);
 

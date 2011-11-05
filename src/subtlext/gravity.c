@@ -70,41 +70,10 @@ GravityFindId(char *match,
   return ret;
 } /* }}} */
 
-/* Singleton */
-
-/* subGravitySingFind {{{ */
-/*
- * call-seq: find(value) -> Subtlext::Gravity, Array or nil
- *           [value]     -> Subtlext::Gravity, Array or nil
- *
- * Find Gravity by a given <i>value</i> which can be of following type:
- *
- * [Fixnum] Array index of the <code>SUBTLE_GRAVITY_LIST</code> property list.
- * [String] Regexp match against name of Gravities, returns a Gravity on single
- *          match or an Array on multiple matches.
- * [Symbol] Either <i>:all</i> for an array of all Views or any string for an
- *          <b>exact</b> match.
- *
- *  Subtlext::Gravity.find(1)
- *  => #<Subtlext::Gravity:xxx>
- *
- *  Subtlext::Gravity.find("subtle")
- *  => #<Subtlext::Gravity:xxx>
- *
- *  Subtlext::Gravity[".*"]
- *  => [#<Subtlext::Gravity:xxx>, #<Subtlext::Gravity:xxx>]
- *
- *  Subtlext::Gravity["subtle"]
- *  => nil
- *
- *  Subtlext::Gravity[:center]
- *  => #<Subtlext::Gravity:xxx>
-
- */
-
-VALUE
-subGravitySingFind(VALUE self,
-  VALUE value)
+/* GravityFind {{{ */
+static VALUE
+GravityFind(VALUE value,
+  int first)
 {
   int flags = 0;
   VALUE parsed = Qnil;
@@ -126,7 +95,72 @@ subGravitySingFind(VALUE self,
     }
 
   return subSubtlextFindObjectsGeometry("SUBTLE_GRAVITY_LIST",
-    "Gravity", buf, flags, False);
+    "Gravity", buf, flags, first);
+} /* }}} */
+
+/* Singleton */
+
+/* subGravitySingFind {{{ */
+/*
+ * call-seq: find(value) -> Array
+ *           [value]     -> Array
+ *
+ * Find Gravity by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>SUBTLE_GRAVITY_LIST</code> property list.
+ * [String] Regexp match against name of Gravities, returns a Gravity on single
+ *          match or an Array on multiple matches.
+ * [Symbol] Either <i>:all</i> for an array of all Views or any string for an
+ *          <b>exact</b> match.
+ *
+ *  Subtlext::Gravity.find(1)
+ *  => [#<Subtlext::Gravity:xxx>]
+ *
+ *  Subtlext::Gravity.find("subtle")
+ *  => [#<Subtlext::Gravity:xxx>]
+ *
+ *  Subtlext::Gravity[".*"]
+ *  => [#<Subtlext::Gravity:xxx>, #<Subtlext::Gravity:xxx>]
+ *
+ *  Subtlext::Gravity["subtle"]
+ *  => []
+ *
+ *  Subtlext::Gravity[:center]
+ *  => [#<Subtlext::Gravity:xxx>]
+
+ */
+
+VALUE
+subGravitySingFind(VALUE self,
+  VALUE value)
+{
+  return GravityFind(value, False);
+} /* }}} */
+
+/* subGravitySingFirst {{{ */
+/*
+ * call-seq: first(value) -> Subtlext::Gravity or nil
+ *
+ * Find first Gravity by a given <i>value</i> which can be of following type:
+ *
+ * [Fixnum] Array index of the <code>SUBTLE_GRAVITY_LIST</code> property list.
+ * [String] Regexp match against name of Gravities, returns a Gravity on single
+ *          match or an Array on multiple matches.
+ * [Symbol] Either <i>:all</i> for an array of all Views or any string for an
+ *          <b>exact</b> match.
+ *
+ *  Subtlext::Gravity.first(1)
+ *  => #<Subtlext::Gravity:xxx>
+ *
+ *  Subtlext::Gravity.first("subtle")
+ *  => #<Subtlext::Gravity:xxx>
+ */
+
+VALUE
+subGravitySingFirst(VALUE self,
+  VALUE value)
+{
+  return GravityFind(value, True);
 } /* }}} */
 
 /* subGravitySingList {{{ */
@@ -147,7 +181,7 @@ VALUE
 subGravitySingList(VALUE self)
 {
   return subSubtlextFindObjectsGeometry("SUBTLE_GRAVITY_LIST",
-    "Gravity", NULL, 0, True);
+    "Gravity", NULL, 0, False);
 } /* }}} */
 
 /* Class */
