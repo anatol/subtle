@@ -51,6 +51,7 @@ extern int debug;
 /* Singleton */
 VALUE subClientSingSelect(VALUE self);                            ///< Select client
 VALUE subClientSingFind(VALUE self, VALUE value);                 ///< Find client
+VALUE subClientSingFirst(VALUE self, VALUE value);                ///< Find first client
 VALUE subClientSingCurrent(VALUE self);                           ///< Get current client
 VALUE subClientSingVisible(VALUE self);                           ///< Get all visible clients
 VALUE subClientSingList(VALUE self);                              ///< Get all clients
@@ -121,6 +122,7 @@ VALUE subGeometryEqualTyped(VALUE self, VALUE other);             ///< Whether o
 /* gravity.c {{{ */
 /* Singleton */
 VALUE subGravitySingFind(VALUE self, VALUE value);                ///< Find gravity
+VALUE subGravitySingFirst(VALUE self, VALUE value);               ///< Find first gravity
 VALUE subGravitySingList(VALUE self);                             ///< Get all gravities
 
 /* Class */
@@ -173,6 +175,7 @@ VALUE subScreenToString(VALUE self);                              ///< Screen to
 /* sublet.c {{{ */
 /* Singleton */
 VALUE subSubletSingFind(VALUE self, VALUE value);                 ///< Find sublet
+VALUE subSubletSingFirst(VALUE self, VALUE value);                ///< Find first sublet
 VALUE subSubletSingList(VALUE self);                              ///< Get all sublets
 
 /* Class */
@@ -212,19 +215,20 @@ VALUE subSubtlextParse(VALUE value, char *buf,
 VALUE subSubtlextOneOrMany(VALUE value, VALUE prev);              ///< Return one or many
 VALUE subSubtlextManyToOne(VALUE value);                          ///< Return one from many
 Window *subSubtlextWindowList(char *prop_name, int *size);        ///< Get window list
-int subSubtlextWindowMatch(Window win, regex_t *preg,
-  const char *source, char **name, int flags);                    ///< Match window
 int subSubtlextFindString(char *prop_name, char *source,
   char **name, int flags);                                        ///< Find string id
 VALUE subSubtlextFindObjects(char *prop_name, char *class_name,
-  char *source, int flags);                                       ///< Find objects
+  char *source, int flags, int first);                            ///< Find objects
+VALUE subSubtlextFindWindows(char *prop_name, char *class_name,
+  char *source, int flags, int first);                            ///< Find objects
 VALUE subSubtlextFindObjectsGeometry(char *prop_name,
-  char *class_name, char *source, int flags, int many);           ///< Find objects with geometries
+  char *class_name, char *source, int flags, int first);          ///< Find objects with geometries
 /* }}} */
 
 /* tag.c {{{ */
 /* Singleton */
 VALUE subTagSingFind(VALUE self, VALUE value);                    ///< Find tag
+VALUE subTagSingFirst(VALUE self, VALUE value);                   ///< Find first tag
 VALUE subTagSingVisible(VALUE self);                              ///< Get all visible tags
 VALUE subTagSingList(VALUE self);                                 ///< Get all tags
 
@@ -241,6 +245,7 @@ VALUE subTagKill(VALUE self);                                     ///< Kill tag
 /* tray.c {{{ */
 /* Singleton */
 VALUE subTraySingFind(VALUE self, VALUE name);                    ///< Find tray
+VALUE subTraySingFirst(VALUE self, VALUE name);                   ///< Find first tray
 VALUE subTraySingList(VALUE self);                                ///< Get all trays
 
 /* Class */
@@ -254,6 +259,7 @@ VALUE subTrayKill(VALUE self);                                    ///< Kill tray
 /* view.c {{{ */
 /* Singleton */
 VALUE subViewSingFind(VALUE self, VALUE name);                    ///< Find view
+VALUE subViewSingFirst(VALUE self, VALUE name);                   ///< Find first view
 VALUE subViewSingCurrent(VALUE self);                             ///< Get current view
 VALUE subViewSingVisible(VALUE self);                             ///< Get all visible views
 VALUE subViewSingList(VALUE self);                                ///< Get all views
