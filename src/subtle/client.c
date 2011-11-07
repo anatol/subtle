@@ -75,7 +75,9 @@ ClientGravity(void)
 static void
 ClientBounds(SubClient *c,
   XRectangle *bounds,
-  XRectangle *geom)
+  XRectangle *geom,
+  int adjustx,
+  int adjusty)
 {
   DEAD(c);
   assert(c && geom);
@@ -99,13 +101,21 @@ ClientBounds(SubClient *c,
       if(geom->height < c->minh) geom->height = c->minh;
       if(geom->height > maxh)    geom->height = maxh;
 
-      /* Adjust for increment values (see ICCCM 4.1.2.3) */
+      /* Adjust based on increment values (see ICCCM 4.1.2.3) */
       diffw = (geom->width  - c->basew) % c->incw;
       diffh = (geom->height - c->baseh) % c->inch;
 
+      /* Adjust x and/or y */
+      if(adjustx) geom->x += diffw;
+      if(adjusty) geom->y += diffh;
+
       /* Center client on current gravity */
-      geom->x      += 0 < diffw ? diffw / 2 : 0;
-      geom->y      += 0 < diffh ? diffh / 2 : 0;
+      if(!(c->flags & SUB_CLIENT_MODE_FLOAT))
+        {
+          geom->x += 0 < diffw ? diffw / 2 : 0;
+          geom->y += 0 < diffh ? diffh / 2 : 0;
+        }
+
       geom->width  -= diffw;
       geom->height -= diffh;
 
@@ -557,7 +567,7 @@ subClientDrag(SubClient *c,
   XEvent ev;
   Window root = None, win = None;
   unsigned int mask = 0;
-  int loop = True, edge = 0, sx = 0, sy = 0;
+  int loop = True, edge = 0, fx = 0, fy = 0, dx = 0, dy = 0;
   int wx = 0, wy = 0, ww = 0, wh = 0, rx = 0, ry = 0;
   SubScreen *s = NULL;
   XRectangle geom = { 0 };
@@ -574,7 +584,7 @@ subClientDrag(SubClient *c,
   geom.height = wh = c->geom.height;
 
   /* Set max width/height */
-  s  = SCREEN(subtle->screens->data[c->screen]);
+  s = SCREEN(subtle->screens->data[c->screen]);
 
   /* Set variables according to mode */
   switch(mode)
@@ -585,15 +595,31 @@ subClientDrag(SubClient *c,
       case SUB_DRAG_RESIZE:
         cursor = subtle->cursors.resize;
 
-        /* Get starting edge */
+        /* Select starting edge */
         edge |= (wx < (geom.width  / 2)) ? EDGE_LEFT : EDGE_RIGHT;
         edge |= (wy < (geom.height / 2)) ? EDGE_TOP  : EDGE_BOTTOM;
 
         /* Set starting point */
-        if(edge & EDGE_LEFT)        sx = geom.x + geom.width;
-        else if(edge & EDGE_RIGHT)  sx = geom.x;
-        if(edge & EDGE_TOP)         sy = geom.y + geom.height;
-        else if(edge & EDGE_BOTTOM) sy = geom.y;
+        if(edge & EDGE_LEFT)
+          {
+            fx = geom.x + geom.width;
+            dx = rx - c->geom.x;
+          }
+        else if(edge & EDGE_RIGHT)
+          {
+            fx = geom.x;
+            dx = geom.x + geom.width - rx;
+          }
+        if(edge & EDGE_TOP)
+          {
+            fy = geom.y + geom.height;
+            dy = ry - c->geom.y;
+          }
+        else if(edge & EDGE_BOTTOM)
+          {
+            fy = geom.y;
+            dy = geom.y + geom.height - ry;
+          }
         break;
     } /* }}} */
 
@@ -613,7 +639,7 @@ subClientDrag(SubClient *c,
         else c->geom.y -= subtle->step;
 
         ClientSnap(c, s, &c->geom);
-        ClientBounds(c, &(s->geom), &c->geom);
+        ClientBounds(c, &(s->geom), &c->geom, False, False);
         break; /* }}} */
       case SUB_GRAB_DIRECTION_RIGHT: /* {{{ */
         if(SUB_DRAG_RESIZE == mode)
@@ -621,7 +647,7 @@ subClientDrag(SubClient *c,
         else c->geom.x += subtle->step;
 
         ClientSnap(c, s, &c->geom);
-        ClientBounds(c, &(s->geom), &c->geom);
+        ClientBounds(c, &(s->geom), &c->geom, False, False);
         break; /* }}} */
       case SUB_GRAB_DIRECTION_DOWN: /* {{{ */
         if(SUB_DRAG_RESIZE == mode)
@@ -629,7 +655,7 @@ subClientDrag(SubClient *c,
         else c->geom.y += subtle->step;
 
         ClientSnap(c, s, &c->geom);
-        ClientBounds(c, &(s->geom), &c->geom);
+        ClientBounds(c, &(s->geom), &c->geom, False, False);
         break; /* }}} */
       case SUB_GRAB_DIRECTION_LEFT: /* {{{ */
         if(SUB_DRAG_RESIZE == mode)
@@ -640,7 +666,7 @@ subClientDrag(SubClient *c,
         else c->geom.x -= subtle->step;
 
         ClientSnap(c, s, &c->geom);
-        ClientBounds(c, &(s->geom), &c->geom);
+        ClientBounds(c, &(s->geom), &c->geom, False, False);
         break; /* }}}*/
       default: /* {{{ */
         ClientMask(&geom);
@@ -659,7 +685,8 @@ subClientDrag(SubClient *c,
                   if(mode & (SUB_DRAG_MOVE|SUB_DRAG_RESIZE))
                     {
                       /* Check values */
-                      if(!XYINRECT(ev.xmotion.x_root, ev.xmotion.y_root, s->geom))
+                      if(!XYINRECT(ev.xmotion.x_root - dx,
+                          ev.xmotion.y_root - dy, s->geom))
                         continue;
 
                       ClientMask(&geom);
@@ -677,31 +704,28 @@ subClientDrag(SubClient *c,
                             /* Handle resize based on edge */
                             if(edge & EDGE_LEFT)
                               {
-                                geom.x     = ev.xmotion.x_root;
-                                geom.width = sx - ev.xmotion.x_root;
+                                geom.x     = ev.xmotion.x_root - dx;
+                                geom.width = fx - ev.xmotion.x_root + dx;
                               }
                             else if(edge & EDGE_RIGHT)
                               {
-                                geom.x     = sx;
-                                geom.width = ev.xmotion.x_root - sx;
+                                geom.x     = fx;
+                                geom.width = ev.xmotion.x_root - fx + dx;
                               }
                             if(edge & EDGE_TOP)
                               {
-                                geom.y      = ev.xmotion.y_root;
-                                geom.height = sy - ev.xmotion.y_root;
+                                geom.y      = ev.xmotion.y_root - dy;
+                                geom.height = fy - ev.xmotion.y_root + dy;
                               }
                             else if(edge & EDGE_BOTTOM)
                               {
-                                geom.y      = sy;
-                                geom.height = ev.xmotion.y_root - sy;
+                                geom.y      = fy;
+                                geom.height = ev.xmotion.y_root - fy + dy;
                               }
 
-                            /* Adjust for increment values (see ICCCM 4.1.2.3) */
-                            geom.width  -= (geom.width - c->basew)  % c->incw;
-                            geom.height -= (geom.height - c->baseh) % c->inch;
-
-                            ClientBounds(c, &(s->geom), &geom);
-
+                            /* Adjust bounds based on edge */
+                            ClientBounds(c, &(s->geom), &geom,
+                              (edge & EDGE_LEFT), (edge & EDGE_TOP));
                             break; /* }}} */
                         }
 
@@ -840,7 +864,7 @@ subClientResize(SubClient *c,
   assert(c);
 
   /* Honor size hints */
-  if(size_hints) ClientBounds(c, bounds, &c->geom);
+  if(size_hints) ClientBounds(c, bounds, &c->geom, False, False);
 
   /* Fit into bounds */
   if(!(c->flags & SUB_CLIENT_MODE_FULL))
@@ -967,6 +991,7 @@ subClientArrange(SubClient *c,
           /* Set values */
           if(-1 != screen)  c->screen = screen;
           if(-1 != gravity) c->gravity = c->gravities[s->vid] = gravity;
+
           g     = GRAVITY(subArrayGet(subtle->gravities, gravity));
           old_g = GRAVITY(subArrayGet(subtle->gravities, old_gravity));
 
