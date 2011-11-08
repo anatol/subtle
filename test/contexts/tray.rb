@@ -34,11 +34,10 @@ context 'Tray' do
     index  = Subtlext::Tray[TRAY_ID]
     string = Subtlext::Tray[TRAY_NAME]
     sym    = Subtlext::Tray[TRAY_NAME.to_sym]
-    all    = Subtlext::Tray['.*']
+    all    = Subtlext::Tray.find('.*')
     none   = Subtlext::Tray['abcdef']
 
-    index == string and index == sym and index == all and
-      none.empty?
+    index == string and index == sym and none.nil?
   end # }}}
 
   asserts 'First' do # {{{

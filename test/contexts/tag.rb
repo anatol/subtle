@@ -33,12 +33,12 @@ context 'Tag' do
     index  = Subtlext::Tag[TAG_ID]
     string = Subtlext::Tag[TAG_NAME]
     sym    = Subtlext::Tag[TAG_NAME.to_sym]
-    all    = Subtlext::Tag['.*']
+    all    = Subtlext::Tag.find('.*')
     none   = Subtlext::Tag['abcdef']
 
     index == string and index == sym and
       all.is_a?(Array) and TAG_COUNT == all.size and
-      none.empty?
+      none.nil?
   end # }}}
 
   asserts 'First' do # {{{

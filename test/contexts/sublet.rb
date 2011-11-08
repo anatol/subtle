@@ -33,11 +33,10 @@ context 'Sublet' do
     index  = Subtlext::Sublet[SUBLET_ID]
     string = Subtlext::Sublet[SUBLET_NAME]
     sym    = Subtlext::Sublet[SUBLET_NAME.to_sym]
-    all    = Subtlext::Sublet['.*']
+    all    = Subtlext::Sublet.find('.*')
     none   = Subtlext::Sublet['abcdef']
 
-    index == string and index == sym and index == all and
-      none.empty?
+    index == string and index == sym and none.nil?
   end # }}}
 
   asserts 'First' do # {{{

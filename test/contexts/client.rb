@@ -35,11 +35,10 @@ context 'Client' do
     index  = Subtlext::Client[CLIENT_ID]
     string = Subtlext::Client[CLIENT_NAME]
     sym    = Subtlext::Client[CLIENT_NAME.to_sym]
-    all    = Subtlext::Client['.*']
+    all    = Subtlext::Client.find('.*')
     none   = Subtlext::Client['abcdef']
 
-    index == string and index == sym and index == all and
-      none.empty?
+    index == string and index == sym and none.nil?
   end # }}}
 
   asserts 'First' do # {{{

@@ -59,8 +59,6 @@ context 'Screen' do
 
     view3 = topic.view
 
-    p view1, view2, view3
-
     view1 == view3 and 'www' == view2.name
   end # }}}
 

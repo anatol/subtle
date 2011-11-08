@@ -34,12 +34,12 @@ context 'View' do
     index  = Subtlext::View[VIEW_ID]
     string = Subtlext::View[VIEW_NAME]
     sym    = Subtlext::View[VIEW_NAME.to_sym]
-    all    = Subtlext::View['.*']
+    all    = Subtlext::View.find('.*')
     none   = Subtlext::View['abcdef']
 
     index == string and index == sym and
       all.is_a? Array and VIEW_COUNT == all.size and
-      none.empty?
+      none.nil?
   end # }}}
 
   asserts 'First' do # {{{

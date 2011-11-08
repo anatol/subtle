@@ -34,12 +34,12 @@ context 'Gravity' do
     index  = Subtlext::Gravity[GRAVITY_ID]
     string = Subtlext::Gravity[GRAVITY_NAME + '$']
     sym    = Subtlext::Gravity[GRAVITY_NAME.to_sym]
-    all    = Subtlext::Gravity['.*']
+    all    = Subtlext::Gravity.find('.*')
     none   = Subtlext::Gravity['abcdef']
 
     index == string and index == sym and
       all.is_a? Array and GRAVITY_COUNT == all.size and
-      none.empty?
+      none.nil?
   end # }}}
 
   asserts 'First' do # {{{
