@@ -1648,13 +1648,19 @@ subClientKill(SubClient *c)
 
   XDeleteContext(subtle->dpy, c->win, CLIENTID);
 
-  /* Remove highlight of urgent client */
+  /* Remove client tags from urgent tags */
   if(c->flags & SUB_CLIENT_MODE_URGENT)
     subtle->urgent_tags &= ~c->tags;
 
   /* Tile remaining clients if necessary */
-  if(subtle->flags & SUB_SUBTLE_TILING)
-    ClientTile(c->gravity, c->screen);
+  if(VISIBLE(subtle->visible_tags, c))
+    {
+      SubGravity *g = GRAVITY(subArrayGet(subtle->gravities, c->gravity));
+
+      if(g && ((subtle->flags & SUB_SUBTLE_TILING) ||
+          g->flags & (SUB_GRAVITY_HORZ|SUB_GRAVITY_VERT)))
+        ClientTile(c->gravity, c->screen);
+    }
 
   if(c->gravities) free(c->gravities);
   if(c->name)      free(c->name);
