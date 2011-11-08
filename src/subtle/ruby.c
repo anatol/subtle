@@ -3281,20 +3281,12 @@ subRubyInit(void)
 #endif /* HAVE_RB_ENC_SET_DEFAULT_INTERNAL */
 
 /* FIXME: Init ruby gems */
-#ifdef HAVE_RUBY_INIT_PRELUDE
-  void Init_prelude(void);
-
-  /* Fake ruby_init_gems(Qtrue) */
-  rb_define_module("Gem");
-  Init_prelude();
-#else
   {
     char *opts[] = { "ruby", "-e;" };
 
     /* Fake ruby_init_prelude() */
     ruby_options(2, opts);
   }
-#endif
 
   /* FIXME: Autload seems to be broken in <1.9.2, use dispatcher */
   //rb_autoload(rb_cObject, SYM2ID(CHAR2SYM("Subtlext")), "subtle/subtlext");
