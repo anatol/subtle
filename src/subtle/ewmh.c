@@ -83,7 +83,7 @@ subEwmhInit(void)
     "SUBTLE_SCREEN_PANELS", "SUBTLE_SCREEN_VIEWS", "SUBTLE_SCREEN_JUMP",
     "SUBTLE_VISIBLE_TAGS", "SUBTLE_VISIBLE_VIEWS",
     "SUBTLE_RENDER", "SUBTLE_RELOAD", "SUBTLE_RESTART", "SUBTLE_QUIT",
-    "SUBTLE_COLORS", "SUBTLE_FONT", "SUBTLE_DATA"
+    "SUBTLE_COLORS", "SUBTLE_FONT", "SUBTLE_DATA", "SUBTLE_VERSION"
   };
 
   assert(SUB_EWMH_TOTAL == LENGTH(names));
@@ -112,6 +112,8 @@ subEwmhInit(void)
   subEwmhSetString(subtle->windows.support, SUB_EWMH_NET_WM_NAME, PKG_NAME);
   subEwmhSetString(subtle->windows.support, SUB_EWMH_WM_CLASS, PKG_NAME);
   subEwmhSetCardinals(subtle->windows.support, SUB_EWMH_NET_WM_PID, &pid, 1);
+  subEwmhSetString(subtle->windows.support,
+    SUB_EWMH_SUBTLE_VERSION, PKG_VERSION);
 
   /* EWMH: Desktop geometry */
   data[0] = subtle->width;
