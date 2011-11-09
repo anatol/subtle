@@ -72,35 +72,17 @@ PanelClientModes(SubClient *c,
 
   /* Collect window modes */
   if(c->flags & SUB_CLIENT_MODE_FULL)
-    {
-      snprintf(buf + x, sizeof(buf), "%c", '+');
-      x++;
-    }
+    x += snprintf(buf + x, sizeof(buf), "%c", '+');
   if(c->flags & SUB_CLIENT_MODE_FLOAT)
-    {
-      snprintf(buf + x, sizeof(buf), "%c", '^');
-      x++;
-    }
+    x += snprintf(buf + x, sizeof(buf), "%c", '^');
   if(c->flags & SUB_CLIENT_MODE_STICK)
-    {
-      snprintf(buf + x, sizeof(buf), "%c", '*');
-      x++;
-    }
+    x += snprintf(buf + x, sizeof(buf), "%c", '*');
   if(c->flags & SUB_CLIENT_MODE_RESIZE)
-    {
-      snprintf(buf + x, sizeof(buf), "%c", '~');
-      x++;
-    }
+    x += snprintf(buf + x, sizeof(buf), "%c", '~');
   if(c->flags & SUB_CLIENT_MODE_ZAPHOD)
-    {
-      snprintf(buf + x, sizeof(buf), "%c", '=');
-      x++;
-    }
+    x += snprintf(buf + x, sizeof(buf), "%c", '=');
   if(c->flags & SUB_CLIENT_MODE_FIXED)
-    {
-      snprintf(buf + x, sizeof(buf), "%c", '!');
-      x++;
-    }
+    x += snprintf(buf + x, sizeof(buf), "%c", '!');
 
   *width = subSharedTextWidth(subtle->dpy, subtle->styles.title.font,
     buf, strlen(buf), NULL, NULL, True);
