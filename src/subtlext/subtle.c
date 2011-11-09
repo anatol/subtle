@@ -82,7 +82,7 @@ subSubtleSingDisplayWriter(VALUE self,
 VALUE
 subSubtleSingAskRunning(VALUE self)
 {
-  char *prop = NULL;
+  char *version = NULL;
   Window *support = NULL;
   VALUE running = Qfalse;
 
@@ -93,14 +93,14 @@ subSubtleSingAskRunning(VALUE self)
       DefaultRootWindow(display), XA_WINDOW, XInternAtom(display,
       "_NET_SUPPORTING_WM_CHECK", False), NULL)))
     {
-      /* Get property */
-      if((prop = subSharedPropertyGet(display, *support, XInternAtom(display,
-          "UTF8_STRING", False), XInternAtom(display, "_NET_WM_NAME", False),
+      /* Get version property */
+      if((version = subSharedPropertyGet(display, *support, XInternAtom(display,
+          "UTF8_STRING", False), XInternAtom(display, "SUBTLE_VERSION", False),
           NULL)))
         {
-          if(!strncmp(prop, PKG_NAME, strlen(prop))) running = Qtrue;
+          running = Qtrue;
 
-          free(prop);
+          free(version);
         }
 
       free(support);
