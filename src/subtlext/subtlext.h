@@ -179,7 +179,6 @@ VALUE subSubletSingFirst(VALUE self, VALUE value);                ///< Find firs
 VALUE subSubletSingList(VALUE self);                              ///< Get all sublets
 
 /* Class */
-VALUE subSubletInstantiate(char *name);                           ///< Instantiate sublet
 VALUE subSubletInit(VALUE self, VALUE name);                      ///< Create sublet
 VALUE subSubletUpdate(VALUE self);                                ///< Update sublet
 VALUE subSubletDataReader(VALUE self);                            ///< Get sublet data

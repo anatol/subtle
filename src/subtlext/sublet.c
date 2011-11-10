@@ -127,19 +127,6 @@ subSubletSingList(VALUE self)
 
 /* Class */
 
-/* subSubletInstantiate {{{ */
-VALUE
-subSubletInstantiate(char *name)
-{
-  VALUE klass = Qnil, sublet = Qnil;
-
-  /* Create new instance */
-  klass  = rb_const_get(mod, rb_intern("Sublet"));
-  sublet = rb_funcall(klass, rb_intern("new"), 1, rb_str_new2(name));
-
-  return sublet;
-} /* }}} */
-
 /* subSubletInit {{{ */
 /*
  * call-seq: new(name) -> Subtlext::Sublet
