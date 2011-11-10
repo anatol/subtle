@@ -636,6 +636,10 @@ tag "gimp_dock" do
   gravity :gimp_dock
 end
 
+tag "gimp_scum" do
+  match role: "gimp-.*|screenshot"
+end
+
 #
 # == Views
 #
