@@ -1178,16 +1178,6 @@ EventMessage(XClientMessageEvent *ev)
                 subScreenJump(s);
               }
             break; /* }}} */
-          case SUB_EWMH_SUBTLE_SUBLET_NEW: /* {{{ */
-            if(ev->data.b)
-              {
-                subRubyLoadSublet(ev->data.b);
-                subArraySort(subtle->sublets, subPanelCompare);
-                subPanelPublish();
-                subScreenUpdate();
-                subScreenRender();
-              }
-            break; /* }}} */
           case SUB_EWMH_SUBTLE_SUBLET_DATA: /* {{{ */
             if((p = EventFindSublet((int)ev->data.l[0])) &&
                 p->sublet->flags & SUB_SUBLET_DATA)
