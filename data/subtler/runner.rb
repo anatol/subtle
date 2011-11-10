@@ -214,7 +214,8 @@ module Subtle # {{{
                   handle_result(obj.send(@action, arg))
                 end
               when -1
-                if [ Subtlext::View, Subtlext::Tag ].include?(@group)
+                if [ Subtlext::Sublet, Subtlext::Tag,
+                    Subtlext::View ].include?(@group)
                   # Create new object
                   ret = obj.send(@action, arg)
                   ret.save
@@ -397,7 +398,6 @@ module Subtle # {{{
         if group.nil? or Subtlext::Sublet == group
           puts <<-EOF
   Actions for sublets (-s, --Sublet):
-    -a, --add     => -sa PATH               Create new sublet
     -l, --list                              List all sublets
     -u, --update  => -su PATTERN            Updates value of sublet
     -D, --data    => -s PATTERN -D DATA     Set data of sublet
