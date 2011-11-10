@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SUBTLER" "1" "October 2011" "" ""
+.TH "SUBTLER" "1" "November 2011" "" ""
 .
 .SH "NAME"
 \fBsubtler\fR \- a commandline interface for subtle
@@ -48,7 +48,7 @@ If the \fBPATTERN\fR is \- subtler will read from stdin\.
 .SH "OUTPUT"
 .
 .IP "\(bu" 4
-\fBClient listing\fR <window id> [\-*]¹ <view id> <geometry> <gravity> <flags> <instance name> (<class name>)
+\fBClient listing\fR <window id> <visibility> <view id> <geometry> <gravity> <flags> <instance name> (<class name>)
 .
 .IP "\(bu" 4
 \fBGravity listing\fR <gravity id> <geometry>
@@ -63,12 +63,43 @@ If the \fBPATTERN\fR is \- subtler will read from stdin\.
 \fBTray listing\fR <window id> <instance name> (<class name>)
 .
 .IP "\(bu" 4
-\fBView listing\fR <window id> [\-*]¹ <view id> <view name>
+\fBView listing\fR <window id> <visibility> <view id> <view name>
 .
 .IP "" 0
 .
-.P
-¹) \- = not visible, * = visible
+.SH "FIELDS"
+.
+.IP "\(bu" 4
+<window id> Numeric (hex) id (e\.g\. 0xa00009)
+.
+.IP "\(bu" 4
+<visibility> \- = not visible, * = visible
+.
+.IP "\(bu" 4
+<view id> Numeric id (e\.g\. 5)
+.
+.IP "\(bu" 4
+<geometry> x x y + width + height
+.
+.IP "\(bu" 4
+<flags> \- = not set, + = fullscreen, ^ = float, * = stick, ~ = resize, = = zaphod, ! = fixed
+.
+.IP "\(bu" 4
+<instance name> Window instance/resource name
+.
+.IP "\(bu" 4
+<class name> Window class name
+.
+.IP "\(bu" 4
+<gravity id> Numeric id of gravity (e\.g\. 2)
+.
+.IP "\(bu" 4
+<screen id> Numeric id of a screen (e\.g\. 1)
+.
+.IP "\(bu" 4
+<tag name> Name of a tag (e\.g\. terms)
+.
+.IP "" 0
 .
 .SH "OPTIONS"
 .
@@ -124,7 +155,7 @@ Reload subtle
 Restart subtle
 .
 .IP "\(bu" 4
-\fB\-Q\fR, \fB\-\-quit\fR
+\fB\-q\fR, \fB\-\-quit\fR
 .
 .br
 Quit subtle
@@ -358,7 +389,7 @@ Find a gravity
 Kill gravity
 .
 .IP
-\fIExample\fR: subtler \-gf center
+\fIExample\fR: subtler \-gk center
 .
 .IP "" 0
 .
