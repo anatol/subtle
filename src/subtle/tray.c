@@ -22,6 +22,8 @@ SubTray *
 subTrayNew(Window win)
 {
   SubTray *t = NULL;
+  int i, n = 0;
+  Atom *protos = NULL;
 
   assert(win);
 
@@ -38,6 +40,21 @@ subTrayNew(Window win)
   XReparentWindow(subtle->dpy, t->win, subtle->windows.tray, 0, 0);
   XAddToSaveSet(subtle->dpy, t->win);
   XSaveContext(subtle->dpy, t->win, TRAYID, (void *)t);
+
+  /* Window manager protocols */
+  if(XGetWMProtocols(subtle->dpy, t->win, &protos, &n))
+    {
+      for(i = 0; i < n; i++)
+        {
+          switch(subEwmhFind(protos[i]))
+            {
+              case SUB_EWMH_WM_DELETE_WINDOW: t->flags |= SUB_TRAY_CLOSE; break;
+              default: break;
+            }
+         }
+
+      XFree(protos);
+    }
 
   /* Start embedding life cycle */
   subEwmhMessage(t->win, SUB_EWMH_XEMBED, 0xFFFFFF, CurrentTime,
@@ -198,27 +215,42 @@ subTrayDeselect(void)
     }
 } /* }}} */
 
- /** subTrayPublish {{{
-  * @brief Publish trays
+ /** subTrayClose {{{
+  * @brief Send tray delete message or just kill it
+  * @param[in]  t  A #SubTray
   **/
 
 void
-subTrayPublish(void)
+subTrayClose(SubTray *t)
 {
-  int i;
-  Window *wins = (Window *)subSharedMemoryAlloc(subtle->trays->ndata, sizeof(Window));
+  assert(t);
 
-  for(i = 0; i < subtle->trays->ndata; i++)
-    wins[i] = TRAY(subtle->trays->data[i])->win;
+  /* Honor window preferences (see ICCCM 4.1.2.7, 4.2.8.1) */
+  if(t->flags & SUB_TRAY_CLOSE)
+    {
+      subEwmhMessage(t->win, SUB_EWMH_WM_PROTOCOLS, NoEventMask,
+        subEwmhGet(SUB_EWMH_WM_DELETE_WINDOW), CurrentTime, 0, 0, 0);
+    }
+  else
+    {
+      int focus = (subtle->windows.focus[0] == t->win); ///< Save
 
-  /* EWMH: Client list and client list stacking */
-  subEwmhSetWindows(ROOT, SUB_EWMH_SUBTLE_TRAY_LIST, wins, subtle->trays->ndata);
+      /* Kill it manually */
+      XKillClient(subtle->dpy, t->win);
 
-  XSync(subtle->dpy, False); ///< Sync all changes
+      subArrayRemove(subtle->trays, (void *)t);
+      subTrayKill(t);
+      subTrayPublish();
+      subTrayUpdate();
 
-  free(wins);
+      subScreenUpdate();
+      subScreenRender();
 
-  subSubtleLogDebugSubtle("Publish: trays=%d\n", subtle->trays->ndata);
+      /* Update focus if necessary */
+      if(focus) subSubtleFocus(True);
+    }
+
+  subSubtleLogDebugSubtle("Close\n");
 } /* }}} */
 
  /** subTrayKill {{{
@@ -244,6 +276,31 @@ subTrayKill(SubTray *t)
   free(t);
 
   subSubtleLogDebugSubtle("Kill\n");
+} /* }}} */
+
+/* All */
+
+ /** subTrayPublish {{{
+  * @brief Publish trays
+  **/
+
+void
+subTrayPublish(void)
+{
+  int i;
+  Window *wins = (Window *)subSharedMemoryAlloc(subtle->trays->ndata, sizeof(Window));
+
+  for(i = 0; i < subtle->trays->ndata; i++)
+    wins[i] = TRAY(subtle->trays->data[i])->win;
+
+  /* EWMH: Client list and client list stacking */
+  subEwmhSetWindows(ROOT, SUB_EWMH_SUBTLE_TRAY_LIST, wins, subtle->trays->ndata);
+
+  XSync(subtle->dpy, False); ///< Sync all changes
+
+  free(wins);
+
+  subSubtleLogDebugSubtle("Publish: trays=%d\n", subtle->trays->ndata);
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker
