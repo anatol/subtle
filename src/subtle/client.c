@@ -1646,6 +1646,8 @@ subClientKill(SubClient *c)
   subSharedPropertyDelete(subtle->dpy, c->win,
     subEwmhGet(SUB_EWMH_NET_WM_STATE));
 
+  /* Ignore further events and delete context */
+  XSelectInput(subtle->dpy, c->win, NoEventMask);
   XDeleteContext(subtle->dpy, c->win, CLIENTID);
 
   /* Remove client tags from urgent tags */

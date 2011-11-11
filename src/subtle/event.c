@@ -348,10 +348,6 @@ EventDestroy(XDestroyWindowEvent *ev)
   /* Check if we know this window */
   if((c = CLIENT(subSubtleFind(ev->window, CLIENTID)))) ///< Client
     {
-      /* Ignore remaining events */
-      c->flags |= SUB_CLIENT_DEAD;
-      XSelectInput(subtle->dpy, c->win, NoEventMask);
-
       /* Kill client */
       subArrayRemove(subtle->clients, (void *)c);
       subClientKill(c);
@@ -884,7 +880,7 @@ EventMap(XMapEvent *ev)
       t->flags &= ~SUB_TRAY_DEAD;
 
       subTrayUpdate();
-      subScreenConfigure();
+      subScreenUpdate();
       subScreenRender();
     }
 
@@ -1407,12 +1403,7 @@ EventMessage(XClientMessageEvent *ev)
       switch(subEwmhFind(ev->message_type))
         {
           case SUB_EWMH_NET_CLOSE_WINDOW: /* {{{ */
-            subArrayRemove(subtle->trays, (void *)r);
-            subTrayKill(r);
-            subTrayPublish();
-            subTrayUpdate();
-            subScreenUpdate();
-            subScreenRender();
+            subTrayClose(r);
             break; /* }}} */
           default: break;
         }
@@ -1652,10 +1643,7 @@ EventUnmap(XUnmapEvent *ev)
           return;
         }
 
-      /* Kill client */
-      c->flags |= SUB_CLIENT_DEAD;
-      XSelectInput(subtle->dpy, c->win, NoEventMask);
-
+      /*  Kill client */
       subArrayRemove(subtle->clients, (void *)c);
       subClientKill(c);
       subClientPublish(False);
@@ -1672,7 +1660,7 @@ EventUnmap(XUnmapEvent *ev)
       /* Set withdrawn state (see ICCCM 4.1.4) */
       subEwmhSetWMState(t->win, WithdrawnState);
 
-      /* Ignore out own generated unmap events */
+      /* Ignore our own generated unmap events */
       if(t->flags & SUB_TRAY_UNMAP)
         {
           t->flags &= ~SUB_TRAY_UNMAP;
@@ -1681,8 +1669,6 @@ EventUnmap(XUnmapEvent *ev)
         }
 
       /*  Kill tray */
-      t->flags |= SUB_TRAY_DEAD;
-
       subArrayRemove(subtle->trays, (void *)t);
       subTrayKill(t);
       subTrayUpdate();
