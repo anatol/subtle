@@ -313,9 +313,9 @@
 #define SUB_SUBLET_UNLOAD             (1L << 16)                  ///< Sublet unload function
 
 /* Screen flags */
-#define SUB_SCREEN_PANEL1             (1L << 10)                  ///< Panel1 enabled
-#define SUB_SCREEN_PANEL2             (1L << 11)                  ///< Panel2 enabled
-#define SUB_SCREEN_STIPPLE            (1L << 12)                  ///< Stipple enabled
+#define SUB_SCREEN_PANEL1             (1L << 10)                  ///< Screen sanel1 enabled
+#define SUB_SCREEN_PANEL2             (1L << 11)                  ///< Screen sanel2 enabled
+#define SUB_SCREEN_STIPPLE            (1L << 12)                  ///< Screen stipple enabled
 
 /* Style flags */
 #define SUB_STYLE_FONT                (1L << 10)                  ///< Style has custom font
@@ -350,8 +350,9 @@
 #define SUB_TAG_MATCH_AND             (1L << 15)                  ///< Match logical AND
 
 /* Tray flags */
-#define SUB_TRAY_DEAD                 (1L << 9)                   ///< Dead window
-#define SUB_TRAY_UNMAP                (1L << 10)                  ///< Ignore unmaps
+#define SUB_TRAY_DEAD                 (1L << 10)                  ///< Dead window
+#define SUB_TRAY_CLOSE                (1L << 12)                  ///< Send close message
+#define SUB_TRAY_UNMAP                (1L << 11)                  ///< Ignore unmaps
 
 /* View flags */
 #define SUB_VIEW_ICON                 (1L << 10)                  ///< View icon
@@ -921,8 +922,9 @@ void subTrayUpdate(void);                                         ///< Update tr
 void subTraySetState(SubTray *t);                                 ///< Set state
 void subTraySelect(void);                                         ///< Set selection
 void subTrayDeselect(void);                                       ///< Get selection
-void subTrayPublish(void);                                        ///< Publish trays
+void subTrayClose(SubTray *t);                                    ///< Close tray
 void subTrayKill(SubTray *t);                                     ///< Delete tray
+void subTrayPublish(void);                                        ///< Publish trays
 /* }}} */
 
 /* view.c {{{ */
