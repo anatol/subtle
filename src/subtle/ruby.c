@@ -1444,7 +1444,7 @@ RubyWrapCall(VALUE data)
             Atom prop = subEwmhGet(SUB_EWMH_SUBTLE_DATA);
             VALUE meth = rb_intern("__data"), str = Qnil;
 
-            /* Get data */
+            /* Fetch data or create empty string */
             if((list = subSharedPropertyGetStrings(subtle->dpy, ROOT,
                 prop, &nlist)))
               {
@@ -1453,9 +1453,11 @@ RubyWrapCall(VALUE data)
 
                 XFreeStringList(list);
               }
+            else str = rb_str_new2("");
 
             subSharedPropertyDelete(subtle->dpy, ROOT, prop);
 
+            /* Finally call method */
             rb_funcall(rargs[1], meth,
               MINMAX(rb_obj_method_arity(rargs[1], meth), 1, 2),
               rargs[1], str);
