@@ -181,8 +181,7 @@ VALUE subSubletSingList(VALUE self);                              ///< Get all s
 /* Class */
 VALUE subSubletInit(VALUE self, VALUE name);                      ///< Create sublet
 VALUE subSubletUpdate(VALUE self);                                ///< Update sublet
-VALUE subSubletDataReader(VALUE self);                            ///< Get sublet data
-VALUE subSubletDataWriter(VALUE self, VALUE value);               ///< Set sublet data
+VALUE subSubletSend(VALUE self, VALUE value);                     ///< Send data to sublet
 VALUE subSubletVisibilityShow(VALUE self);                        ///< Show sublet
 VALUE subSubletVisibilityHide(VALUE self);                        ///< Hide sublet
 VALUE subSubletGeometryReader(VALUE self);                        ///< Get sublet geometry

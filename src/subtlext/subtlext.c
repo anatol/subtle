@@ -2169,8 +2169,7 @@ Init_subtlext(void)
   /* Class methods */
   rb_define_method(sublet, "initialize", subSubletInit,           1);
   rb_define_method(sublet, "update",     subSubletUpdate,         0);
-  rb_define_method(sublet, "data",       subSubletDataReader,     0);
-  rb_define_method(sublet, "data=",      subSubletDataWriter,     1);
+  rb_define_method(sublet, "send_data",  subSubletSend,           1);
   rb_define_method(sublet, "show",       subSubletVisibilityShow, 0);
   rb_define_method(sublet, "hide",       subSubletVisibilityHide, 0);
   rb_define_method(sublet, "to_str",     subSubletToString,       0);

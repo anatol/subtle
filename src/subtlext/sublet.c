@@ -183,40 +183,19 @@ subSubletUpdate(VALUE self)
   return Qnil;
 } /* }}} */
 
-/* subSubletDataReader {{{ */
+/* subSubletSend {{{ */
 /*
- * call-seq: data -> String
+ * call-seq: send_data(string) -> nil
  *
- * Get data of this Sublet.
+ * Send given string data to a :data event of a Sublet. The data is
+ * passed as second argument.
  *
- *  puts sublet.data
- *  => "subtle"
+ *  sublet.send_data("subtle")
+ *  => nil
  */
 
 VALUE
-subSubletDataReader(VALUE self)
-{
-  VALUE id = Qnil;
-
-  /* Check ruby object */
-  rb_check_frozen(self);
-  GET_ATTR(self, "@id", id);
-
-  return id;
-} /* }}} */
-
-/* subSubletDataWriter {{{ */
-/*
- * call-seq: data=(string) -> String
- *
- * Set data of this Sublet.
- *
- *  sublet.data = "subtle"
- *  => "subtle"
- */
-
-VALUE
-subSubletDataWriter(VALUE self,
+subSubletSend(VALUE self,
   VALUE value)
 {
   VALUE id = Qnil;
@@ -237,7 +216,7 @@ subSubletDataWriter(VALUE self,
         XInternAtom(display, "SUBTLE_DATA", False), &list, 1);
       free(list);
 
-      data.l[0] = FIX2LONG(id);
+      data.l[0] = FIX2INT(id);
 
       subSharedMessage(display, DefaultRootWindow(display),
         "SUBTLE_SUBLET_DATA", data, 32, True);
@@ -245,7 +224,7 @@ subSubletDataWriter(VALUE self,
   else rb_raise(rb_eArgError, "Unexpected value-type `%s'",
     rb_obj_classname(value));
 
-  return value;
+  return Qnil;
 } /* }}} */
 
 /* subSubletVisibilityShow {{{ */
