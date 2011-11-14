@@ -117,7 +117,7 @@ module Subtle # {{{
             when '--clients' then @action = :clients
             when '--views'   then @action = :views
             when '--update'  then @action = :update
-            when '--data'    then @action = :data=
+            when '--data'    then @action = :send_data
             when '--gravity' then @action = :gravity=
             when '--raise'   then @action = :raise
             when '--lower'   then @action = :lower
@@ -400,7 +400,7 @@ module Subtle # {{{
   Actions for sublets (-s, --Sublet):
     -l, --list                              List all sublets
     -u, --update  => -su PATTERN            Updates value of sublet
-    -D, --data    => -s PATTERN -D DATA     Set data of sublet
+    -D, --data    => -s PATTERN -D DATA     Send data to sublet
     -k, --kill    => -sk PATTERN            Kill sublet
 
           EOF
