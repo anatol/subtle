@@ -64,11 +64,7 @@ context 'Tray' do
   end # }}}
 
   asserts 'Kill a tray' do # {{{
-    topic.kill
-
-    sleep 1
-
-    0 == Subtlext::Tray.all.size
+    nil == topic.kill
   end # }}}
 end
 
