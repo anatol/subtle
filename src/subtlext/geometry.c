@@ -70,6 +70,7 @@ subGeometryToRect(VALUE self,
  * call-seq: new(x, y, width, height) -> Subtlext::Geometry
  *           new(array)               -> Subtlext::Geometry
  *           new(hash)                -> Subtlext::Geometry
+ *           new(string)              -> Subtlext::Geometry
  *           new(geometry)            -> Subtlext::Geometry
  *
  * Create a new Geometry object from givem <i>value</i> which can be of
@@ -77,6 +78,7 @@ subGeometryToRect(VALUE self,
  *
  * [Array]    Must be an array with values for x, y, width and height
  * [Hash]     Must be a hash with values for x, y, width and height
+ * [String]   Must be a string of following format: XxY+WIDTH+HEIGHT
  * [Geometry] Copy geometry from a Geometry object
  *
  * Or just pass one argument for x, y, width and height.
@@ -93,6 +95,9 @@ subGeometryToRect(VALUE self,
  *  geom = Subtlext::Geometry.new({ :x => 0, :y => 0, :width => 50, :height => 50 })
  *  => #<Subtlext::Geometry:xxx>
  *
+ *  geom = Subtlext::Geometry.new("0x0+100+100")
+ *  => #<Subtlext::Geometry:xxx>
+ *
  *  geom = Subtlext::Geometry.new(Subtlext::Geometry.new(0, 0, 50, 50))
  *  => #<Subtlext::Geometry:xxx>
  */
@@ -104,7 +109,7 @@ subGeometryInit(int argc,
 {
   VALUE value = Qnil, data[4] = { Qnil };
 
-  rb_scan_args(argc, argv, "04", &data[0], &data[1], &data[2], &data[3]);
+  rb_scan_args(argc, argv, "13", &data[0], &data[1], &data[2], &data[3]);
   value = data[0];
 
   /* Check object type */
@@ -127,6 +132,20 @@ subGeometryInit(int argc,
 
             for(i = 0; 4 > i; i++)
               data[i] = rb_hash_lookup(value, CHAR2SYM(syms[i]));
+          }
+        break;
+      case T_STRING:
+          {
+            XRectangle geom = { 0 };
+
+            sscanf(RSTRING_PTR(value), "%hdx%hd+%hu+%hu",
+              &geom.x, &geom.y, &geom.width, &geom.height);
+
+            /* Convert values */
+            data[0] = INT2FIX(geom.x);
+            data[1] = INT2FIX(geom.y);
+            data[2] = INT2FIX(geom.width);
+            data[3] = INT2FIX(geom.height);
           }
         break;
       case T_OBJECT:
