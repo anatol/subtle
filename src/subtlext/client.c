@@ -1202,6 +1202,7 @@ subClientGeometryReader(VALUE self)
  * call-seq: geometry=(x, y, width, height) -> Subtlext::Geometry
  *           geometry=(array)               -> Subtlext::Geometry
  *           geometry=(hash)                -> Subtlext::Geometry
+ *           geometry=(string)              -> Subtlext::Geometry
  *           geometry=(geometry)            -> Subtlext::Geometry
  *
  * Set Client geometry.
@@ -1213,6 +1214,9 @@ subClientGeometryReader(VALUE self)
  *  => #<Subtlext::Geometry:xxx>
  *
  *  client.geometry = {x: 0, y: 0, width: 100, height: 100 }
+ *  => #<Subtlext::Geometry:xxx>
+ *
+ *  client.geometry = "0x0+100+100"
  *  => #<Subtlext::Geometry:xxx>
  *
  *  client.geometry = Subtlext::Geometry(0, 0, 100, 100)

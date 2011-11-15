@@ -29,14 +29,13 @@ GravityFindId(char *match,
 {
   int ret = -1, ngravities = 0;
   char **gravities = NULL;
-  regex_t *preg = NULL;
 
   assert(match);
 
   /* Find gravity id */
-  if((preg = subSharedRegexNew(match)) &&
-      (gravities = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
-      XInternAtom(display, "SUBTLE_GRAVITY_LIST", False), &ngravities)))
+  if((gravities = subSharedPropertyGetStrings(display,
+      DefaultRootWindow(display), XInternAtom(display,
+      "SUBTLE_GRAVITY_LIST", False), &ngravities)))
     {
       int i;
       XRectangle geom = { 0 };
@@ -49,12 +48,13 @@ GravityFindId(char *match,
 
           /* Check id and name */
           if((isdigit(match[0]) && atoi(match) == i) ||
-              (!isdigit(match[0]) && subSharedRegexMatch(preg, buf)))
+              (!isdigit(match[0]) && 0 == strcmp(match, buf)))
             {
               if(geometry) *geometry = geom;
               if(name)
                 {
-                  *name = (char *)subSharedMemoryAlloc(strlen(buf) + 1, sizeof(char));
+                  *name = (char *)subSharedMemoryAlloc(strlen(buf) + 1,
+                    sizeof(char));
                   strncpy(*name, buf, strlen(buf));
                 }
 
@@ -64,7 +64,6 @@ GravityFindId(char *match,
        }
     }
 
-  if(preg)       subSharedRegexKill(preg);
   if(gravities) XFreeStringList(gravities);
 
   return ret;
@@ -204,9 +203,11 @@ subGravityInstantiate(char *name)
  * call-seq: new(name, x, y, width, height) -> Subtlext::Gravity
  *           new(name, array)               -> Subtlext::Gravity
  *           new(name, hash)                -> Subtlext::Gravity
+ *           new(name, string)              -> Subtlext::Gravity
  *           new(name, geometry)            -> Subtlext::Gravity
  *
- * Create a new Gravity object locally <b>without</b> calling #save automatically.
+ * Create a new Gravity object locally <b>without</b> calling
+ * #save automatically.
  *
  * The Gravity <b>won't</b> be useable until #save is called.
  *
@@ -473,6 +474,7 @@ subGravityGeometryReader(VALUE self)
  * call-seq: geometry=(x, y, width, height) -> Subtlext::Geometry
  *           geometry=(array)               -> Subtlext::Geometry
  *           geometry=(hash)                -> Subtlext::Geometry
+ *           geometry=(string)              -> Subtlext::Geometry
  *           geometry=(geometry)            -> Subtlext::Geometry
  *
  * Set the Gravity Geometry
@@ -484,6 +486,9 @@ subGravityGeometryReader(VALUE self)
  *  => #<Subtlext::Geometry:xxx>
  *
  *  gravity.geometry = {x: 0, y: 0, width: 100, height: 100 }
+ *  => #<Subtlext::Geometry:xxx>
+ *
+ *  gravity.geometry = "0x0+100+100"
  *  => #<Subtlext::Geometry:xxx>
  *
  *  gravity.geometry = Subtlext::Geometry(0, 0, 100, 100)
@@ -508,7 +513,7 @@ subGravityGeometryWriter(int argc,
   /* Update geometry */
   if(RTEST(geom)) rb_iv_set(self, "@geometry", geom);
 
-  return Qnil;
+  return geom;
 } /* }}} */
 
 /* subGravityTilingWriter {{{ */
