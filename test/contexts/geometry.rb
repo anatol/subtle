@@ -11,15 +11,16 @@
 
 context 'Geometry' do
   setup do # {{{
-    Subtlext::Geometry.new 0, 0, 1, 1
+    Subtlext::Geometry.new(0, 0, 1, 1)
   end # }}}
 
   asserts 'Init types' do # {{{
-    g1 = Subtlext::Geometry.new topic
-    g2 = Subtlext::Geometry.new [ 0, 0, 1, 1 ]
+    g1 = Subtlext::Geometry.new(topic)
+    g2 = Subtlext::Geometry.new([ 0, 0, 1, 1 ])
     g3 = Subtlext::Geometry.new({ x: 0, y: 0, width: 1, height: 1 })
+    g4 = Subtlext::Geometry.new("0x0+1+1")
 
-    topic == g1 and g1 == g2 and g1 == g3
+    topic == g1 and g1 == g2 and g1 == g3 and g1 == g4
   end # }}}
 
   asserts 'Check attributes' do # {{{
@@ -34,7 +35,7 @@ context 'Geometry' do
   end # }}}
 
   asserts 'Equal and compare' do # {{{
-    topic.eql? Subtlext::Geometry.new(0, 0, 1, 1) and topic == topic
+    topic.eql?(Subtlext::Geometry.new(0, 0, 1, 1)) and topic == topic
   end # }}}
 
   asserts 'Convert to string' do # {{{
