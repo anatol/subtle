@@ -193,11 +193,11 @@ module Subtle # {{{
             # Check singleton and instance methods
             if (@group.singleton_methods << :new).include?(@action)
               obj   = @group
-              arg   = arg1
+              args  = [ arg1, arg2 ].compact
               arity = obj.method(@action).arity
             elsif @group.instance_methods.include?(@action)
               obj   = @group.send(:find, arg1)
-              arg   = arg2
+              args  = [ arg2 ]
               arity = @group.instance_method(@action).arity
             end
 
@@ -208,16 +208,16 @@ module Subtle # {{{
                 if obj.is_a?(Array)
                   obj.each do |o|
                     p '%s:' % o if 1 < obj.size
-                    handle_result(o.send(@action, arg))
+                    handle_result(o.send(@action, *args))
                   end
                 else
-                  handle_result(obj.send(@action, arg))
+                  handle_result(obj.send(@action, *args))
                 end
               when -1
                 if [ Subtlext::Sublet, Subtlext::Tag,
-                    Subtlext::View ].include?(@group)
+                    Subtlext::View, Subtlext::Gravity ].include?(@group)
                   # Create new object
-                  ret = obj.send(@action, arg)
+                  ret = obj.send(@action, *args)
                   ret.save
 
                   handle_result(ret)
