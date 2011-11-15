@@ -10,7 +10,7 @@
 #
 
 context 'Tag' do
-  TAG_COUNT = 12
+  TAG_COUNT = 13
   TAG_ID    = 1
   TAG_NAME  = 'terms'
 
@@ -25,7 +25,7 @@ context 'Tag' do
   asserts 'Get list' do # {{{
     list = Subtlext::Tag.list
 
-    list.is_a? Array and TAG_COUNT == list.size and
+    list.is_a?(Array) and TAG_COUNT == list.size and
       Subtlext::Tag.method(:all) == Subtlext::Tag.method(:list)
   end # }}}
 

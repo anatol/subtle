@@ -15,8 +15,8 @@ context 'Color' do
   end # }}}
 
   asserts 'Init types' do # {{{
-    c1 = Subtlext::Color.new topic
-    c2 = Subtlext::Color.new [ 255, 0, 0 ]
+    c1 = Subtlext::Color.new(topic)
+    c2 = Subtlext::Color.new([ 255, 0, 0 ])
     c3 = Subtlext::Color.new({ red: 255, green: 0, blue: 0 })
 
     topic == c1 and c1 == c2 and c1 == c3
@@ -35,11 +35,11 @@ context 'Color' do
   end # }}}
 
   asserts 'Equal and compare' do # {{{
-    topic.eql? Subtlext::Color.new('#ff0000') and topic == topic
+    topic.eql?(Subtlext::Color.new('#ff0000')) and topic == topic
   end # }}}
 
   asserts 'Convert to string' do # {{{
-    topic.to_str.match /<>#[0-9]+<>/
+    topic.to_str.match(/<>#[0-9]+<>/)
   end # }}}
 end
 

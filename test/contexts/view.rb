@@ -38,7 +38,7 @@ context 'View' do
     none   = Subtlext::View['abcdef']
 
     index == string and index == sym and
-      all.is_a? Array and VIEW_COUNT == all.size and
+      all.is_a?(Array) and VIEW_COUNT == all.size and
       none.nil?
   end # }}}
 

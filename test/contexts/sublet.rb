@@ -51,11 +51,11 @@ context 'Sublet' do
   end # }}}
 
   asserts 'Get geometry' do # {{{
-    topic.geometry.is_a? Subtlext::Geometry
+    topic.geometry.is_a?(Subtlext::Geometry)
   end # }}}
 
   asserts 'Equal and compare' do # {{{
-    topic.eql? topic and topic == topic
+    topic.eql?(topic) and topic == topic
   end # }}}
 
   asserts 'Convert to string' do # {{{

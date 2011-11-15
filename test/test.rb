@@ -32,7 +32,7 @@ end
 
 def fork_and_forget(cmd)
   pid = Process.fork
-  if(pid.nil?)
+  if pid.nil?
     exec(cmd)
   else
     Process.detach(pid)
@@ -40,7 +40,7 @@ def fork_and_forget(cmd)
 end
 
 # Find xterm
-if((xterm = find_executable0("xterm")).nil?)
+if (xterm = find_executable0("xterm")).nil?
   raise "xterm not found in path"
 end
 

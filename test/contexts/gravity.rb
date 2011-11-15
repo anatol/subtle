@@ -38,7 +38,7 @@ context 'Gravity' do
     none   = Subtlext::Gravity['abcdef']
 
     index == string and index == sym and
-      all.is_a? Array and GRAVITY_COUNT == all.size and
+      all.is_a?(Array) and GRAVITY_COUNT == all.size and
       none.nil?
   end # }}}
 
@@ -50,13 +50,13 @@ context 'Gravity' do
   end # }}}
 
   asserts 'Equal and compare' do # {{{
-    topic.eql? Subtlext::Gravity.first(GRAVITY_ID) and topic == topic
+    topic.eql?(Subtlext::Gravity.first(GRAVITY_ID)) and topic == topic
   end # }}}
 
   asserts 'Check associations' do # {{{
     clients = topic.clients
 
-    clients.is_a? Array and 1 == clients.size
+    clients.is_a?(Array) and 1 == clients.size
   end # }}}
 
   asserts 'Convert to string' do # {{{

@@ -15,7 +15,7 @@ context "Icon" do
   end # }}}
 
   asserts("Equal and compare") do # {{{
-    topic.eql? Subtlext::Icon.new(8, 8) and topic == topic
+    topic.eql?(Subtlext::Icon.new(8, 8)) and topic == topic
   end # }}}
 
   asserts("Check attributes") do # {{{

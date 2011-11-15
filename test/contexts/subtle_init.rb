@@ -17,7 +17,7 @@ context 'Subtle - Init' do
   end # }}}
 
   asserts 'Check colors' do # {{{
-    Subtlext::Subtle.colors.is_a? Hash and
+    Subtlext::Subtle.colors.is_a?(Hash) and
       COLORS_COUNT == Subtlext::Subtle.colors.size
   end # }}}
 
@@ -26,7 +26,7 @@ context 'Subtle - Init' do
   end # }}}
 
   asserts 'Check spawn' do # {{{
-    if((xterm = find_executable0('xterm')).nil?)
+    if (xterm = find_executable0('xterm')).nil?
       raise 'xterm not found in path'
     else
       Subtlext::Subtle.spawn("#{xterm} -display :10")
