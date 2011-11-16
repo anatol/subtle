@@ -399,6 +399,7 @@ module Subtle # {{{
           puts <<-EOF
   Actions for sublets (-s, --Sublet):
     -l, --list                              List all sublets
+    -f, --find    => -sf PATTERN            Find sublet
     -u, --update  => -su PATTERN            Updates value of sublet
     -D, --data    => -s PATTERN -D DATA     Send data to sublet
     -k, --kill    => -sk PATTERN            Kill sublet
