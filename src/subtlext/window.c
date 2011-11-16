@@ -312,7 +312,7 @@ subWindowSingOnce(VALUE self,
   return ret;
 } /* }}} */
 
-/* Class */
+/* Helper */
 
 /* subWindowInstantiate {{{ */
 VALUE
@@ -326,6 +326,8 @@ subWindowInstantiate(VALUE geometry)
 
   return win;
 } /* }}} */
+
+/* Class */
 
 /* subWindowAlloc {{{ */
 /*
@@ -478,12 +480,12 @@ subWindowSubwindow(VALUE self,
 
 /* subWindowNameWriter {{{ */
 /*
- * call-seq: name=(str) -> nil
+ * call-seq: name=(str) -> String
  *
  * Set the WM_NAME of a Window-
  *
  *  win.name = "sublet"
- *  => nil
+ *  => "sublet"
  */
 
 VALUE
@@ -523,17 +525,17 @@ subWindowNameWriter(VALUE self,
         rb_obj_classname(value));
     }
 
-  return Qnil;
+  return value;
 } /* }}} */
 
 /* subWindowFontWriter {{{ */
 /*
- * call-seq: font=(string) -> nil
+ * call-seq: font=(string) -> String
  *
  * Set the font that is used for text inside of a W.indow
  *
- *  win.font = "-*-fixed-*-*-*-*-10-*-*-*-*-*-*-*"
- *  => nil
+ *  win.font = "-*-*-*-*-*-*-10-*-*-*-*-*-*-*"
+ *  => "-*-*-*-*-*-*-10-*-*-*-*-*-*-*"
  */
 
 VALUE
@@ -568,7 +570,7 @@ subWindowFontWriter(VALUE self,
         rb_obj_classname(value));
     }
 
-  return Qnil;
+  return value;
 } /* }}} */
 
 /* subWindowFontYReader {{{ */
@@ -651,11 +653,11 @@ subWindowFontWidth(VALUE self,
 
 /* subWindowForegroundWriter {{{ */
 /*
- * call-seq: foreground=(string) -> nil
- *           foreground=(array)  -> nil
- *           foreground=(hash)   -> nil
- *           foreground=(fixnum) -> nil
- *           foreground=(color)  -> nil
+ * call-seq: foreground=(string) -> String
+ *           foreground=(array)  -> Array
+ *           foreground=(hash)   -> Hash
+ *           foreground=(fixnum) -> Fixnum
+ *           foreground=(object) -> Subtlext::Color
  *
  * Set the foreground color of this Window which can be of
  * following types:
@@ -664,10 +666,10 @@ subWindowFontWidth(VALUE self,
  * [Array]  Must be an array with values for red, green and blue
  * [Hash]   Must be a hash with values for red, green and blue
  * [Fixnum] Pixel representation of a color in Xlib
- * [Color]  Copy color from a Color object
+ * [Object] Copy color from a Color object
  *
  *  win.foreground = "#000000"
- *  => nil
+ *  => "#000000"
  */
 
 VALUE
@@ -682,16 +684,16 @@ subWindowForegroundWriter(VALUE self,
   Data_Get_Struct(self, SubtlextWindow, w);
   if(w) w->fg = subColorPixel(value, Qnil, Qnil, NULL);
 
-  return Qnil;
+  return value;
 } /* }}} */
 
 /* subWindowBackgroundWriter {{{ */
 /*
- * call-seq: background=(string) -> nil
- *           background=(array)  -> nil
- *           background=(hash)   -> nil
- *           background=(fixnum) -> nil
- *           background=(color)  -> nil
+ * call-seq: background=(string) -> String
+ *           background=(array)  -> Array
+ *           background=(hash)   -> Hash
+ *           background=(fixnum) -> Fixnum
+ *           background=(object) -> Subtlext::Color
  *
  * Set the background color of this Window which can be of
  * following types:
@@ -700,10 +702,10 @@ subWindowForegroundWriter(VALUE self,
  * [Array]  Must be an array with values for red, green and blue
  * [Hash]   Must be a hash with values for red, green and blue
  * [Fixnum] Pixel representation of a color in Xlib
- * [Color]  Copy color from a Color object
+ * [Object] Copy color from a Color object
 
  *  win.background = "#000000"
- *  => nil
+ *  => "#000000"
  */
 
 VALUE
@@ -723,16 +725,16 @@ subWindowBackgroundWriter(VALUE self,
       XSetWindowBackground(display, w->win, w->bg);
     }
 
-  return Qnil;
+  return value;
 } /* }}} */
 
 /* subWindowBorderColorWriter {{{ */
 /*
- * call-seq: border=(string) -> nil
- *           border=(array)  -> nil
- *           border=(hash)   -> nil
- *           border=(fixnum) -> nil
- *           border=(color)  -> nil
+ * call-seq: border=(string) -> String
+ *           border=(array)  -> Array
+ *           border=(hash)   -> Hash
+ *           border=(fixnum) -> Fixnum
+ *           border=(object) -> Subtlext::Color
  *
  * Set the border color of this Window which can be of
  * following types:
@@ -741,10 +743,10 @@ subWindowBackgroundWriter(VALUE self,
  * [Array]  Must be an array with values for red, green and blue
  * [Hash]   Must be a hash with values for red, green and blue
  * [Fixnum] Pixel representation of a color in Xlib
- * [Color]  Copy color from a Color object
+ * [Object] Copy color from a Color object
  *
  *  win.border_color = "#000000"
- *  => nil
+ *  => "#000000"
  */
 
 VALUE
@@ -769,12 +771,12 @@ subWindowBorderColorWriter(VALUE self,
 
 /* subWindowBorderSizeWriter {{{ */
 /*
- * call-seq: border_size=(fixnum) -> nil
+ * call-seq: border_size=(fixnum) -> Fixnum
  *
  * Set border size of this Window.
  *
  *  win.border_size = 3
- *  => nil
+ *  => 3
  */
 
 VALUE
@@ -803,7 +805,7 @@ subWindowBorderSizeWriter(VALUE self,
         rb_obj_classname(value));
     }
 
-  return Qnil;
+  return value;
 } /* }}} */
 
 /* subWindowGeometryReader {{{ */
@@ -830,10 +832,9 @@ subWindowGeometryReader(VALUE self)
 
 /* subWindowGeometryWriter {{{ */
 /*
- * call-seq: geometry=(value)    -> nil
- *           geometry=(array)    -> nil
- *           geometry=(hash)     -> nil
- *           geometry=(geometry) -> nil
+ * call-seq: geometry=(array)  -> Array
+ *           geometry=(hash)   -> Hash
+ *           geometry=(object) -> Subtlext::Geometry
  *
  * Set the geometry of this Window which can be of following
  * types:
@@ -843,7 +844,7 @@ subWindowGeometryReader(VALUE self)
  * [Geometry] Copy geometry from a Geometry object
  *
  *  win.geometry = { :x => 0, :y => 0, :width => 50, :height => 50 }
- *  => nil
+ *  => { :x => 0, :y => 0, :width => 50, :height => 50 }
  */
 
 VALUE
@@ -870,12 +871,12 @@ subWindowGeometryWriter(VALUE self,
       XMoveResizeWindow(display, w->win, r.x, r.y, r.width, r.height);
     }
 
-  return Qnil;
+  return value;
 } /* }}} */
 
 /* subWindowWrite {{{ */
 /*
- * call-seq: write(x, y, string) -> nil
+ * call-seq: write(x, y, string) -> Fixnum
  *
  * Write a string onto this Window at given x/y coordinates, that
  * <b>won't</b> be visible unless the Window content is updated
@@ -1155,7 +1156,7 @@ subWindowRead(int argc,
 
 /* subWindowOn {{{ */
 /*
- * call-seq: on(event, &block) -> nil
+ * call-seq: on(event, &block) -> Subtlext::Window
  *
  * Grab pointer button press events and pass them to the block until
  * the return value of the block isn't <b>true</b> or an error occured.
@@ -1163,7 +1164,7 @@ subWindowRead(int argc,
  *  grab_mouse do |x, y, button|
  *    p "x=#{x}, y=#{y}, button=#{button}"
  *  end
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1200,20 +1201,20 @@ subWindowOn(int argc,
       else rb_raise(rb_eArgError, "Unexpected value type for on");
     }
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowDrawPoint {{{ */
 /*
- * call-seq: draw_point(x, y, color) -> nil
+ * call-seq: draw_point(x, y, color) -> Subtlext::Window
  *
  * Draw a pixel on the window at given coordinates in given color.
  *
  *  win.draw_point(1, 1)
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  *
  *  win.draw_point(1, 1, "#ff0000")
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1255,20 +1256,20 @@ subWindowDrawPoint(int argc,
     }
   else rb_raise(rb_eArgError, "Unexpected value-types");
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowDrawLine {{{ */
 /*
- * call-seq: draw_line(x1, y1, x2, y2, color) -> nil
+ * call-seq: draw_line(x1, y1, x2, y2, color) -> Subtlext::Window
  *
  * Draw a line on the window starting at x1/y1 to x2/y2 in given color.
  *
  *  win.draw_line(1, 1, 10, 1)
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  *
  *  win.draw_line(1, 1, 10, 1, "#ff0000", "#000000")
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1312,21 +1313,21 @@ subWindowDrawLine(int argc,
     }
   else rb_raise(rb_eArgError, "Unexpected value-types");
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowDrawRect {{{ */
 /*
- * call-seq: draw_rect(x, y, width, height, color, fill) -> nil
+ * call-seq: draw_rect(x, y, width, height, color, fill) -> Subtlext::Window
  *
  * Draw a rect on the Window starting at x/y with given width, height
  * and colors.
  *
  *  win.draw_rect(1, 1, 10, 10)
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  *
  *  win.draw_rect(1, 1, 10, 10, "#ff0000", true)
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1376,18 +1377,18 @@ subWindowDrawRect(int argc,
     }
   else rb_raise(rb_eArgError, "Unexpected value-types");
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowDrawText {{{ */
 /*
- * call-seq: draw_text(x, y, string, color) -> nil
+ * call-seq: draw_text(x, y, string, color) -> Subtlext::Window
  *
  * Draw a text on the Window starting at x/y with given width, height
  * and color <b>without</b> caching it.
  *
  *  win.draw_text(10, 10, "subtle")
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1419,18 +1420,18 @@ subWindowDrawText(int argc,
         FIX2INT(y), lcolor, w->bg, RSTRING_PTR(text), RSTRING_LEN(text));
     }
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowDrawIcon {{{ */
 /*
- * call-seq: draw_icon(x, y, icon, fg, bg) -> nil
+ * call-seq: draw_icon(x, y, icon, fg, bg) -> Subtlext::Window
  *
  * Draw a icon on the Window starting at x/y with given width, height
  * and color <b>without</b> caching it.
  *
  *  win.draw_icon(10, 10, Subtlext::Icon.new("foo.xbm"))
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1447,10 +1448,12 @@ subWindowDrawIcon(int argc,
   rb_scan_args(argc, argv, "32", &x, &y, &icon, &fg, &bg);
 
   Data_Get_Struct(self, SubtlextWindow, w);
-  if(w && FIXNUM_P(x) && FIXNUM_P(y) && T_OBJECT == rb_type(icon))
+  if(w && FIXNUM_P(x) && FIXNUM_P(y) &&
+      rb_obj_is_instance_of(icon, rb_const_get(mod, rb_intern("Icon"))))
     {
-#if 0
+      int bitmap = False;
       long lfg = w->fg, lbg = w->bg;
+      VALUE width = Qnil, height = Qnil, pixmap = Qnil;
 
       /* Create on demand */
       if(0 == w->gc)
@@ -1460,22 +1463,28 @@ subWindowDrawIcon(int argc,
       if(!NIL_P(fg)) lfg = subColorPixel(fg, Qnil, Qnil, NULL);
       if(!NIL_P(bg)) lbg = subColorPixel(bg, Qnil, Qnil, NULL);
 
-      subSharedTextIconDraw(display, w->gc, w->font, w->win, FIX2INT(x),
-        FIX2INT(y), lfg, lbg, RSTRING_PTR(text), RSTRING_LEN(text));
-#endif
+      /* Fetch icon values */
+      width  = rb_iv_get(icon, "@width");
+      height = rb_iv_get(icon, "@height");
+      pixmap = rb_iv_get(icon, "@pixmap");
+      bitmap = Qtrue == subIconAskBitmap(icon) ? True : False;
+
+      subSharedTextIconDraw(display, w->gc, w->win, FIX2INT(x),
+        FIX2INT(y), FIX2INT(width), FIX2INT(height), lfg, lbg,
+        NUM2LONG(pixmap), bitmap);
     }
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowClear {{{ */
 /*
- * call-seq: clear -> nil
+ * call-seq: clear -> Subtlext::Window
  *
  * Clear this Window and remove all stored text.
  *
  *  win.clear
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1504,17 +1513,17 @@ subWindowClear(int argc,
       else XClearWindow(display, w->win);
     }
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowRedraw {{{ */
 /*
- * call-seq: redraw -> nil
+ * call-seq: redraw -> Subtlext::Window
  *
  * Redraw Window content.
  *
  *  win.redraw
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1528,12 +1537,12 @@ subWindowRedraw(VALUE self)
   Data_Get_Struct(self, SubtlextWindow, w);
   if(w) WindowExpose(w);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowCompletion {{{ */
 /*
- * call-seq: completion(&block) -> nil
+ * call-seq: completion(&block) -> Subtlext::Window
  *
  * Add completion block to this Window, that is called whenever the
  * tab key is pressed.
@@ -1541,6 +1550,7 @@ subWindowRedraw(VALUE self)
  *  win.completion do |str, guess|
  *    str
  *  end
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1552,7 +1562,7 @@ subWindowCompletion(VALUE self)
 
 /* subWindowInput {{{ */
 /*
- * call-seq: input(&block) -> nil
+ * call-seq: input(&block) -> Subtlext::Window
  *
  * Add input block that to this Window, that is called whenever the user
  * makes any input in a #read call.
@@ -1560,6 +1570,7 @@ subWindowCompletion(VALUE self)
  *  win.input do |str|
  *    str
  *  end
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1570,13 +1581,13 @@ subWindowInput(VALUE self)
 
 /* subWindowRaise {{{ */
 /*
- * call-seq: raise -> nil
+ * call-seq: raise -> Subtlext::Window
  *
  * Raise this Window to the top of the window stack, when the window manager
  * supports that. (subtle does)
  *
  *  win.raise
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1594,18 +1605,18 @@ subWindowRaise(VALUE self)
       WindowExpose(w);
     }
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowLower {{{ */
 /*
- * call-seq: lower -> nil
+ * call-seq: lower -> Subtlext::Window
  *
  * Lower this Window to the bottom of the window stack, when the window manager
  * supports that. (subtle does)
  *
  *  win.lower
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1623,17 +1634,17 @@ subWindowLower(VALUE self)
       WindowExpose(w);
     }
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowShow {{{ */
 /*
- * call-seq: show() -> nil
+ * call-seq: show() -> Subtlext::Window
  *
  * Show this Window on screen.
  *
  *  win.show
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1657,17 +1668,17 @@ subWindowShow(VALUE self)
         }
     }
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowHide {{{ */
 /*
- * call-seq: hide() -> nil
+ * call-seq: hide() -> Subtlext::Window
  *
  * Hide this Window from screen.
  *
  *  win.hide
- *  => nil
+ *  => #<Subtlext::Window:xxx>
  */
 
 VALUE
@@ -1687,7 +1698,7 @@ subWindowHide(VALUE self)
       XSync(display, False); ///< Sync with X
     }
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subWindowAskHidden {{{ */

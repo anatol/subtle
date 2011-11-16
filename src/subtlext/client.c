@@ -33,7 +33,7 @@ ClientRestack(VALUE self,
   subSharedMessage(display, DefaultRootWindow(display),
     "_NET_RESTACK_WINDOW", data, 32, True);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* ClientFlagsGet {{{ */
@@ -87,7 +87,7 @@ ClientFlagsSet(VALUE self,
 
   rb_iv_set(self, "@flags", INT2FIX(iflags));
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* ClientFlagsToggle {{{ */
@@ -120,7 +120,7 @@ ClientFlagsToggle(VALUE self,
 
   subSharedMessage(display, NUM2LONG(win), "_NET_WM_STATE", data, 32, True);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* ClientGravity {{{ */
@@ -136,21 +136,22 @@ ClientGravity(VALUE key,
   /* Find gravity */
   if(RTEST(value))
     {
-      /* Check if finder returned an array */
-      VALUE gravity = subSubtlextManyToOne(subGravitySingFind(Qnil, value));
+      VALUE gravity = Qnil;
 
-      if(RTEST(gravity)) data.l[1] = FIX2INT(rb_iv_get(gravity, "@id"));
+      if(RTEST((gravity = subGravitySingFirst(Qnil, value))))
+        data.l[1] = FIX2INT(rb_iv_get(gravity, "@id"));
     }
 
   /* Find view id if any */
   if(RTEST(key))
     {
-      VALUE view = subSubtlextManyToOne(subViewSingFind(Qnil, key));
+      VALUE view = Qnil;
 
-      if(RTEST(view)) data.l[2] = FIX2INT(rb_iv_get(view, "@id"));
+      if(RTEST((view = subViewSingFirst(Qnil, key))))
+        data.l[2] = FIX2INT(rb_iv_get(view, "@id"));
     }
 
-  /* Finally send */
+  /* Finally send message */
   if(-1 != data.l[0] && -1 != data.l[1])
     {
       subSharedMessage(display, DefaultRootWindow(display),
@@ -485,7 +486,7 @@ subClientSingRecent(VALUE self)
   return array;
 } /* }}} */
 
-/* Class */
+/* Helper */
 
 /* subClientInstantiate {{{ */
 VALUE
@@ -499,6 +500,8 @@ subClientInstantiate(Window win)
 
   return client;
 } /* }}} */
+
+/* Class */
 
 /* subClientInit {{{ */
 /*
@@ -538,7 +541,7 @@ subClientInit(VALUE self,
 
 /* subClientUpdate {{{ */
 /*
- * call-seq: update -> nil
+ * call-seq: update -> Subtlext::Client
  *
  * Update Client properties based on <b>required</b> Client window id.
  *
@@ -592,7 +595,7 @@ subClientUpdate(VALUE self)
     }
   else rb_raise(rb_eStandardError, "Invalid client id `%#lx'", win);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subClientViewList {{{ */
@@ -817,7 +820,7 @@ subClientFlagsAskBorderless(VALUE self)
 
 /* subClientFlagsToggleFull {{{ */
 /*
- * call-seq: toggle_full -> nil
+ * call-seq: toggle_full -> Subtlext::Client
  *
  * Toggle Client fullscreen state.
  *
@@ -833,7 +836,7 @@ subClientFlagsToggleFull(VALUE self)
 
 /* subClientFlagsToggleFloat {{{ */
 /*
- * call-seq: toggle_float -> nil
+ * call-seq: toggle_float -> Subtlext::Client
  *
  * Toggle Client floating state.
  *
@@ -849,7 +852,7 @@ subClientFlagsToggleFloat(VALUE self)
 
 /* subClientFlagsToggleStick {{{ */
 /*
- * call-seq: toggle_stick -> nil
+ * call-seq: toggle_stick -> Subtlext::Client
  *
  * Toggle Client sticky state.
  *
@@ -865,7 +868,7 @@ subClientFlagsToggleStick(VALUE self)
 
 /* subClientFlagsToggleResize {{{ */
 /*
- * call-seq: toggle_stick -> nil
+ * call-seq: toggle_stick -> Subtlext::Client
  *
  * Toggle Client resize state.
  *
@@ -881,7 +884,7 @@ subClientFlagsToggleResize(VALUE self)
 
 /* subClientFlagsToggleUrgent {{{ */
 /*
- * call-seq: toggle_urgent -> nil
+ * call-seq: toggle_urgent -> Subtlext::Client
  *
  * Toggle Client urgent state.
  *
@@ -897,7 +900,7 @@ subClientFlagsToggleUrgent(VALUE self)
 
 /* subClientFlagsToggleZaphod {{{ */
 /*
- * call-seq: toggle_zaphod -> nil
+ * call-seq: toggle_zaphod -> Subtlext::Client
  *
  * Toggle Client zaphod state.
  *
@@ -913,7 +916,7 @@ subClientFlagsToggleZaphod(VALUE self)
 
 /* subClientFlagsToggleFixed {{{ */
 /*
- * call-seq: toggle_fixed -> nil
+ * call-seq: toggle_fixed -> Subtlext::Client
  *
  * Toggle Client fixed state.
  *
@@ -929,7 +932,7 @@ subClientFlagsToggleFixed(VALUE self)
 
 /* subClientFlagsToggleBorderless {{{ */
 /*
- * call-seq: toggle_borderless -> nil
+ * call-seq: toggle_borderless -> Subtlext::Client
  *
  * Toggle Client borderless state.
  *
@@ -945,7 +948,7 @@ subClientFlagsToggleBorderless(VALUE self)
 
 /* subClientFlagsWriter {{{ */
 /*
- * call-seq: flags=(array) -> nil
+ * call-seq: flags=(array) -> Subtlext::Client
  *
  * Set multiple flags at once. Flags can be one or a combination of the
  * following:
@@ -989,12 +992,12 @@ subClientFlagsWriter(VALUE self,
       ClientFlagsSet(self, flags, False);
     }
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subClientRestackRaise {{{ */
 /*
- * call-seq: raise -> nil
+ * call-seq: raise -> Subtlext::Client
  *
  * Move Client window to top of window stack.
  *
@@ -1010,7 +1013,7 @@ subClientRestackRaise(VALUE self)
 
 /* subClientRestackLower {{{ */
 /*
- * call-seq: lower -> nil
+ * call-seq: lower -> Subtlext::Client
  *
  * Move Client window to bottom of window stack.
  *
@@ -1105,26 +1108,26 @@ subClientGravityReader(VALUE self)
 
 /* subClientGravityWriter {{{ */
 /*
- * call-seq: gravity=(fixnum) -> nil
- *           gravity=(symbol) -> nil
- *           gravity=(object) -> nil
- *           gravity=(hash)   -> nil
+ * call-seq: gravity=(fixnum) -> Fixnum
+ *           gravity=(symbol) -> Symbol
+ *           gravity=(object) -> Object
+ *           gravity=(hash)   -> Hash
  *
  * Set Client Gravity either for current or for specific View.
  *
  *  # Set gravity for current view
  *  client.gravity = 0
- *  => nil
+ *  => #<Subtlext::Gravity:xxx>
  *
  *  client.gravity = :center
- *  => nil
+ *  => #<Subtlext::Gravity:xxx>
  *
  *  client.gravity = Subtlext::Gravity[0]
- *  => nil
+ *  => #<Subtlext::Gravity:xxx>
  *
  *  # Set gravity for specific view
  *  client.gravity = { :terms => :center }
- *  => nil
+ *  => #<Subtlext::Gravity:xxx>
  */
 
 VALUE
@@ -1136,7 +1139,7 @@ subClientGravityWriter(VALUE self,
 
   subSubtlextConnect(NULL); ///< Implicit open connection
 
-  /* Check instance type */
+  /* Check value type */
   switch(rb_type(value))
     {
       case T_FIXNUM:
@@ -1157,7 +1160,7 @@ subClientGravityWriter(VALUE self,
   /* Reset gravity */
   rb_iv_set(self, "@gravity", Qnil);
 
-  return Qnil;
+  return value;
 } /* }}} */
 
 /* subClientGeometryReader {{{ */
@@ -1199,25 +1202,25 @@ subClientGeometryReader(VALUE self)
 
 /* subClientGeometryWriter {{{ */
 /*
- * call-seq: geometry=(x, y, width, height) -> Subtlext::Geometry
- *           geometry=(array)               -> Subtlext::Geometry
- *           geometry=(hash)                -> Subtlext::Geometry
- *           geometry=(string)              -> Subtlext::Geometry
+ * call-seq: geometry=(x, y, width, height) -> Fixnum
+ *           geometry=(array)               -> Array
+ *           geometry=(hash)                -> Hash
+ *           geometry=(string)              -> String
  *           geometry=(geometry)            -> Subtlext::Geometry
  *
  * Set Client geometry.
  *
  *  client.geometry = 0, 0, 100, 100
- *  => #<Subtlext::Geometry:xxx>
+ *  => 0
  *
  *  client.geometry = [ 0, 0, 100, 100 ]
- *  => #<Subtlext::Geometry:xxx>
+ *  => [ 0, 0, 100, 100 ]
  *
- *  client.geometry = {x: 0, y: 0, width: 100, height: 100 }
- *  => #<Subtlext::Geometry:xxx>
+ *  client.geometry = { x: 0, y: 0, width: 100, height: 100 }
+ *  => { x: 0, y: 0, width: 100, height: 100 }
  *
  *  client.geometry = "0x0+100+100"
- *  => #<Subtlext::Geometry:xxx>
+ *  => "0x0+100+100"
  *
  *  client.geometry = Subtlext::Geometry(0, 0, 100, 100)
  *  => #<Subtlext::Geometry:xxx>

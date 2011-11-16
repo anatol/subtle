@@ -230,7 +230,7 @@ subScreenSingCurrent(VALUE self)
   return screen;
 } /* }}} */
 
-/* Class */
+/* Helper */
 
 /* subScreenInstantiate {{{ */
 VALUE
@@ -244,6 +244,8 @@ subScreenInstantiate(int id)
 
   return screen;
 } /* }}} */
+
+/* Class */
 
 /* subScreenInit {{{ */
 /*
@@ -274,12 +276,12 @@ subScreenInit(VALUE self,
 
 /* subScreenUpdate {{{ */
 /*
- * call-seq: update -> nil
+ * call-seq: update -> Subtlext::Screen
  *
  * Update Screen properties
  *
  *  screen.update
- *  => nil
+ *  => #<Subtlext::Screen:xxx>
  */
 
 VALUE
@@ -301,17 +303,17 @@ subScreenUpdate(VALUE self)
   else rb_raise(rb_eStandardError, "Invalid screen id `%d'",
     (int)FIX2INT(id));
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subScreenJump {{{ */
 /*
- * call-seq: screen -> nil
+ * call-seq: screen -> Subtlext::Screen
  *
  * Jump to this Screen
  *
  *  screen.jump
- *  => nil
+ *  => #<Subtlext::Screen:xxx>
  */
 
 VALUE
@@ -332,7 +334,7 @@ subScreenJump(VALUE self)
   subSharedMessage(display, DefaultRootWindow(display),
     "SUBTLE_SCREEN_JUMP", data, 32, True);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subScreenViewReader {{{ */
@@ -386,9 +388,9 @@ subScreenViewReader(VALUE self)
 
 /* subScreenViewWriter {{{ */
 /*
- * call-seq: view=(fixnum) -> nil
- *           view=(symbol) -> nil
- *           view=(object) -> nil
+ * call-seq: view=(fixnum) -> Fixnum
+ *           view=(symbol) -> Symbol
+ *           view=(object) -> Subtlext::View
  *
  * Set active view for screen
  *
@@ -426,7 +428,7 @@ subScreenViewWriter(VALUE self,
   subSharedMessage(display, DefaultRootWindow(display),
     "_NET_CURRENT_DESKTOP", data, 32, True);
 
-  return Qnil;
+  return value;
 } /* }}} */
 
 /* subScreenAskCurrent {{{ */

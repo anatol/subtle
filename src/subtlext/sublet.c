@@ -134,7 +134,7 @@ subSubletSingList(VALUE self)
  * Create new Sublet object locally <b>without</b> calling #save automatically.
  *
  *  sublet = Subtlext::Sublet.new("subtle")
- *  => #<Subtlext::Sublet:xxx> *
+ *  => #<Subtlext::Sublet:xxx>
  */
 
 VALUE
@@ -156,12 +156,12 @@ subSubletInit(VALUE self,
 
 /* subSubletUpdate {{{ */
 /*
- * call-seq: update -> nil
+ * call-seq: update -> Subtlext::Sublet
  *
  * Force subtle to update the data of this Sublet.
  *
  *  sublet.update
- *  => nil
+ *  => #<Subtlext::Sublet:xxx>
  */
 
 VALUE
@@ -180,18 +180,18 @@ subSubletUpdate(VALUE self)
   subSharedMessage(display, DefaultRootWindow(display),
     "SUBTLE_SUBLET_UPDATE", data, 32, True);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subSubletSend {{{ */
 /*
- * call-seq: send_data(string) -> nil
+ * call-seq: send_data(string) -> Subtlext::Sublet
  *
  * Send given string data to a :data event of a Sublet. The data is
  * passed as second argument.
  *
  *  sublet.send_data("subtle")
- *  => nil
+ *  => #<Subtlext::Sublet:xxx>
  */
 
 VALUE
@@ -224,17 +224,17 @@ subSubletSend(VALUE self,
   else rb_raise(rb_eArgError, "Unexpected value-type `%s'",
     rb_obj_classname(value));
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subSubletVisibilityShow {{{ */
 /*
- * call-seq: show -> nil
+ * call-seq: show -> Subtlext::Sublet
  *
  * Show sublet in the panels.
  *
  *  sublet.show
- *  => nil
+ *  => #<Subtlext::Sublet:xxx>
  */
 
 VALUE
@@ -253,17 +253,17 @@ subSubletVisibilityShow(VALUE self)
   subSharedMessage(display, DefaultRootWindow(display),
     "SUBTLE_SUBLET_FLAGS", data, 32, True);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subSubletVisibilityHide {{{ */
 /*
- * call-seq: hide -> nil
+ * call-seq: hide -> Subtlext::Sublet
  *
  * Hide sublet from the panels.
  *
  *  sublet.hide
- *  => nil
+ *  => #<Subtlext::Sublet:xxx>
  */
 
 VALUE
@@ -282,7 +282,7 @@ subSubletVisibilityHide(VALUE self)
   subSharedMessage(display, DefaultRootWindow(display),
     "SUBTLE_SUBLET_FLAGS", data, 32, True);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subSubletToString {{{ */

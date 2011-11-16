@@ -162,7 +162,7 @@ subTraySingList(VALUE self)
   return array;
 } /* }}} */
 
-/* Class */
+/* Helper */
 
 /* subTrayInstantiate {{{ */
 VALUE
@@ -176,6 +176,8 @@ subTrayInstantiate(Window win)
 
   return tray;
 } /* }}} */
+
+/* Class */
 
 /* subTrayInit {{{ */
 /*
@@ -210,12 +212,12 @@ subTrayInit(VALUE self,
 
 /* subTrayUpdate {{{ */
 /*
- * call-seq: update -> nil
+ * call-seq: update -> Subtlext::Tray
  *
  * Update Tray properties based on <b>required</b> Tray window id.
  *
  *  tray.update
- *  => nil
+ *  => #<Subtlext::Tray:xxx>
  */
 
 VALUE
@@ -250,7 +252,7 @@ subTrayUpdate(VALUE self)
     }
   else rb_raise(rb_eStandardError, "Invalid tray id `%#lx`", win);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subTrayToString {{{ */

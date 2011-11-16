@@ -290,7 +290,7 @@ subViewSingList(VALUE self)
   return array;
 } /* }}} */
 
-/* Class */
+/* Helper */
 
 /* subViewInstantiate {{{ */
 VALUE
@@ -306,6 +306,8 @@ subViewInstantiate(char *name)
 
   return view;
 } /* }}} */
+
+/* Class */
 
 /* subViewInit {{{ */
 /*
@@ -338,12 +340,12 @@ subViewInit(VALUE self,
 
 /* subViewUpdate {{{ */
 /*
- * call-seq: Update -> nil
+ * call-seq: Update -> Subtlext::View
  *
  * Update View properties based on <b>required</b> View index.
  *
  *  view.update
- *  => nil
+ *  => #<Subtlext::View:xxx>
  */
 
 VALUE
@@ -389,7 +391,7 @@ subViewUpdate(VALUE self)
 
   rb_iv_set(self, "@id", INT2FIX(id));
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subViewClients {{{ */
@@ -469,12 +471,12 @@ subViewClients(VALUE self)
 
 /* subViewJump {{{ */
 /*
- * call-seq: jump -> nil
+ * call-seq: jump -> Subtlext::View
  *
  * Set this View to the current active one
  *
  *  view.jump
- *  => nil
+ *  => #<Subtlext::View:xxx>
  */
 
 VALUE
@@ -495,7 +497,7 @@ subViewJump(VALUE self)
   subSharedMessage(display, DefaultRootWindow(display),
     "_NET_CURRENT_DESKTOP", data, 32, True);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subViewSelectNext {{{ */

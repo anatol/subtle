@@ -82,7 +82,7 @@ IconEqual(VALUE self,
   return ret ? Qtrue : Qfalse;
 } /* }}} */
 
-/* Exported */
+/* Class */
 
 /* subIconAlloc {{{ */
 /*
@@ -257,15 +257,15 @@ subIconInit(int argc,
 
 /* subIconDrawPoint {{{ */
 /*
- * call-seq: draw_point(x, y, fg, bg) -> nil
+ * call-seq: draw_point(x, y, fg, bg) -> Subtlext::Icon
  *
  * Draw a pixel on the icon at given coordinates in given colors.
  *
  *  icon.draw_point(1, 1)
- *  => nil
+ *  => #<Subtlext::Icon:xxx>
  *
  *  icon.draw_point(1, 1, "#ff0000", "#000000")
- *  => nil
+ *  => #<Subtlext::Icon:xxx>
  */
 
 VALUE
@@ -313,20 +313,20 @@ subIconDrawPoint(int argc,
     }
   else rb_raise(rb_eArgError, "Unexpected value-types");
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subIconDrawLine {{{ */
 /*
- * call-seq: draw_line(x1, y1, x2, y2, fg, bg) -> nil
+ * call-seq: draw_line(x1, y1, x2, y2, fg, bg) -> Subtlext::Icon
  *
  * Draw a line on the Icon starting at x1/y1 to x2/y2 in given colors.
  *
  *  icon.draw_line(1, 1, 10, 1)
- *  => nil
+ *  => #<Subtlext::Icon:xxx>
  *
  *  icon.draw_line(1, 1, 10, 1, "#ff0000", "#000000")
- *  => nil
+ *  => #<Subtlext::Icon:xxx>
  */
 
 VALUE
@@ -376,21 +376,21 @@ subIconDrawLine(int argc,
     }
   else rb_raise(rb_eArgError, "Unexpected value-types");
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subIconDrawRect {{{ */
 /*
- * call-seq: draw_rect(x, y, width, height, fill, fg, bg) -> nil
+ * call-seq: draw_rect(x, y, width, height, fill, fg, bg) -> Subtlext::Icon
  *
  * Draw a rect on the Icon starting at x/y with given width, height
  * and colors.
  *
  *  icon.draw_rect(1, 1, 10, 10, false)
- *  => nil
+ *  => #<Subtlext::Icon:xxx>
  *
  *  icon.draw_rect(1, 1, 10, 10, false, "#ff0000", "#000000")
- *  => nil
+ *  => #<Subtlext::Icon:xxx>
  */
 
 VALUE
@@ -446,17 +446,17 @@ subIconDrawRect(int argc,
     }
   else rb_raise(rb_eArgError, "Unexpected value-types");
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subIconCopyArea {{{ */
 /*
- * call-seq: copy_area(icon2, src_x, src_y, width, height, dest_x, dest_y) -> nil
+ * call-seq: copy_area(icon2, src_x, src_y, width, height, dest_x, dest_y) -> Subtlext::Icon
  *
  * Copy area of given width/height from one Icon to another.
  *
  *  icon.copy_area(icon, 0, 0, 10, 10, 0, 0)
- *  => nil
+ *  => #<Subtlext::Icon:xxx>
  */
 
 VALUE
@@ -529,21 +529,21 @@ subIconCopyArea(int argc,
     }
   else rb_raise(rb_eArgError, "Unexpected value-types");
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subIconClear {{{ */
 /*
- * call-seq: clear         -> nil
- *           clear(fg, bg) -> nil
+ * call-seq: clear         -> Subtlext::Icon
+ *           clear(fg, bg) -> Subtlext::Icon
  *
  * Clear the icon and optionally set a fore-/background color.
  *
  *  icon.clear
- *  => nil
+ *  => #<Subtlext::Icon:xxx>
  *
  *  icon.clear("#ff0000", "#000000")
- *  => nil
+ *  => #<Subtlext::Icon:xxx>
  */
 
 VALUE
@@ -584,7 +584,7 @@ subIconClear(int argc,
       XFlush(display);
     }
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subIconAskBitmap {{{ */

@@ -34,7 +34,7 @@ GeometryEqual(VALUE self,
   return ret ? Qtrue : Qfalse;
 } /* }}} */
 
-/* Class */
+/* Helper */
 
 /* subGeometryInstantiate {{{ */
 VALUE
@@ -64,6 +64,8 @@ subGeometryToRect(VALUE self,
   r->width  = FIX2INT(rb_iv_get(self, "@width"));
   r->height = FIX2INT(rb_iv_get(self, "@height"));
 } /* }}} */
+
+/* Class */
 
 /* subGeometryInit {{{ */
 /*

@@ -67,7 +67,7 @@ ColorRGBToPixel(XColor *xcolor)
   xcolor->blue  = SCALE(xcolor->blue,  65535, 255);
 } /* }}} */
 
-/* Exported */
+/* Helper */
 
 /* subColorPixel {{{ */
 unsigned long
@@ -165,6 +165,8 @@ subColorInstantiate(unsigned long pixel)
 
   return color;
 } /* }}} */
+
+/* Class */
 
 /* subColorInit {{{ */
 /*

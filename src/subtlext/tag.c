@@ -205,7 +205,7 @@ subTagSingList(VALUE self)
   return array;
 } /* }}} */
 
-/* Class */
+/* Helper */
 
 /* subTagInstantiate {{{ */
 VALUE
@@ -219,6 +219,8 @@ subTagInstantiate(char *name)
 
   return tag;
 } /* }}} */
+
+/* Class */
 
 /* subTagInit {{{ */
 /*
@@ -251,12 +253,12 @@ subTagInit(VALUE self,
 
 /* subTagUpdate {{{ */
 /*
- * call-seq: update -> nil
+ * call-seq: update -> Subtlext::Tag
  *
  * Update Tag properties based on Tag index.
  *
  *  tag.update
- *  => nil
+ *  => #<Subtlext::Tag:xxx>
  */
 
 VALUE
@@ -302,7 +304,7 @@ subTagUpdate(VALUE self)
 
   rb_iv_set(self, "@id", INT2FIX(id));
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subTagClients {{{ */
