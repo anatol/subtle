@@ -59,6 +59,13 @@ context 'Gravity' do
     clients.is_a?(Array) and 1 == clients.size
   end # }}}
 
+  asserts 'Check geometry for screen' do # {{{
+    screen = Subtlext::Screen.current
+    geom   = topic.geometry_for(screen)
+
+    screen.geometry == geom
+  end # }}}
+
   asserts 'Convert to string' do # {{{
     GRAVITY_NAME == topic.to_str
   end # }}}

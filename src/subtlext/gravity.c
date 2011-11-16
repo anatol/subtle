@@ -89,7 +89,8 @@ GravityFind(VALUE value,
           return subGravitySingList(Qnil);
         break;
       case T_OBJECT:
-        if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("Gravity"))))
+        if(rb_obj_is_instance_of(value, rb_const_get(mod,
+            rb_intern("Gravity"))))
           return parsed;
     }
 
@@ -183,7 +184,7 @@ subGravitySingList(VALUE self)
     "Gravity", NULL, 0, False);
 } /* }}} */
 
-/* Class */
+/* Helper */
 
 /* subGravityInstantiate {{{ */
 VALUE
@@ -197,6 +198,8 @@ subGravityInstantiate(char *name)
 
   return gravity;
 } /* }}} */
+
+/* Class */
 
 /* subGravityInit {{{ */
 /*
@@ -250,7 +253,7 @@ subGravityInit(int argc,
 
 /* subGravityUpdate {{{ */
 /*
- * call-seq: update -> nil
+ * call-seq: update -> Subtlext::Gravity
  *
  * Update Gravity properties based on <b>required</b> Gravity index.
  *
@@ -318,7 +321,7 @@ subGravityUpdate(VALUE self)
 
   rb_iv_set(self, "@id", INT2FIX(id));
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* subGravityClients {{{ */
@@ -387,7 +390,7 @@ subGravityClients(VALUE self)
 
 /* subGravityGeometryFor {{{ */
 /*
- * call-seq: geometry_for(screen) -> nil
+ * call-seq: geometry_for(screen) -> Subtlext::Geometry
  *
  * Get the Gravity Geometry for given Screen in pixel values.
  *
@@ -399,40 +402,30 @@ VALUE
 subGravityGeometryFor(VALUE self,
   VALUE value)
 {
-  VALUE ary = rb_ary_new2(4);
+  VALUE geom = Qnil;
 
-  /* Check value type */
-  if(T_OBJECT == rb_type(value))
+  /* Check object instance */
+  if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("Screen"))))
     {
-      VALUE klass = rb_const_get(mod, rb_intern("Screen"));
+      XRectangle real = { 0 }, geom_grav = { 0 }, geom_screen = { 0 };
 
-      /* Check object instance */
-      if(rb_obj_is_instance_of(value, klass))
-        {
-          XRectangle real = { 0 }, geom_grav = { 0 }, geom_screen = { 0 };
+      GravityToRect(self,  &geom_grav);
+      GravityToRect(value, &geom_screen);
 
-          GravityToRect(self,  &geom_grav);
-          GravityToRect(value, &geom_screen);
+      /* Calculate real values for screen */
+      real.width  = geom_screen.width * geom_grav.width / 100;
+      real.height = geom_screen.height * geom_grav.height / 100;
+      real.x      = geom_screen.x +
+        (geom_screen.width - real.width) * geom_grav.x / 100;
+      real.y      = geom_screen.y +
+        (geom_screen.height - real.height) * geom_grav.y / 100;
 
-          /* Calculate real values for screen */
-          real.width  = geom_screen.width * geom_grav.width / 100;
-          real.height = geom_screen.height * geom_grav.height / 100;
-          real.x      = geom_screen.x +
-            (geom_screen.width - real.width) * geom_grav.x / 100;
-          real.y      = geom_screen.y +
-            (geom_screen.height - real.height) * geom_grav.y / 100;
-
-          /* Fill into result array */
-          rb_ary_push(ary, INT2FIX(real.x));
-          rb_ary_push(ary, INT2FIX(real.y));
-          rb_ary_push(ary, INT2FIX(real.width));
-          rb_ary_push(ary, INT2FIX(real.height));
-        }
-      else rb_raise(rb_eArgError, "Unexpected value-type `%s'",
-        rb_obj_classname(value));
+      geom = subGeometryInstantiate(real.x, real.y, real.width, real.height);
     }
+  else rb_raise(rb_eArgError, "Unexpected value-type `%s'",
+    rb_obj_classname(value));
 
-  return ary;
+  return geom;
 } /* }}} */
 
 /* subGravityGeometryReader {{{ */
@@ -471,25 +464,25 @@ subGravityGeometryReader(VALUE self)
 
 /* subGravityGeometryWriter {{{ */
 /*
- * call-seq: geometry=(x, y, width, height) -> Subtlext::Geometry
- *           geometry=(array)               -> Subtlext::Geometry
- *           geometry=(hash)                -> Subtlext::Geometry
- *           geometry=(string)              -> Subtlext::Geometry
+ * call-seq: geometry=(x, y, width, height) -> Fixnum
+ *           geometry=(array)               -> Array
+ *           geometry=(hash)                -> Hash
+ *           geometry=(string)              -> String
  *           geometry=(geometry)            -> Subtlext::Geometry
  *
  * Set the Gravity Geometry
  *
  *  gravity.geometry = 0, 0, 100, 100
- *  => #<Subtlext::Geometry:xxx>
+ *  => 0
  *
  *  gravity.geometry = [ 0, 0, 100, 100 ]
- *  => #<Subtlext::Geometry:xxx>
+ *  => [ 0, 0, 100, 100 ]
  *
- *  gravity.geometry = {x: 0, y: 0, width: 100, height: 100 }
- *  => #<Subtlext::Geometry:xxx>
+ *  gravity.geometry = { x: 0, y: 0, width: 100, height: 100 }
+ *  => { x: 0, y: 0, width: 100, height: 100 }
  *
  *  gravity.geometry = "0x0+100+100"
- *  => #<Subtlext::Geometry:xxx>
+ *  => "0x0+100+100"
  *
  *  gravity.geometry = Subtlext::Geometry(0, 0, 100, 100)
  *  => #<Subtlext::Geometry:xxx>
@@ -518,15 +511,15 @@ subGravityGeometryWriter(int argc,
 
 /* subGravityTilingWriter {{{ */
 /*
- * call-seq: tiling=(value) -> nil
+ * call-seq: tiling=(value) -> Symbol or nil
  *
  * Set the tiling mode for gravity
  *
  *  gravity.tiling = :vert
- *  => nil
+ *  => :vert
  *
- *  gravity.tiling = :vert
- *  => nil
+ *  gravity.tiling = :horz
+ *  => :horz
  *
  *  gravity.tiling = nil
  *  => nil
@@ -563,7 +556,7 @@ subGravityTilingWriter(VALUE self,
   subSharedMessage(display, DefaultRootWindow(display),
     "SUBTLE_GRAVITY_FLAGS", data, 32, True);
 
-  return Qnil;
+  return value;
 } /* }}} */
 
 /* subGravityToString {{{ */
