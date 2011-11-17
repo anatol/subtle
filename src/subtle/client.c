@@ -1094,8 +1094,9 @@ subClientToggle(SubClient *c,
                 }
             }
 
-          /* Set screen stick */
+          /* Set screen stick and force re-arrange */
           subScreenCurrent(&c->screen);
+          c->flags |= SUB_CLIENT_ARRANGE;
         }
 
       /* Set fullscreen mode */
