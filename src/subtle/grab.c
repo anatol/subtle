@@ -144,6 +144,10 @@ subGrabSet(Window win)
     {
       int i;
 
+      /* Unbind click-to-focus grab */
+      if(subtle->flags & SUB_SUBTLE_CLICK_TO_FOCUS)
+        XUngrabButton(subtle->dpy, Button1, AnyModifier, win);
+
       /* Bind grabs */
       for(i = 0; i < subtle->grabs->ndata; i++)
         {
