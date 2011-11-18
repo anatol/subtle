@@ -19,23 +19,26 @@
 #
 
 # Window move/resize steps in pixel per keypress
-set :step, 5
+set :increase_step, 5
 
 # Window screen border snapping
-set :snap, 10
+set :border_snap, 10
 
 # Default starting gravity for windows. Comment out to use gravity of
 # currently active client
-set :gravity, :center
+set :default_gravity, :center
 
-# Make transient windows urgent
-set :urgent, false
+# Make dialog windows urgent and draw focus
+set :urgent_dialogs, false
 
 # Honor resize size hints globally
-set :resize, false
+set :honor_size_hints, false
 
-# Enable gravity tiling
-set :tiling, false
+# Enable gravity tiling for all gravities
+set :gravity_tiling, false
+
+# Enable click-to-focus focus model
+set :click_to_focus, false
 
 # Set the WM_NAME of subtle (Java quirk)
 # set :wmname, "LG3D"

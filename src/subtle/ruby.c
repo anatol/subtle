@@ -1842,17 +1842,20 @@ RubyConfigSet(VALUE self,
       switch(rb_type(value))
         {
           case T_FIXNUM: /* {{{ */
-            if(CHAR2SYM("step") == option)
+            if(CHAR2SYM("step") == option ||
+                CHAR2SYM("increase_step") == option)
               {
                 if(!(subtle->flags & SUB_SUBTLE_CHECK))
                   subtle->step = FIX2INT(value);
               }
-            else if(CHAR2SYM("snap") == option)
+            else if(CHAR2SYM("snap") == option ||
+                CHAR2SYM("border_snap") == option)
               {
                 if(!(subtle->flags & SUB_SUBTLE_CHECK))
                   subtle->snap = FIX2INT(value);
               }
-            else if(CHAR2SYM("gravity") == option)
+            else if(CHAR2SYM("gravity") == option ||
+                CHAR2SYM("default_gravity") == option)
               {
                 if(!(subtle->flags & SUB_SUBTLE_CHECK))
                   subtle->gravity = value; ///< Store for later
@@ -1861,10 +1864,34 @@ RubyConfigSet(VALUE self,
               SYM2CHAR(option));
             break; /* }}} */
           case T_SYMBOL: /* {{{ */
-            if(CHAR2SYM("gravity") == option)
+            if(CHAR2SYM("gravity") == option ||
+                CHAR2SYM("default_gravity") == option)
               {
                 if(!(subtle->flags & SUB_SUBTLE_CHECK))
                   subtle->gravity = value; ///< Store for later
+              }
+            else subSubtleLogWarn("Cannot find option `:%s'\n",
+              SYM2CHAR(option));
+            break; /* }}} */
+          case T_TRUE:
+          case T_FALSE: /* {{{ */
+            if(CHAR2SYM("urgent") == option ||
+                CHAR2SYM("urgent_dialogs") == option)
+              {
+                if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
+                  subtle->flags |= SUB_SUBTLE_URGENT;
+              }
+            else if(CHAR2SYM("resize") == option ||
+                CHAR2SYM("honor_size_hints") == option)
+              {
+                if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
+                  subtle->flags |= SUB_SUBTLE_RESIZE;
+              }
+            else if(CHAR2SYM("tiling") == option ||
+                CHAR2SYM("gravity_tiling") == option)
+              {
+                if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
+                  subtle->flags |= SUB_SUBTLE_TILING;
               }
             else if(CHAR2SYM("click_to_focus") == option)
               {
@@ -1874,42 +1901,11 @@ RubyConfigSet(VALUE self,
             else subSubtleLogWarn("Cannot find option `:%s'\n",
               SYM2CHAR(option));
             break; /* }}} */
-          case T_TRUE:
-          case T_FALSE: /* {{{ */
-            if(CHAR2SYM("urgent") == option)
-              {
-                if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
-                  subtle->flags |= SUB_SUBTLE_URGENT;
-              }
-            else if(CHAR2SYM("resize") == option)
-              {
-                if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
-                  subtle->flags |= SUB_SUBTLE_RESIZE;
-              }
-            else if(CHAR2SYM("tiling") == option)
-              {
-                if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
-                  subtle->flags |= SUB_SUBTLE_TILING;
-              }
-            else subSubtleLogWarn("Cannot find option `:%s'\n",
-              SYM2CHAR(option));
-            break; /* }}} */
           case T_STRING: /* {{{ */
            if(CHAR2SYM("font") == option)
             {
               subSubtleLogDeprecated("The `font' option is deprecated, "
                 "please use the styles `font' property instead.\n");
-
-              if(!(subtle->flags & SUB_SUBTLE_CHECK) &&
-                  !subtle->styles.all.font)
-                {
-                  subtle->styles.all.font   = RubyFont(RSTRING_PTR(value));
-                  subtle->styles.all.flags |= SUB_STYLE_FONT;
-
-                  /* EWMH: Font */
-                  subEwmhSetString(ROOT, SUB_EWMH_SUBTLE_FONT,
-                    RSTRING_PTR(value));
-                }
             }
            else if(CHAR2SYM("separator") == option)
               {
