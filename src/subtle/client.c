@@ -509,11 +509,13 @@ subClientRender(SubClient *c)
 
  /** subClientFocus {{{
   * @brief Set focus to client
-  * @param[in]  c  A #SubClient
+  * @param[in]  c     A #SubClient
+  * @param[in]  warp  Whether to warp pointer to window
   **/
 
 void
-subClientFocus(SubClient *c)
+subClientFocus(SubClient *c,
+  int warp)
 {
   DEAD(c);
   assert(c);
@@ -533,23 +535,26 @@ subClientFocus(SubClient *c)
     }
   else if(c->flags & SUB_CLIENT_INPUT)
     XSetInputFocus(subtle->dpy, c->win, RevertToPointerRoot, CurrentTime);
+
+  /* Warp pointer */
+  if(warp) subClientWarp(c);
 } /* }}} */
 
  /** subClientWarp {{{
   * @brief Warp pointer to window center
-  * @param[in]  c     A #SubClient
-  * @param[in]  rise  Raise window
+  * @param[in]  c  A #SubClient
   **/
 
 void
-subClientWarp(SubClient *c,
-  int rise)
+subClientWarp(SubClient *c)
 {
   DEAD(c);
   assert(c);
 
-  XWarpPointer(subtle->dpy, None, ROOT, 0, 0, 0, 0,
-    c->geom.x + c->geom.width / 2, c->geom.y + c->geom.height / 2);
+  /* Move pointer to window center */
+  if(!(subtle->flags & SUB_SUBTLE_CLICK_TO_FOCUS))
+    XWarpPointer(subtle->dpy, None, ROOT, 0, 0, 0, 0,
+      c->geom.x + c->geom.width / 2, c->geom.y + c->geom.height / 2);
 } /* }}} */
 
  /** subClientDrag {{{
