@@ -536,7 +536,7 @@ task(PG_SUBTLEXT => [:config]) # }}}
 
 desc("Install subtle")
 task(:install => [:config, :build]) do
-  verbose = (:default != RakeFileUtils.verbose)
+  verbose = (true == RakeFileUtils.verbose)
 
   # Make install dirs
   FileUtils.mkdir_p(
@@ -555,21 +555,26 @@ task(:install => [:config, :build]) do
   FileUtils.install(
     File.join("data", @defines["PKG_CONFIG"]),
     @options["configdir"],
-    :mode => 0644, :verbose => verbose
+    :mode    => 0644,
+    :verbose => verbose
   )
 
   # Install subtle
   message("INSTALL %s\n" % [PG_SUBTLE])
   FileUtils.install(
-    PG_SUBTLE, @options["bindir"],
-    :mode => 0755, :verbose => verbose
+    PG_SUBTLE,
+    @options["bindir"],
+    :mode    => 0755,
+    :verbose => verbose
   )
 
   # Install subtlext
   message("INSTALL %s\n" % [PG_SUBTLEXT])
   FileUtils.install(
-    PG_SUBTLEXT + ".so", @options["extdir"],
-    :mode => 0644, :verbose => verbose
+    PG_SUBTLEXT + ".so",
+    @options["extdir"],
+    :mode    => 0644,
+    :verbose => verbose
   )
 
   # Get path of sed and ruby interpreter
@@ -583,8 +588,9 @@ task(:install => [:config, :build]) do
   message("INSTALL subtler\n")
   FileList["data/subtler/*.rb"].collect do |f|
     FileUtils.install(f,
-    File.join(@options["extdir"], "subtler"),
-      :mode => 0644, :verbose => verbose
+      File.join(@options["extdir"], "subtler"),
+      :mode    => 0644,
+      :verbose => verbose
     )
   end
 
@@ -593,7 +599,8 @@ task(:install => [:config, :build]) do
   FileList["data/sur/*.rb"].collect do |f|
     FileUtils.install(f,
       File.join(@options["extdir"], "sur"),
-      :mode => 0644, :verbose => verbose
+      :mode    => 0644,
+      :verbose => verbose
     )
   end
 
@@ -601,7 +608,8 @@ task(:install => [:config, :build]) do
   message("INSTALL tools\n")
   FileList["data/bin/*"].collect do |f|
     FileUtils.install(f, @options["bindir"],
-      :mode => 0755, :verbose => verbose
+      :mode    => 0755,
+      :verbose => verbose
     )
 
     # Update interpreter name
@@ -613,7 +621,8 @@ task(:install => [:config, :build]) do
   message("INSTALL manpages\n")
   FileList["data/man/*.*"].collect do |f|
     FileUtils.install(f, @options["mandir"],
-      :mode => 0644, :verbose => verbose
+      :mode    => 0644,
+      :verbose => verbose
     )
   end
 end # }}}
