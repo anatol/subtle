@@ -335,6 +335,7 @@
 #define SUB_SUBTLE_RELOAD             (1L << 10)                  ///< Reload config
 #define SUB_SUBTLE_TRAY               (1L << 11)                  ///< Use tray
 #define SUB_SUBTLE_TILING             (1L << 12)                  ///< Enable tiling
+#define SUB_SUBTLE_CLICK_TO_FOCUS     (1L << 13)                  ///< Click to focus
 
 /* Tag flags */
 #define SUB_TAG_GRAVITY               (1L << 10)                  ///< Gravity property
@@ -760,8 +761,8 @@ SubClient *subClientNew(Window win);                              ///< Create cl
 void subClientConfigure(SubClient *c);                            ///< Send configure request
 void subClientDimension(int id);                                  ///< Dimension clients
 void subClientRender(SubClient *c);                               ///< Render client
-void subClientFocus(SubClient *c);                                ///< Focus client
-void subClientWarp(SubClient *c, int rise);                       ///< Warp to client
+void subClientFocus(SubClient *c, int warp);                      ///< Focus client
+void subClientWarp(SubClient *c);                                 ///< Warp to client
 void subClientDrag(SubClient *c, int mode, int direction);        ///< Move/drag client
 void subClientUpdate(int vid);                                    ///< Update clients
 void subClientTag(SubClient *c, int tag, int *flags);             ///< Tag client
