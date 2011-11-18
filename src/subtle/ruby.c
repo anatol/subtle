@@ -1866,6 +1866,11 @@ RubyConfigSet(VALUE self,
                 if(!(subtle->flags & SUB_SUBTLE_CHECK))
                   subtle->gravity = value; ///< Store for later
               }
+            else if(CHAR2SYM("click_to_focus") == option)
+              {
+                if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
+                  subtle->flags |= SUB_SUBTLE_CLICK_TO_FOCUS;
+              }
             else subSubtleLogWarn("Cannot find option `:%s'\n",
               SYM2CHAR(option));
             break; /* }}} */
@@ -3606,7 +3611,7 @@ subRubyReloadConfig(void)
   XQueryPointer(subtle->dpy, ROOT, &root, &win, &rx, &ry, &x, &y, &mask);
 
   if((c = CLIENT(subSubtleFind(win, CLIENTID))))
-    subClientFocus(c);
+    subClientFocus(c, True);
   else subSubtleFocus(False);
 
   /* Hook: Reload */
