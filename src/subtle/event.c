@@ -317,9 +317,18 @@ EventCrossing(XCrossingEvent *ev)
           {
             subGrabSet(ROOT);
           }
-        else if((c = CLIENT(subSubtleFind(ev->window, CLIENTID)))) ///< Client
+        else if((c = CLIENT(subSubtleFind(ev->window, CLIENTID))) && ALIVE(c)) ///< Client
           {
-            if(ALIVE(c)) subClientFocus(c);
+            if(subtle->flags & SUB_SUBTLE_CLICK_TO_FOCUS)
+              {
+                if(subtle->windows.focus[0] != c->win)
+                  {
+                    XGrabButton(subtle->dpy, Button1,
+                      AnyModifier, c->win, False, ButtonPressMask, GrabModeAsync,
+                      GrabModeAsync, None, None);
+                  }
+              }
+            else subClientFocus(c, False);
           }
         else if((s = SCREEN(subSubtleFind(ev->window, SCREENID)))) ///< Screen panels
           {
@@ -329,8 +338,19 @@ EventCrossing(XCrossingEvent *ev)
         break;
       case LeaveNotify:
         if((s = SCREEN(subSubtleFind(ev->window, SCREENID)))) ///< Screen panels
-          subPanelAction(s->panels, SUB_PANEL_OUT, ev->x, ev->y, -1,
-            s->panel2 == ev->window);
+          {
+            subPanelAction(s->panels, SUB_PANEL_OUT, ev->x, ev->y, -1,
+              s->panel2 == ev->window);
+          }
+        else if((c = CLIENT(subSubtleFind(ev->window, CLIENTID))) && ALIVE(c)) ///< Client
+          {
+            if(subtle->flags & SUB_SUBTLE_CLICK_TO_FOCUS &&
+                subtle->windows.focus[0] != c->win)
+              {
+                XUngrabButton(subtle->dpy, Button1, AnyModifier, c->win);
+                printf("DEBUG %s:%d\n", __FILE__, __LINE__);
+              }
+          }
     }
 
   subSubtleLogDebugEvents("Enter: win=%#lx\n", ev->window);
@@ -490,11 +510,18 @@ EventGrab(XEvent *ev)
   switch(ev->type)
     {
       case ButtonPress:
-        if((s = SCREEN(subSubtleFind(ev->xbutton.window, SCREENID))))
+        if((s = SCREEN(subSubtleFind(ev->xbutton.window, SCREENID)))) ///< Screen panels
           {
             subPanelAction(s->panels, SUB_PANEL_DOWN, ev->xbutton.x,
               ev->xbutton.y, ev->xbutton.button,
               s->panel2 == ev->xbutton.window);
+
+            return;
+          }
+        else if(subtle->flags & SUB_SUBTLE_CLICK_TO_FOCUS &&
+            (c = CLIENT(subSubtleFind(ev->xbutton.window, CLIENTID)))) ///< Client
+          {
+            if(ALIVE(c)) subClientFocus(c, False);
 
             return;
           }
@@ -737,8 +764,7 @@ EventGrab(XEvent *ev)
 
                 if(found)
                   {
-                    subClientWarp(found, True);
-                    subClientFocus(found);
+                    subClientFocus(found, True);
 
                     subSubtleLogDebug("Match: win=%#lx, distance=%d\n",
                       found->win, match);
@@ -754,8 +780,7 @@ EventGrab(XEvent *ev)
 
                     if(VISIBLE(subtle->visible_tags, iter))
                       {
-                        subClientFocus(iter);
-                        subClientWarp(iter, True);
+                        subClientFocus(iter, True);
                         break;
                       }
                   }
@@ -798,8 +823,8 @@ EventGrab(XEvent *ev)
                 if(0 <= id && id < subtle->gravities->ndata)
                   {
                     subClientArrange(c, id, c->screen);
-                    subClientWarp(c, False);
                     subClientRestack(c, SUB_CLIENT_RESTACK_UP);
+                    subClientWarp(c);
 
                     /* Hook: Tile */
                     subHookCall(SUB_HOOK_TILE, NULL);
@@ -973,8 +998,7 @@ EventMessage(XClientMessageEvent *ev)
                       }
                   }
 
-                subClientWarp(c, True);
-                subClientFocus(c);
+                subClientFocus(c, True);
               }
             else if((r = TRAY(subSubtleFind(ev->data.l[0], TRAYID))))
               {
@@ -1057,8 +1081,8 @@ EventMessage(XClientMessageEvent *ev)
                     if(subtle->visible_views & (1L << ((int)ev->data.l[2] + 1)))
                       {
                         subClientArrange(c, c->gravities[(int)ev->data.l[2]], c->screen);
-                        subClientWarp(c, True);
                         XRaiseWindow(subtle->dpy, c->win);
+                        subClientWarp(c);
 
                         /* Hook: Tile */
                         subHookCall(SUB_HOOK_TILE, NULL);
@@ -1067,8 +1091,8 @@ EventMessage(XClientMessageEvent *ev)
                 else if(VISIBLE(subtle->visible_tags, c))
                   {
                     subClientArrange(c, (int)ev->data.l[1], c->screen);
-                    subClientWarp(c, True);
                     XRaiseWindow(subtle->dpy, c->win);
+                    subClientWarp(c);
 
                     /* Hook: Tile */
                     subHookCall(SUB_HOOK_TILE, NULL);
@@ -1156,8 +1180,8 @@ EventMessage(XClientMessageEvent *ev)
                     if((c = CLIENT(subtle->clients->data[i])) && c->gravity == ev->data.l[0])
                       {
                         subClientArrange(c, 0, -1); ///< Fallback to first gravity
-                        subClientWarp(c, True);
                         XRaiseWindow(subtle->dpy, c->win);
+                        subClientWarp(c);
                       }
                   }
 
