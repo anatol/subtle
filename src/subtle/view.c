@@ -71,8 +71,7 @@ subViewFocus(SubView *v,
       if((c = CLIENT(subSubtleFind(v->focus, CLIENTID))) &&
           VISIBLE(v->tags, c))
         {
-          subClientFocus(c);
-          subClientWarp(c, False);
+          subClientFocus(c, True);
 
           return;
         }

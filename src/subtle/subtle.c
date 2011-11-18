@@ -194,8 +194,7 @@ subSubtleFocus(int focus)
                   VISIBLE(subtle->visible_tags, c) &&
                   c->win != subtle->windows.focus[0])
                 {
-                  subClientFocus(c);
-                  subClientWarp(c, True);
+                  subClientFocus(c, True);
 
                   return c->win;
                 }
@@ -212,8 +211,7 @@ subSubtleFocus(int focus)
               VISIBLE(subtle->visible_tags, c) &&
               c->win != subtle->windows.focus[0])
             {
-              subClientFocus(c);
-              subClientWarp(c, True);
+              subClientFocus(c, True);
 
               return c->win;
             }

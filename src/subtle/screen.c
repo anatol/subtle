@@ -357,7 +357,7 @@ subScreenConfigure(void)
 
               /* Warp after gravity and screen have been set */
               if(c->flags & SUB_CLIENT_MODE_URGENT)
-                subClientWarp(c, True);
+                subClientWarp(c);
 
               /* EWMH: Desktop, screen */
               subEwmhSetCardinals(c->win, SUB_EWMH_NET_WM_DESKTOP,
