@@ -947,7 +947,13 @@ subClientArrange(SubClient *c,
   /* Check flags */
   if(c->flags & SUB_CLIENT_MODE_FULL)
     {
-      XMoveResizeWindow(subtle->dpy, c->win, s->base.x, s->base.y,
+      /* Use all screens when in zaphod mode */
+      if(c->flags & SUB_CLIENT_MODE_ZAPHOD)
+        {
+          XMoveResizeWindow(subtle->dpy, c->win, 0, 0,
+            subtle->width, subtle->height);
+        }
+      else XMoveResizeWindow(subtle->dpy, c->win, s->base.x, s->base.y,
         s->base.width, s->base.height);
       XRaiseWindow(subtle->dpy, c->win);
     }
