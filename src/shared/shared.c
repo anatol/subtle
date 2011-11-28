@@ -870,7 +870,6 @@ subSharedParseKey(Display *disp,
   unsigned int *state,
   int *mouse)
 {
-  int i;
   KeySym sym = NoSymbol;
   char *tokens = NULL, *tok = NULL, *save = NULL;
 
@@ -885,31 +884,21 @@ subSharedParseKey(Display *disp,
         {
           /* Unknown keys */
           case NoSymbol:
+            if('B' == tok[0])
               {
-                char button[4] = { 0 };
+                int buttonid = 0;
 
-                /* Check if it is a mouse button */
-                for(i = 1; i <= 20; i++)
-                  {
-                    snprintf(button, sizeof(button), "B%d", i);
+                sscanf(tok, "B%d", &buttonid);
 
-                    if(0 == strcmp(tok, button))
-                      {
-                        *mouse = True;
-                        *code  = XK_Pointer_Button1 + i - 1; ///< FIXME: Implementation independent?
-                        sym    = XK_Pointer_Button1;
+                *mouse = True;
+                *code  = XK_Pointer_Button1 + buttonid; ///< FIXME: Implementation independent?
+                sym    = XK_Pointer_Button1;
+              }
+            else
+              {
+                free(tokens);
 
-                        break;
-                      }
-                  }
-
-                /* Check if a symbol was found */
-                if(NoSymbol == sym)
-                  {
-                    free(tokens);
-
-                    return sym;
-                  }
+                return sym;
               }
             break;
 
