@@ -526,7 +526,7 @@ EventGrab(XEvent *ev)
             return;
           }
 
-        code  = XK_Pointer_Button1 + ev->xbutton.button - 1; ///< Build button number
+        code  = XK_Pointer_Button1 + ev->xbutton.button; ///< Build button number
         state = ev->xbutton.state;
 
         subSubtleLogDebugEvents("Grab: type=mouse, win=%#lx\n",
