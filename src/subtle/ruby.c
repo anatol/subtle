@@ -1189,8 +1189,8 @@ RubyEvalStyle(VALUE name,
   if(T_STRING == rb_type(value = rb_hash_lookup(params,
       CHAR2SYM("font"))) && !s->font)
     {
-      s->font   = RubyFont(RSTRING_PTR(value));
       s->flags |= SUB_STYLE_FONT;
+      s->font   = RubyFont(RSTRING_PTR(value));
 
       /* EWMH: Font */
       if(CHAR2SYM("all") == name)
@@ -1201,9 +1201,12 @@ RubyEvalStyle(VALUE name,
   if(T_STRING == rb_type(value = rb_hash_lookup(params,
       CHAR2SYM("separator"))) && !s->separator)
     {
+      s->flags |= SUB_STYLE_SEPARATOR;
+
       /* Create new separator */
-      s->separator = (SubSeparator *)subSharedMemoryAlloc(1, sizeof(SubSeparator));
-      s->separator->string = strdup(RSTRING_PTR(value));
+      s->separator = (SubSeparator *)subSharedMemoryAlloc(1,
+        sizeof(SubSeparator));
+      s->separator->string  = strdup(RSTRING_PTR(value));
    }
 } /* }}} */
 
