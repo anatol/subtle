@@ -100,13 +100,14 @@ PanelViewStyle(SubView *v,
     {
       SubStyle *style = NULL;
 
+      subStyleReset(s, -1);
+
       /* Pick base style */
       if(!(style = subArrayGet(subtle->styles.views.styles, v->style)))
         {
           if(subtle->styles.focus && focus)
             style = subtle->styles.focus;
-          else if(subtle->styles.occupied &&
-              subtle->client_tags & v->tags)
+          else if(subtle->styles.occupied && subtle->client_tags & v->tags)
             style = subtle->styles.occupied;
         }
 
@@ -261,7 +262,8 @@ subPanelUpdate(SubPanel *p)
         if(0 < subtle->views->ndata)
           {
             int i;
-            SubStyle s = { -1, .border = { -1 }, .padding = { -1 }, .margin = { -1 }};
+            SubStyle s = { -1, .flags = SUB_TYPE_STYLE, .border = { -1 },
+              .padding = { -1 }, .margin = { -1 }};
 
             /* Update for each view */
             for(i = 0; i < subtle->views->ndata; i++)
@@ -407,7 +409,8 @@ subPanelRender(SubPanel *p,
         if(0 < subtle->views->ndata)
           {
             int i, vx = p->x;
-            SubStyle s = { -1, .border = { -1 }, .padding = { -1 }, .margin = { -1 }};
+            SubStyle s = { -1, .flags = SUB_TYPE_STYLE, .border = { -1 },
+              .padding = { -1 }, .margin = { -1 }};
 
             /* View buttons */
             for(i = 0; i < subtle->views->ndata; i++)
