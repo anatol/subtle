@@ -186,6 +186,15 @@ subStyleReset(SubStyle *s,
 
   s->font = NULL;
 
+  /* Reset separator */
+  if(s->flags & SUB_STYLE_SEPARATOR && s->separator)
+    {
+      free(s->separator->string);
+      free(s->separator);
+    }
+
+  s->separator = NULL;
+
   /* Remove states */
   if(s->styles) subArrayKill(s->styles, True);
   s->styles = NULL;
@@ -243,7 +252,7 @@ subStyleKill(SubStyle *s)
   if(s->flags & SUB_STYLE_SEPARATOR && s->separator)
     {
       free(s->separator->string);
-      free(s);
+      free(s->separator);
     }
 
   if(s->name)   free(s->name);
