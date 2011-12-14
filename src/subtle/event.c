@@ -904,13 +904,10 @@ EventMessage(XClientMessageEvent *ev)
                     int sid = 0;
 
                     /* Find screen: Prefer screen of current window */
-                    if((c = CLIENT(subSubtleFind(subtle->windows.focus[0], CLIENTID))) &&
-                        VISIBLE(c))
-                      {
-                        s   = SCREEN(subArrayGet(subtle->screens, c->screenid));
-                        sid = c->screenid;
-                      }
-                    else s = subScreenCurrent(&sid);
+                    if((c = CLIENT(subSubtleFind(subtle->windows.focus[0],
+                        CLIENTID))) && VISIBLE(c))
+                      sid = c->screenid;
+                    else subScreenCurrent(&sid);
 
                     subViewFocus(subtle->views->data[ev->data.l[0]],
                       sid, False, True);

@@ -1182,6 +1182,8 @@ subClientToggle(SubClient *c,
       /* Set sticky mode */
       if(type & SUB_CLIENT_MODE_STICK)
         {
+          SubClient *focus = NULL;
+
           /* Check if gravity should be set */
           if(gravity)
             {
@@ -1198,8 +1200,12 @@ subClientToggle(SubClient *c,
                 }
             }
 
-          /* Set screen stick and force re-arrange */
-          //subScreenCurrent(&c->screenid);
+          /* Prefer screen of current window, set it and re-arrange*/
+          if((focus = CLIENT(subSubtleFind(subtle->windows.focus[0],
+              CLIENTID))) && VISIBLE(c))
+            c->screenid = focus->screenid;
+          else subScreenCurrent(&c->screenid);
+
           c->flags |= SUB_CLIENT_ARRANGE;
         }
 
