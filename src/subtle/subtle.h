@@ -774,8 +774,8 @@ void subClientRetag(SubClient *c, int *flags);                    ///< Update cl
 void subClientResize(SubClient *c, XRectangle *bounds,
   int size_hints);                                                ///< Resize client for screen
 void subClientRestack(SubClient *c, int dir);                     ///< Restack clients
-void subClientArrange(SubClient *c, int gravity,
-  int screen);                                                    ///< Arrange client
+void subClientArrange(SubClient *c, int gravityid,
+  int screenid);                                                  ///< Arrange client
 void subClientToggle(SubClient *c, int type, int gravity);        ///< Toggle client state
 void subClientSetStrut(SubClient *c);                             ///< Set client strut
 void subClientSetProtocols(SubClient *c);                         ///< Set client protocols

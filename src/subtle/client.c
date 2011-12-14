@@ -1027,10 +1027,10 @@ subClientRestack(SubClient *c,
 
 void
 subClientArrange(SubClient *c,
-  int gravity,
-  int screen)
+  int gravityid,
+  int screenid)
 {
-  SubScreen *s = SCREEN(subArrayGet(subtle->screens, screen));
+  SubScreen *s = SCREEN(subArrayGet(subtle->screens, screenid));
 
   DEAD(c);
   assert(c && s);
@@ -1051,7 +1051,7 @@ subClientArrange(SubClient *c,
     }
   else if(c->flags & SUB_CLIENT_MODE_FLOAT)
     {
-      if(c->flags & SUB_CLIENT_ARRANGE || (-1 != screen && c->screenid != screen))
+      if(c->flags & SUB_CLIENT_ARRANGE || (-1 != screenid && c->screenid != screenid))
         {
           SubScreen *s2 = SCREEN(subArrayGet(subtle->screens,
             -1 != c->screenid ? c->screenid : 0));
@@ -1063,7 +1063,7 @@ subClientArrange(SubClient *c,
               c->geom.y      = c->geom.y - s2->geom.y + s->geom.y;
               c->geom.width  = c->geom.width;
               c->geom.height = c->geom.height;
-              c->screenid      = screen;
+              c->screenid    = screenid;
             }
 
           /* Finally resize window */
@@ -1085,17 +1085,18 @@ subClientArrange(SubClient *c,
   else
     {
       if(c->flags & SUB_CLIENT_ARRANGE ||
-          c->gravityid != gravity || c->screenid != screen)
+          c->gravityid != gravityid || c->screenid != screenid)
         {
           XRectangle bounds = s->geom;
           int old_gravity = c->gravityid, old_screen = c->screenid;
           SubGravity *g = NULL, *old_g = NULL;
 
           /* Set values */
-          if(-1 != screen)  c->screenid = screen;
-          if(-1 != gravity) c->gravityid = c->gravities[s->viewid] = gravity;
+          if(-1 != screenid)  c->screenid  = screenid;
+          if(-1 != gravityid)
+            c->gravityid = c->gravities[s->viewid] = gravityid;
 
-          g     = GRAVITY(subArrayGet(subtle->gravities, gravity));
+          g     = GRAVITY(subArrayGet(subtle->gravities, gravityid));
           old_g = GRAVITY(subArrayGet(subtle->gravities, old_gravity));
 
           /* Gravity tiling */
@@ -1106,7 +1107,7 @@ subClientArrange(SubClient *c,
           if(subtle->flags & SUB_SUBTLE_TILING ||
               (g && g->flags & (SUB_GRAVITY_HORZ|SUB_GRAVITY_VERT)))
             {
-              ClientTile(gravity, -1 == screen ? 0 : screen);
+              ClientTile(gravityid, -1 == screenid ? 0 : screenid);
             }
           else
             {
