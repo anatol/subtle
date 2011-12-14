@@ -247,7 +247,11 @@ subTrayClose(SubTray *t)
       subScreenRender();
 
       /* Update focus if necessary */
-      if(focus) subSubtleFocus(True);
+      if(focus)
+        {
+          SubClient *c = subClientNext(0);
+          if(c) subClientFocus(c, True);
+        }
     }
 
   subSubtleLogDebugSubtle("Close\n");

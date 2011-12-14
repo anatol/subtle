@@ -103,7 +103,7 @@ PanelViewStyle(SubView *v,
       subStyleReset(s, -1);
 
       /* Pick base style */
-      if(!(style = subArrayGet(subtle->styles.views.styles, v->style)))
+      if(!(style = subArrayGet(subtle->styles.views.styles, v->styleid)))
         {
           if(subtle->styles.focus && focus)
             style = subtle->styles.focus;
@@ -136,7 +136,7 @@ PanelSubletStyle(SubPanel *p)
 
   /* Pick sublet style */
   if(subtle->styles.sublets.styles)
-    s = subArrayGet(subtle->styles.sublets.styles, p->sublet->style);
+    s = subArrayGet(subtle->styles.sublets.styles, p->sublet->styleid);
 
   return s ? s : &subtle->styles.sublets;
 } /* }}} */
@@ -168,9 +168,9 @@ subPanelNew(int type)
         p->sublet = SUBLET(subSharedMemoryAlloc(1, sizeof(SubSublet)));
 
         /* Sublet specific */
-        p->sublet->time   = subSubtleTime();
-        p->sublet->text   = subSharedTextNew();
-        p->sublet->style  = -1;
+        p->sublet->time    = subSubtleTime();
+        p->sublet->text    = subSharedTextNew();
+        p->sublet->styleid = -1;
         break; /* }}} */
       case SUB_PANEL_VIEWS: /* {{{ */
         p->flags |= SUB_PANEL_DOWN;
@@ -247,8 +247,8 @@ subPanelUpdate(SubPanel *p)
                       subtle->styles.title.font, c->name,
                       /* Limit string length */
                       len > subtle->styles.clients.right ?
-                      subtle->styles.clients.right : len,
-                      NULL, NULL, True) + width + STYLE_WIDTH(subtle->styles.title);
+                      subtle->styles.clients.right : len, NULL, NULL, True) +
+                      width + STYLE_WIDTH(subtle->styles.title);
 
                     /* Ensure min width */
                     p->width = MAX(subtle->styles.clients.min, p->width);
@@ -275,7 +275,7 @@ subPanelUpdate(SubPanel *p)
                     !(subtle->client_tags & v->tags))
                   continue;
 
-                PanelViewStyle(v, i, (p->screen->vid == i), &s);
+                PanelViewStyle(v, i, (p->screen->viewid == i), &s);
 
                 /* Update view width */
                 if(v->flags & SUB_VIEW_ICON_ONLY)
@@ -373,7 +373,7 @@ subPanelRender(SubPanel *p,
             SubClient *c = NULL;
 
             if((c = CLIENT(subSubtleFind(subtle->windows.focus[0], CLIENTID))) &&
-                !(c->flags & SUB_CLIENT_TYPE_DESKTOP))
+                !(c->flags & SUB_CLIENT_TYPE_DESKTOP) && VISIBLE(c))
               {
                 int x = 0, y = 0, width = 0, len = 0;
                 char buf[5] = { 0 };
@@ -423,7 +423,7 @@ subPanelRender(SubPanel *p,
                     !(subtle->client_tags & v->tags))
                   continue;
 
-                PanelViewStyle(v, i, (p->screen->vid == i), &s);
+                PanelViewStyle(v, i, (p->screen->viewid == i), &s);
 
                 /* Set window background and border*/
                 PanelRect(drawable, vx, v->width, &s);
@@ -586,7 +586,11 @@ subPanelAction(SubArray *panels,
                         /* Check if x is in view rect */
                         if(x >= vx && x <= vx + v->width)
                           {
-                            subViewSwitch(v, -1, False);
+                            /* FIXME */
+                            int sid = subArrayIndex(subtle->screens,
+                              (void *)p->screen);
+
+                            subViewFocus(v, sid, True, False);
 
                             break;
                           }

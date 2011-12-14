@@ -63,41 +63,43 @@
   (SUB_LOG_EVENTS|SUB_LOG_RUBY|SUB_LOG_XERROR| \
   SUB_LOG_SUBTLE|SUB_LOG_DEBUG)                                   ///< Debug loglevel
 
-#define BORDER(c) \
-  (c->flags & SUB_CLIENT_MODE_BORDERLESS ? 0 : \
+#define BORDER(C) \
+  (C->flags & SUB_CLIENT_MODE_BORDERLESS ? 0 : \
   subtle->styles.clients.border.top)                              ///< Get border width
 
-#define STYLE_TOP(s) \
-  (s.border.top + s.padding.top + s.margin.top)                   ///< Get style top
-#define STYLE_RIGHT(s) \
-  (s.border.right + s.padding.right + s.margin.right)             ///< Get style right
-#define STYLE_BOTTOM(s) \
-  (s.border.bottom + s.padding.bottom + s.margin.bottom)          ///< Get style bottom
-#define STYLE_LEFT(s) \
-  (s.border.left + s.padding.left + s.margin.left)                ///< Get style left
+#define STYLE_TOP(S) \
+  (S.border.top + S.padding.top + S.margin.top)                   ///< Get style top
+#define STYLE_RIGHT(S) \
+  (S.border.right + S.padding.right + S.margin.right)             ///< Get style right
+#define STYLE_BOTTOM(S) \
+  (S.border.bottom + S.padding.bottom + S.margin.bottom)          ///< Get style bottom
+#define STYLE_LEFT(S) \
+  (S.border.left + S.padding.left + S.margin.left)                ///< Get style left
 
-#define STYLE_WIDTH(s)  (STYLE_LEFT(s) + STYLE_RIGHT(s))          ///< Get style width
-#define STYLE_HEIGHT(s) (STYLE_TOP(s) + STYLE_BOTTOM(s))          ///< Get style height
+#define STYLE_WIDTH(S)  (STYLE_LEFT(S) + STYLE_RIGHT(S))          ///< Get style width
+#define STYLE_HEIGHT(S) (STYLE_TOP(S) + STYLE_BOTTOM(S))          ///< Get style height
 
-#define STYLE_FLAG(flag)    (1L << (10 + flag))                   ///< Get style flag
+#define STYLE_FLAG(Flag)    (1L << (10 + Flag))                   ///< Get style flag
 
-#define MIN(a,b)     (a >= b ? b : a)                             ///< Minimum
-#define MAX(a,b)     (a >= b ? a : b)                             ///< Maximum
+#define MIN(A,B)     (A >= B ? B : A)                             ///< Minimum
+#define MAX(A,B)     (A >= B ? A : B)                             ///< Maximum
 
-#define ALIVE(c) (c && !(c->flags & SUB_CLIENT_DEAD))             ///< Check if client is alive
-#define DEAD(c) \
-  if(!c || c->flags & SUB_CLIENT_DEAD) return;                    ///< Check dead clients
+#define ALIVE(C) (C && !(C->flags & SUB_CLIENT_DEAD))             ///< Check if client is alive
+#define DEAD(C) \
+  if(!C || C->flags & SUB_CLIENT_DEAD) return;                    ///< Check dead clients
 
-#define MINMAX(val,min,max) \
-  ((val < min) ? min : ((val > max) ? max : val))                 ///< Value min/max
+#define MINMAX(Val,Min,Max) \
+  ((Val < Min) ? Min : ((Val > Max) ? Max : Val))                 ///< Value min/max
 
-#define XYINRECT(wx,wy,r) \
-  (wx >= r.x && wx <= (r.x + r.width) && \
-   wy >= r.y && wy <= (r.y + r.height))                           ///< Whether x/y is in rect
+#define XYINRECT(Wx,Wy,R) \
+  (Wx >= R.x && Wx <= (R.x + R.width) && \
+   Wy >= R.y && Wy <= (R.y + R.height))                           ///< Whether x/y is in rect
 
-#define VISIBLE(visible_tags,c) \
-  (c && (visible_tags & c->tags || \
-  c->flags & (SUB_CLIENT_TYPE_DESKTOP|SUB_CLIENT_MODE_STICK)))    ///< Visible on view
+#define VISIBLE(C) VISIBLETAGS(C,subtle->visible_tags)            ///< Whether client is visible
+
+#define VISIBLETAGS(C,Tags) \
+  (C && (Tags & c->tags || \
+  C->flags & (SUB_CLIENT_TYPE_DESKTOP|SUB_CLIENT_MODE_STICK)))    ///< Whether client is visible on tags
 
 #define ROOT DefaultRootWindow(subtle->dpy)                       ///< Root window
 #define SCRN DefaultScreen(subtle->dpy)                           ///< Default screen
@@ -255,8 +257,8 @@
 #define SUB_GRAB_CHAIN_START          (1L << 14)                  ///< Chain grab start
 #define SUB_GRAB_CHAIN_LINK           (1L << 15)                  ///< Chain grab link
 #define SUB_GRAB_CHAIN_END            (1L << 16)                  ///< Chain grab end
-#define SUB_GRAB_VIEW_JUMP            (1L << 17)                  ///< Jump to view
-#define SUB_GRAB_VIEW_SWITCH          (1L << 18)                  ///< Jump to view
+#define SUB_GRAB_VIEW_FOCUS           (1L << 17)                  ///< Jump to view
+#define SUB_GRAB_VIEW_SWAP            (1L << 18)                  ///< Jump to view
 #define SUB_GRAB_VIEW_SELECT          (1L << 19)                  ///< Jump to view
 #define SUB_GRAB_SCREEN_JUMP          (1L << 20)                  ///< Jump to screen
 #define SUB_GRAB_SUBTLE_RELOAD        (1L << 21)                  ///< Reload subtle
@@ -335,7 +337,8 @@
 #define SUB_SUBTLE_RELOAD             (1L << 10)                  ///< Reload config
 #define SUB_SUBTLE_TRAY               (1L << 11)                  ///< Use tray
 #define SUB_SUBTLE_TILING             (1L << 12)                  ///< Enable tiling
-#define SUB_SUBTLE_CLICK_TO_FOCUS     (1L << 13)                  ///< Click to focus
+#define SUB_SUBTLE_FOCUS_CLICK        (1L << 13)                  ///< Click to focus
+#define SUB_SUBTLE_SKIP_WARP          (1L << 14)                  ///< Skip pointer warp
 
 /* Tag flags */
 #define SUB_TAG_GRAVITY               (1L << 10)                  ///< Gravity property
@@ -444,7 +447,8 @@ typedef struct subclient_t /* {{{ */
   float      minr, maxr;                                          ///< Client ratios
   int        minw, minh, maxw, maxh, incw, inch, basew, baseh;    ///< Client sizes
 
-  int        dir, screen, gravity, *gravities;                    ///< Client placement
+  int        dir, screenid, gravityid;                            ///< Client restacking dir, current screen id, current gravity id
+  int        *gravities;                                          ///< Client gravities for views
 } SubClient; /* }}} */
 
 typedef enum subewmh_t /* {{{ */
@@ -604,7 +608,7 @@ typedef struct subscreen_t /* {{{ */
 {
   FLAGS             flags;                                        ///< Screen flags
 
-  int               vid;                                          ///< Screen current view id
+  int               viewid;                                       ///< Screen current view id
   XRectangle        geom, base;                                   ///< Screen geom, base
   Pixmap            stipple;                                      ///< Screen stipple
   Drawable          drawable;                                     ///< Screen drawable
@@ -623,7 +627,7 @@ typedef struct subseparator_t /* {{{ */
 
 typedef struct subsublet_t { /* {{{ */
   FLAGS             flags;                                        ///< Sublet flags
-  int               watch, width, style;                          ///< Sublet watch id, width and style state
+  int               watch, width, styleid;                        ///< Sublet watch id, width and style id
   char              *name;                                        ///< Sublet name
   unsigned long     instance;                                     ///< Sublet ruby instance, fg, bg and icon color
   time_t            time, interval;                               ///< Sublet update/interval time
@@ -735,7 +739,7 @@ typedef struct subview_t /* {{{ */
   char              *name;                                        ///< View name
   TAGS              tags;                                         ///< View tags
   Window            focus;                                        ///< View window, focus
-  int               width, style;                                 ///< View width, style state
+  int               width, styleid;                               ///< View width, style id
 
   struct subicon_t  *icon;                                        ///< View icon
 } SubView; /* }}} */
@@ -760,9 +764,9 @@ void subArrayKill(SubArray *a, int clean);                        ///< Kill arra
 SubClient *subClientNew(Window win);                              ///< Create client
 void subClientConfigure(SubClient *c);                            ///< Send configure request
 void subClientDimension(int id);                                  ///< Dimension clients
-void subClientRender(SubClient *c);                               ///< Render client
 void subClientFocus(SubClient *c, int warp);                      ///< Focus client
-void subClientWarp(SubClient *c);                                 ///< Warp to client
+SubClient *subClientNext(int screenid);                      ///< Focus next client
+void subClientWarp(SubClient *c);                                 ///< Warp pointer to client
 void subClientDrag(SubClient *c, int mode, int direction);        ///< Move/drag client
 void subClientUpdate(int vid);                                    ///< Update clients
 void subClientTag(SubClient *c, int tag, int *flags);             ///< Tag client
@@ -826,7 +830,7 @@ void subEwmhFinish(void);                                         ///< Unset EWM
 void subGrabInit(void);                                           ///< Init keymap
 SubGrab *subGrabNew(const char *keys, int *duplicate);            ///< Create grab
 SubGrab *subGrabFind(int code, unsigned int mod);                 ///< Find grab
-void subGrabSet(Window win);                                      ///< Grab window
+void subGrabSet(Window win, int mask);                            ///< Grab window
 void subGrabUnset(Window win);                                    ///< Ungrab window
 int subGrabCompare(const void *a, const void *b);                 ///< Compare grabs
 void subGrabKill(SubGrab *g);                                     ///< Kill grab
@@ -879,12 +883,12 @@ void subScreenInit(void);                                         ///< Init scre
 SubScreen *subScreenNew(int x, int y, unsigned int width,
   unsigned int height);                                           ///< Create screen
 SubScreen *subScreenFind(int x, int y, int *sid);                 ///< Find screen by coordinates
-SubScreen *subScreenCurrent(int *sid);                            ///< Get current screen
+SubScreen * subScreenCurrent(int *sid);                           ///< Get current screen
 void subScreenConfigure(void);                                    ///< Configure screens
 void subScreenUpdate(void);                                       ///< Update screens
 void subScreenRender(void);                                       ///< Render screens
 void subScreenResize(void);                                       ///< Update screen sizes
-void subScreenJump(SubScreen *s);                                 ///< Jump to screen
+void subScreenWarp(SubScreen *s);                                 ///< Warp pointer to screen
 void subScreenPublish(void);                                      ///< Publish screens
 void subScreenKill(SubScreen *s);                                 ///< Kill screen
 /* }}} */
@@ -901,7 +905,6 @@ void subStyleInheritance(void);                                   ///< Inherit v
 /* subtle.c {{{ */
 XPointer * subSubtleFind(Window win, XContext id);                ///< Find window
 time_t subSubtleTime(void);                                       ///< Get current time
-Window subSubtleFocus(int focus);                                 ///< Focus window
 void subSubtleLog(int level, const char *file,
   int line, const char *format, ...);                             ///< Print messages
 void subSubtleFinish(void);                                       ///< Finish subtle
@@ -930,9 +933,8 @@ void subTrayPublish(void);                                        ///< Publish t
 
 /* view.c {{{ */
 SubView *subViewNew(char *name, char *tags);                      ///< Create view
-void subViewFocus(SubView *v, int focus);                         ///< Restore view focus
-void subViewJump(SubView *v);                                     ///< Jump to view
-void subViewSwitch(SubView *v, int sid, int focus);               ///< Switch view
+void subViewFocus(SubView *v, int screenid,
+  int swap, int focus);                                           ///< Focus view
 void subViewKill(SubView *v);                                     ///< Kill view
 void subViewPublish(void);                                        ///< Publish views
 /* }}} */
