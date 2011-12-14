@@ -30,7 +30,7 @@ subViewNew(char *name,
   /* Create new view */
   v = VIEW(subSharedMemoryAlloc(1, sizeof(SubView)));
   v->flags = SUB_TYPE_VIEW;
-  v->style = -1;
+  v->styleid = -1;
   v->name  = strdup(name);
 
   /* Tags */
@@ -52,137 +52,77 @@ subViewNew(char *name,
 } /* }}} */
 
  /** subViewFocus {{{
-  * @brief Restore view focus
-  * @param[in]  v      A #SubView
-  * @param[in]  focus  Whether to focus next client
+  * @brief Jump to view on screen or swap both
+  * @param[in]  v         A #SubView
+  * @param[in]  screenid  Screen id
+  * @param[in]  swap      Whether to swap views
+  * @param[in]  focus     Whether to focus next client
   **/
 
 void
 subViewFocus(SubView *v,
+  int screenid,
+  int swap,
   int focus)
 {
-  assert(v);
-
-  /* Focus */
-  if(focus && None != v->focus)
-    {
-      SubClient *c = NULL;
-
-      if((c = CLIENT(subSubtleFind(v->focus, CLIENTID))) &&
-          VISIBLE(v->tags, c))
-        {
-          subClientFocus(c, True);
-
-          return;
-        }
-      else v->focus = None;
-    }
-
-  subSubtleFocus(focus);
-
-  subSubtleLogDebugSubtle("Focus: focus=%d\n", focus);
-} /* }}} */
-
- /** subViewJump {{{
-  * @brief Jump to view
-  * @param[in]  v  A #SubView
-  **/
-
-void
-subViewJump(SubView *v)
-{
-  int i;
-  SubScreen *s = NULL;
-
-  assert(v);
-
-  /* Check if view is visible on a screen */
-  for(i = 0; i < subtle->screens->ndata; i++)
-    {
-      s = SCREEN(subtle->screens->data[i]);
-
-      if(VIEW(subtle->views->data[s->vid]) == v)
-        {
-          subScreenJump(s);
-
-          /* Hook: Jump */
-          subHookCall((SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_FOCUS),
-            (void *)v);
-
-          return;
-        }
-    }
-
-  /* Get current screen */
-  if((s = subScreenCurrent(NULL)))
-    {
-      s->vid = subArrayIndex(subtle->views, (void *)v);
-
-      subScreenConfigure();
-      subScreenRender();
-      subScreenPublish();
-      subViewFocus(v, True);
-    }
-
-  /* Hook: Jump, Tile */
-  subHookCall((SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_FOCUS), (void *)v);
-  subHookCall(SUB_HOOK_TILE, NULL);
-
-  subSubtleLogDebugSubtle("Jump\n");
-} /* }}} */
-
- /** subViewSwitch {{{
-  * @brief Switch views or jump
-  * @param[in]  v      A #SubView
-  * @param[in]  sid    Screen id
-  * @param[in]  focus  Whether to focus next client
-  **/
-
-void
-subViewSwitch(SubView *v,
-  int sid,
-  int focus)
-{
-  int i, swap = -1;
+  int vid = 0;
   SubScreen *s1 = NULL;
+  SubClient *c = NULL;
 
   assert(v);
 
-  /* Get working screen */
-  if(!(s1 = subArrayGet(subtle->screens, sid)))
-    s1 = subScreenCurrent(NULL);
+  /* Select screen and find vid */
+  s1  = SCREEN(subArrayGet(subtle->screens, screenid));
+  vid = subArrayIndex(subtle->views, (void *)v);
 
-  /* Check if there is only one screen */
-  if(1 < subtle->screens->ndata)
+  /* Swap only makes sense with more than one screen */
+  if(swap && 1 < subtle->screens->ndata)
     {
       /* Check if view is visible on any screen */
-      for(i = 0; i < subtle->screens->ndata; i++)
+      if(subtle->visible_views & (1L << (vid + 1)))
         {
-          SubScreen *s2 = SCREEN(subtle->screens->data[i]);
+          int i;
 
-          if(s1 != s2 && subArrayGet(subtle->views, s2->vid) == v)
+          /* Find screen with view and swap */
+          for(i = 0; i < subtle->screens->ndata; i++)
             {
-              /* Swap views */
-              swap    = s1->vid;
-              s1->vid = s2->vid;
-              s2->vid = swap;
+              SubScreen *s2 = SCREEN(subtle->screens->data[i]);
 
-              break;
+              if(s2->viewid == vid)
+                {
+                  s2->viewid = s1->viewid;
+
+                  break;
+                }
             }
         }
     }
 
   /* Set view and configure */
-  if(-1 == swap) s1->vid = subArrayIndex(subtle->views, (void *)v);
+  s1->viewid = vid;
 
   subScreenConfigure();
   subScreenRender();
   subScreenPublish();
 
-  subViewFocus(v, focus);
+  /* Update focus */
+  if(focus)
+    {
+      /* Restore focus on view */
+      if(!((c = CLIENT(subSubtleFind(v->focus, CLIENTID))) &&
+          VISIBLETAGS(c, v->tags)))
+        {
+          c        = subClientNext(screenid);
+          v->focus = None;
+        }
 
-  /* Hook: Jump */
+      if(c) subClientFocus(c, True);
+    }
+
+  /* Hook: Focus */
   subHookCall((SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_FOCUS), (void *)v);
+
+  subSubtleLogDebugSubtle("Focus: focus=%d\n", focus);
 } /* }}} */
 
  /** SubViewKill {{{
