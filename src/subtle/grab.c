@@ -14,32 +14,6 @@
 
 static unsigned int numlockmask = 0;
 
-/* GrabBind {{{ */
-static void
-GrabBind(SubGrab *g,
-  Window win)
-{
-  int i;
-  const unsigned int states[] = { 0, LockMask, numlockmask,
-    numlockmask|LockMask };
-
-  /* FIXME: Ugly key/state grabbing */
-  for(i = 0; i < LENGTH(states); i++)
-    {
-      if(g->flags & SUB_GRAB_KEY)
-        {
-          XGrabKey(subtle->dpy, g->code, g->state|states[i],
-            win, True, GrabModeAsync, GrabModeAsync);
-        }
-      else if(g->flags & SUB_GRAB_MOUSE)
-        {
-          XGrabButton(subtle->dpy, g->code - XK_Pointer_Button1,
-            g->state|states[i], win, False, ButtonPressMask|ButtonReleaseMask,
-            GrabModeAsync, GrabModeSync, None, None);
-        }
-    }
-} /* }}} */
-
 /* Public */
 
  /** subGrabInit {{{
@@ -123,30 +97,34 @@ subGrabFind(int code,
   SubGrab **ret = NULL, *gptr = NULL, g;
 
   /* Find grab via binary search */
-  g.code   = code;
-  g.state  = (state & ~(LockMask|numlockmask));
-  gptr     = &g;
-  ret      = (SubGrab **)bsearch(&gptr, subtle->grabs->data, subtle->grabs->ndata,
-    sizeof(SubGrab *), subGrabCompare);
+  g.code  = code;
+  g.state = (state & ~(LockMask|numlockmask));
+  gptr    = &g;
+  ret     = (SubGrab **)bsearch(&gptr, subtle->grabs->data,
+    subtle->grabs->ndata, sizeof(SubGrab *), subGrabCompare);
 
   return ret ? *ret : NULL;
 } /* }}} */
 
  /** subGrabSet {{{
   * @brief Grab keys for a window
-  * @param[in]  win  Window
+  * @param[in]  win   Window
+  * @param[in]  mask  Mask to select grabs to set
   **/
 
 void
-subGrabSet(Window win)
+subGrabSet(Window win,
+  int mask)
 {
   if(win)
     {
-      int i;
+      int i, j;
+      const unsigned int states[] = { 0, LockMask, numlockmask,
+        numlockmask|LockMask };
 
       /* Unbind click-to-focus grab */
-      if(subtle->flags & SUB_SUBTLE_CLICK_TO_FOCUS)
-        XUngrabButton(subtle->dpy, Button1, AnyModifier, win);
+      if(subtle->flags & SUB_SUBTLE_FOCUS_CLICK && ROOT != win)
+        XUngrabButton(subtle->dpy, AnyButton, AnyModifier, win);
 
       /* Bind grabs */
       for(i = 0; i < subtle->grabs->ndata; i++)
@@ -154,8 +132,26 @@ subGrabSet(Window win)
           SubGrab *g = GRAB(subtle->grabs->data[i]);
 
           /* Assign only grabs with action */
-          if(!(g->flags & (SUB_GRAB_CHAIN_LINK|SUB_GRAB_CHAIN_END)))
-            GrabBind(g, win);
+          if(!(g->flags & (SUB_GRAB_CHAIN_LINK|SUB_GRAB_CHAIN_END)) &&
+              g->flags & mask)
+            {
+              /* FIXME: Ugly key/state grabbing */
+              for(j = 0; LENGTH(states) > j; j++)
+                {
+                  if(g->flags & SUB_GRAB_KEY)
+                    {
+                      XGrabKey(subtle->dpy, g->code, g->state|states[j],
+                        ROOT, True, GrabModeAsync, GrabModeAsync);
+                    }
+                  else if(g->flags & SUB_GRAB_MOUSE)
+                    {
+                      XGrabButton(subtle->dpy, g->code - XK_Pointer_Button1,
+                        g->state|states[j], win, False,
+                        ButtonPressMask|ButtonReleaseMask,
+                        GrabModeSync, GrabModeAsync, None, None);
+                    }
+                }
+            }
         }
     }
 } /* }}} */
@@ -170,6 +166,14 @@ subGrabUnset(Window win)
 {
   XUngrabKey(subtle->dpy, AnyKey, AnyModifier, win);
   XUngrabButton(subtle->dpy, AnyButton, AnyModifier, win);
+
+  /* Bind click-to-focus grab */
+  if(subtle->flags & SUB_SUBTLE_FOCUS_CLICK && ROOT != win)
+    {
+      XGrabButton(subtle->dpy, AnyButton, AnyModifier, win, False,
+        ButtonPressMask>ButtonReleaseMask, GrabModeAsync,
+        GrabModeAsync, None, None);
+    }
 } /* }}} */
 
  /** subGrabCompare {{{
