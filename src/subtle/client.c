@@ -47,9 +47,9 @@ ClientCopy(SubClient *c,
   SubClient *k)
 {
   /* Copy stick flag, tags and screens */
-  c->flags  |= (k->flags & SUB_CLIENT_MODE_STICK);
-  c->tags   |= k->tags;
-  c->screen |= k->screen;
+  c->flags    |= (k->flags & SUB_CLIENT_MODE_STICK);
+  c->tags     |= k->tags;
+  c->screenid |= k->screenid;
 } /* }}} */
 
 /* ClientGravity {{{ */
@@ -64,7 +64,7 @@ ClientGravity(void)
     {
       /* Copy gravity from current client */
       if((c = CLIENT(subSubtleFind(subtle->windows.focus[0], CLIENTID))))
-        grav = c->gravity;
+        grav = c->gravityid;
     }
   else grav = subtle->gravity; ///< Set default
 
@@ -193,7 +193,7 @@ ClientTile(int gravity,
     {
       SubClient *c = CLIENT(subtle->clients->data[i]);
 
-      if(c->gravity == gravity && c->screen == screen &&
+      if(c->gravityid == gravity && c->screenid == screen &&
         subtle->visible_tags & c->tags &&
         !(c->flags &(SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_FULL))) used++;
     }
@@ -219,7 +219,7 @@ ClientTile(int gravity,
     {
       SubClient *c = CLIENT(subtle->clients->data[i]);
 
-      if(c->gravity == gravity && c->screen == screen &&
+      if(c->gravityid == gravity && c->screenid == screen &&
           subtle->visible_tags & c->tags &&
           !(c->flags & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_FULL)))
         {
@@ -358,7 +358,7 @@ subClientNew(Window win)
   c = CLIENT(subSharedMemoryAlloc(1, sizeof(SubClient)));
   c->gravities = (int *)subSharedMemoryAlloc(subtle->views->ndata, sizeof(int));
   c->flags     = (SUB_TYPE_CLIENT|SUB_CLIENT_INPUT);
-  c->gravity   = -1; ///< Force update
+  c->gravityid   = -1; ///< Force update
   c->dir       = -1;
   c->win       = win;
 
@@ -402,6 +402,7 @@ subClientNew(Window win)
   subClientSetTransient(c, &flags);
   subClientSetMWMHints(c);
   subClientToggle(c, flags, False);
+  subGrabUnset(c->win);
 
   /* Set leader window */
   if((leader = (Window *)subSharedPropertyGet(subtle->dpy, c->win, XA_WINDOW,
@@ -416,7 +417,7 @@ subClientNew(Window win)
   subEwmhSetCardinals(c->win, SUB_EWMH_SUBTLE_CLIENT_GRAVITY,
     (long *)&subtle->gravity, 1);
   subEwmhSetCardinals(c->win, SUB_EWMH_SUBTLE_CLIENT_SCREEN,
-    (long *)&c->screen, 1);
+    (long *)&c->screenid, 1);
   subEwmhSetCardinals(c->win, SUB_EWMH_NET_WM_DESKTOP, &vid, 1);
   subEwmhSetCardinals(c->win, SUB_EWMH_NET_FRAME_EXTENTS, extents, 4);
 
@@ -488,25 +489,6 @@ subClientDimension(int id)
     }
 } /* }}} */
 
- /** subClientRender {{{
-  * @brief Render client
-  * @param[in]  c  A #SubClient
-  **/
-
-void
-subClientRender(SubClient *c)
-{
-  DEAD(c);
-  assert(c);
-
-  /* Exclude desktop type windows */
-  if(!(c->flags & SUB_CLIENT_TYPE_DESKTOP))
-    {
-      XSetWindowBorder(subtle->dpy, c->win, subtle->windows.focus[0] == c->win ?
-        subtle->styles.clients.fg : subtle->styles.clients.bg);
-    }
-} /* }}} */
-
  /** subClientFocus {{{
   * @brief Set focus to client
   * @param[in]  c     A #SubClient
@@ -517,14 +499,37 @@ void
 subClientFocus(SubClient *c,
   int warp)
 {
+  SubScreen *s = NULL;
+  SubView *v = NULL;
+  SubClient *focus = NULL;
+
   DEAD(c);
   assert(c);
+
+  if(!VISIBLE(c)) return;
 
   /* Remove urgent after getting focus */
   if(c->flags & SUB_CLIENT_MODE_URGENT)
     {
       c->flags            &= ~SUB_CLIENT_MODE_URGENT;
       subtle->urgent_tags &= ~c->tags;
+    }
+
+  /* Unset current focus */
+  if((focus = CLIENT(subSubtleFind(subtle->windows.focus[0], CLIENTID))))
+    {
+      int i;
+
+      subGrabUnset(focus->win);
+
+      /* Reorder focus history */
+      for(i = (HISTORYSIZE - 1); 0 < i; i--)
+        subtle->windows.focus[i] = subtle->windows.focus[i - 1];
+      subtle->windows.focus[0] = 0;
+
+      /* Exclude desktop type windows */
+      if(!(focus->flags & SUB_CLIENT_TYPE_DESKTOP))
+        XSetWindowBorder(subtle->dpy, focus->win, subtle->styles.clients.bg);
     }
 
   /* Check client input focus type (see ICCCM 4.1.7, 4.1.2.7, 4.2.8) */
@@ -536,8 +541,93 @@ subClientFocus(SubClient *c,
   else if(c->flags & SUB_CLIENT_INPUT)
     XSetInputFocus(subtle->dpy, c->win, RevertToPointerRoot, CurrentTime);
 
+  /* Update focus */
+  subtle->windows.focus[0] = c->win;
+  subGrabSet(c->win, SUB_GRAB_MOUSE);
+
+  /* Exclude desktop type windows */
+  if(!(c->flags & SUB_CLIENT_TYPE_DESKTOP))
+    XSetWindowBorder(subtle->dpy, c->win, subtle->styles.clients.fg);
+
+  /* EWMH: Active window */
+  subEwmhSetWindows(ROOT, SUB_EWMH_NET_ACTIVE_WINDOW,
+    subtle->windows.focus, HISTORYSIZE);
+
+  /* EWMH: Current desktop */
+  if((s = SCREEN(subArrayGet(subtle->screens, c->screenid))))
+    {
+      subEwmhSetCardinals(ROOT, SUB_EWMH_NET_CURRENT_DESKTOP,
+        (long *)&s->viewid, 1);
+    }
+
+  /* Set view focus */
+  if((v = VIEW(subArrayGet(subtle->views, s->viewid))))
+    v->focus = c->win;;
+
+  /* Hook: Focus */
+  subHookCall((SUB_HOOK_TYPE_CLIENT|SUB_HOOK_ACTION_FOCUS),
+    (void *)c);
+
   /* Warp pointer */
   if(warp) subClientWarp(c);
+
+  /* Update screen */
+  subScreenUpdate();
+  subScreenRender();
+} /* }}} */
+
+ /** subClientNext {{{
+  * @brief Find next client and set focus to it
+  * @param[in]  screenid  Screen id
+  * @return Returns a new #SubClient or \p NULL
+  **/
+
+SubClient *
+subClientNext(int screenid)
+{
+  int i;
+  SubClient *c = NULL;
+
+  /* Pass 1: Check focus history of current screen */
+  for(i = 1; i < HISTORYSIZE; i++)
+    {
+      if((c = CLIENT(subSubtleFind(subtle->windows.focus[i], CLIENTID))))
+        {
+          /* Check visibility on current screen */
+          if(c->screenid == screenid &&
+              ALIVE(c) && VISIBLE(c) &&
+              c->win != subtle->windows.focus[0])
+            return c;
+        }
+    }
+
+  /* Pass 2: Check client stacking list backwards of current screen */
+  for(i = subtle->clients->ndata - 1; 0 <= i; i--)
+    {
+      c = CLIENT(subtle->clients->data[i]);
+
+      /* Check visibility on current screen */
+      if(c->screenid == screenid &&
+          ALIVE(c) && VISIBLE(c) &&
+          c->win != subtle->windows.focus[0])
+        return c;
+    }
+
+  /* Pass 3: Check client stacking list backwards of any visible screen */
+  if(1 < subtle->screens->ndata)
+    {
+      for(i = subtle->clients->ndata - 1; 0 <= i; i--)
+        {
+          c = CLIENT(subtle->clients->data[i]);
+
+          /* Check visibility on current screen */
+          if(ALIVE(c) && VISIBLE(c) &&
+              c->win != subtle->windows.focus[0])
+            return c;
+        }
+    }
+
+  return NULL;
 } /* }}} */
 
  /** subClientWarp {{{
@@ -552,9 +642,11 @@ subClientWarp(SubClient *c)
   assert(c);
 
   /* Move pointer to window center */
-  if(!(subtle->flags & SUB_SUBTLE_CLICK_TO_FOCUS))
+  if(!(subtle->flags & SUB_SUBTLE_SKIP_WARP))
     XWarpPointer(subtle->dpy, None, ROOT, 0, 0, 0, 0,
       c->geom.x + c->geom.width / 2, c->geom.y + c->geom.height / 2);
+
+  subSubtleLogDebugSubtle("Warp\n");
 } /* }}} */
 
  /** subClientDrag {{{
@@ -589,7 +681,7 @@ subClientDrag(SubClient *c,
   geom.height = wh = c->geom.height;
 
   /* Set max width/height */
-  s = SCREEN(subtle->screens->data[c->screen]);
+  s = SCREEN(subtle->screens->data[c->screenid]);
 
   /* Set variables according to mode */
   switch(mode)
@@ -778,8 +870,7 @@ subClientTag(SubClient *c,
   assert(c);
 
   /* Update flags and tags */
-  if(c && !(c->flags & SUB_CLIENT_DEAD) &&
-      (t = TAG(subArrayGet(subtle->tags, tag))))
+  if(ALIVE(c) && (t = TAG(subArrayGet(subtle->tags, tag))))
     {
       int i;
 
@@ -955,14 +1046,15 @@ subClientArrange(SubClient *c,
         }
       else XMoveResizeWindow(subtle->dpy, c->win, s->base.x, s->base.y,
         s->base.width, s->base.height);
+
       XRaiseWindow(subtle->dpy, c->win);
     }
   else if(c->flags & SUB_CLIENT_MODE_FLOAT)
     {
-      if(c->flags & SUB_CLIENT_ARRANGE || (-1 != screen && c->screen != screen))
+      if(c->flags & SUB_CLIENT_ARRANGE || (-1 != screen && c->screenid != screen))
         {
           SubScreen *s2 = SCREEN(subArrayGet(subtle->screens,
-            -1 != c->screen ? c->screen : 0));
+            -1 != c->screenid ? c->screenid : 0));
 
           /* Update screen offsets */
           if(s != s2)
@@ -971,7 +1063,7 @@ subClientArrange(SubClient *c,
               c->geom.y      = c->geom.y - s2->geom.y + s->geom.y;
               c->geom.width  = c->geom.width;
               c->geom.height = c->geom.height;
-              c->screen      = screen;
+              c->screenid      = screen;
             }
 
           /* Finally resize window */
@@ -993,15 +1085,15 @@ subClientArrange(SubClient *c,
   else
     {
       if(c->flags & SUB_CLIENT_ARRANGE ||
-          c->gravity != gravity || c->screen != screen)
+          c->gravityid != gravity || c->screenid != screen)
         {
           XRectangle bounds = s->geom;
-          int old_gravity = c->gravity, old_screen = c->screen;
+          int old_gravity = c->gravityid, old_screen = c->screenid;
           SubGravity *g = NULL, *old_g = NULL;
 
           /* Set values */
-          if(-1 != screen)  c->screen = screen;
-          if(-1 != gravity) c->gravity = c->gravities[s->vid] = gravity;
+          if(-1 != screen)  c->screenid = screen;
+          if(-1 != gravity) c->gravityid = c->gravities[s->viewid] = gravity;
 
           g     = GRAVITY(subArrayGet(subtle->gravities, gravity));
           old_g = GRAVITY(subArrayGet(subtle->gravities, old_gravity));
@@ -1026,7 +1118,7 @@ subClientArrange(SubClient *c,
 
           /* EWMH: Gravity */
           subEwmhSetCardinals(c->win, SUB_EWMH_SUBTLE_CLIENT_GRAVITY,
-            (long *)&c->gravity, 1);
+            (long *)&c->gravityid, 1);
 
           /* Hook: Gravity */
           subHookCall((SUB_HOOK_TYPE_CLIENT|SUB_HOOK_ACTION_GRAVITY),
@@ -1066,8 +1158,8 @@ subClientToggle(SubClient *c,
       /* Unset stick mode */
       if(type & SUB_CLIENT_MODE_STICK)
         {
-          /* Remove highlight of tagless, urgent client */
-          if(0 == c->tags && c->flags & SUB_CLIENT_MODE_URGENT)
+          /* Update highlight urgent client */
+          if(c->flags & SUB_CLIENT_MODE_URGENT)
             subtle->urgent_tags &= ~c->tags;
         }
 
@@ -1101,12 +1193,12 @@ subClientToggle(SubClient *c,
 
                   /* Check visibility manually */
                   if(!(v->tags & c->tags))
-                    if(-1 != c->gravity) c->gravities[i] = c->gravity;
+                    if(-1 != c->gravityid) c->gravities[i] = c->gravityid;
                 }
             }
 
           /* Set screen stick and force re-arrange */
-          subScreenCurrent(&c->screen);
+          //subScreenCurrent(&c->screenid);
           c->flags |= SUB_CLIENT_ARRANGE;
         }
 
@@ -1139,7 +1231,7 @@ subClientToggle(SubClient *c,
       /* Set center mode */
       if(type & SUB_CLIENT_MODE_CENTER)
         {
-          SubScreen *s = SCREEN(subtle->screens->data[c->screen]);
+          SubScreen *s = SCREEN(subtle->screens->data[c->screenid]);
 
           /* Set to screen center */
           c->geom.x = s->geom.x +
@@ -1158,7 +1250,7 @@ subClientToggle(SubClient *c,
           /* Special treatment */
           if(type & SUB_CLIENT_TYPE_DESKTOP)
             {
-              SubScreen *s = SCREEN(subtle->screens->data[c->screen]);
+              SubScreen *s = SCREEN(subtle->screens->data[c->screenid]);
 
               c->geom = s->base;
 
@@ -1620,7 +1712,7 @@ subClientClose(SubClient *c)
     }
   else
     {
-      int focus = (subtle->windows.focus[0] == c->win); ///< Save
+      int sid = (subtle->windows.focus[0] == c->win ? c->screenid : -1); ///< Save
 
       /* Kill it manually */
       XKillClient(subtle->dpy, c->win);
@@ -1634,7 +1726,12 @@ subClientClose(SubClient *c)
       subScreenRender();
 
       /* Update focus if necessary */
-      if(focus) subSubtleFocus(True);
+      if(-1 != sid)
+        {
+          SubClient *k = subClientNext(sid);
+
+          if(k) subClientFocus(k, True);
+        }
     }
 
   subSubtleLogDebugSubtle("Close\n");
@@ -1667,13 +1764,13 @@ subClientKill(SubClient *c)
     subtle->urgent_tags &= ~c->tags;
 
   /* Tile remaining clients if necessary */
-  if(VISIBLE(subtle->visible_tags, c))
+  if(VISIBLE(c))
     {
-      SubGravity *g = GRAVITY(subArrayGet(subtle->gravities, c->gravity));
+      SubGravity *g = GRAVITY(subArrayGet(subtle->gravities, c->gravityid));
 
       if(g && ((subtle->flags & SUB_SUBTLE_TILING) ||
           g->flags & (SUB_GRAVITY_HORZ|SUB_GRAVITY_VERT)))
-        ClientTile(c->gravity, c->screen);
+        ClientTile(c->gravityid, c->screenid);
     }
 
   if(c->gravities) free(c->gravities);
