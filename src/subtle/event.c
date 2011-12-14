@@ -1597,11 +1597,11 @@ EventUnmap(XUnmapEvent *ev)
   SubClient *c = NULL;
   SubTray *t = NULL;
 
-  int focus = (subtle->windows.focus[0] == ev->window); ///< Save
-
   /* Check if we know this window */
   if((c = CLIENT(subSubtleFind(ev->window, CLIENTID))))
     {
+      int sid = (subtle->windows.focus[0] == c->win ? c->screenid : -1); ///< Save
+
       /* Set withdrawn state (see ICCCM 4.1.4) */
       subEwmhSetWMState(c->win, WithdrawnState);
 
@@ -1623,14 +1623,16 @@ EventUnmap(XUnmapEvent *ev)
       subScreenRender();
 
       /* Update focus if necessary */
-      if(focus)
+      if(-1 != sid)
         {
-          c = subClientNext(0);
+          c = subClientNext(sid);
           if(c) subClientFocus(c, True);
         }
     }
   else if((t = TRAY(subSubtleFind(ev->window, TRAYID)))) ///< Tray
     {
+      int focus = (subtle->windows.focus[0] == ev->window); ///< Save
+
       /* Set withdrawn state (see ICCCM 4.1.4) */
       subEwmhSetWMState(t->win, WithdrawnState);
 
