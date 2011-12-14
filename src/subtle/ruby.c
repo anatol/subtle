@@ -503,7 +503,7 @@ RubyEvalHook(VALUE event,
     { CHAR2SYM("tag_create"),     (SUB_HOOK_TYPE_TAG|SUB_HOOK_ACTION_CREATE)     },
     { CHAR2SYM("tag_kill"),       (SUB_HOOK_TYPE_TAG|SUB_HOOK_ACTION_KILL)       },
     { CHAR2SYM("view_create"),    (SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_CREATE)    },
-    { CHAR2SYM("view_jump"),      (SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_FOCUS)     },
+    { CHAR2SYM("view_focus"),     (SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_FOCUS)     },
     { CHAR2SYM("view_kill"),      (SUB_HOOK_TYPE_VIEW|SUB_HOOK_ACTION_KILL)      }
   };
 
@@ -675,7 +675,7 @@ RubyEvalGrab(VALUE keys,
                   {
                     if((name = (char *)name + 8))
                       {
-                        type = SUB_GRAB_VIEW_JUMP;
+                        type = SUB_GRAB_VIEW_FOCUS;
                         data = DATA((unsigned long)(atol(name) - 1));
                       }
                   }
@@ -683,7 +683,7 @@ RubyEvalGrab(VALUE keys,
                   {
                     if((name = (char *)name + 10))
                       {
-                        type = SUB_GRAB_VIEW_SWITCH;
+                        type = SUB_GRAB_VIEW_SWAP;
                         data = DATA((unsigned long)(atol(name) - 1));
                       }
                   }
@@ -1024,8 +1024,8 @@ RubyEvalConfig(void)
       SubScreen *s = SCREEN(subtle->screens->data[i]);
 
       /* Check if vid exists */
-      if(0 > s->vid || s->vid >= subtle->views->ndata)
-        s->vid = 0;
+      if(0 > s->viewid || s->viewid >= subtle->views->ndata)
+        s->viewid = 0;
 
       s->flags &= ~SUB_RUBY_DATA;
     }
@@ -1573,12 +1573,12 @@ RubyWrapSubletConfig(VALUE data)
           value = rb_sym_to_s(value);
 
           subStyleFind(&subtle->styles.sublets, RSTRING_PTR(value),
-            &s->style);
+            &s->styleid);
         }
     }
 
   /* Check if there is a matching style */
-  subStyleFind(&subtle->styles.sublets, s->name, &s->style);
+  subStyleFind(&subtle->styles.sublets, s->name, &s->styleid);
 
   return Qnil;
 } /* }}} */
@@ -1899,7 +1899,12 @@ RubyConfigSet(VALUE self,
             else if(CHAR2SYM("click_to_focus") == option)
               {
                 if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
-                  subtle->flags |= SUB_SUBTLE_CLICK_TO_FOCUS;
+                  subtle->flags |= SUB_SUBTLE_FOCUS_CLICK;
+              }
+            else if(CHAR2SYM("skip_pointer_warp") == option)
+              {
+                if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
+                  subtle->flags |= SUB_SUBTLE_SKIP_WARP;
               }
             else subSubtleLogWarn("Cannot find option `:%s'\n",
               SYM2CHAR(option));
@@ -2412,7 +2417,7 @@ RubyConfigScreen(VALUE self,
               s->bottom   = bottom;
               s->stipple  = stipple;
 
-              if(-1 != vid) s->vid = vid;
+              if(-1 != vid) s->viewid = vid;
             }
         }
     }
@@ -2916,7 +2921,7 @@ RubySubletDataWriter(VALUE self,
           SubStyle *s = &subtle->styles.sublets, *style = NULL;
 
           /* Select style */
-          if(s->styles && (style = subArrayGet(s->styles, p->sublet->style)))
+          if(s->styles && (style = subArrayGet(s->styles, p->sublet->styleid)))
               s = style;
 
           p->sublet->width = subSharedTextParse(subtle->dpy,
@@ -2954,7 +2959,7 @@ RubySubletGeometryReader(VALUE self)
 
       /* Pick sublet style */
       if(subtle->styles.sublets.styles)
-        s = subArrayGet(s->styles, p->sublet->style);
+        s = subArrayGet(s->styles, p->sublet->styleid);
 
       subPanelGeometry(p, s ? s : &subtle->styles.sublets, &geom);
 
@@ -3019,8 +3024,8 @@ RubySubletStyleWriter(VALUE self,
           /* Select style */
           if(s->styles && (style = subArrayGet(s->styles, FIX2INT(value))))
             {
-              s                = style;
-              p->sublet->style = FIX2INT(value);
+              s                  = style;
+              p->sublet->styleid = FIX2INT(value);
             }
 
           p->sublet->width = subSharedTextParse(subtle->dpy,
@@ -3556,7 +3561,7 @@ subRubyReloadConfig(void)
     {
       SubScreen *s = SCREEN(subtle->screens->data[i]);
 
-      vids[i]   = s->vid; ///< Store views
+      vids[i]   = s->viewid; ///< Store views
       s->flags &= ~(SUB_SCREEN_STIPPLE|SUB_SCREEN_PANEL1|SUB_SCREEN_PANEL2);
 
       subArrayClear(s->panels, True);
@@ -3580,7 +3585,7 @@ subRubyReloadConfig(void)
   for(i = 0; i < subtle->screens->ndata; i++)
     {
       if(vids[i] < subtle->views->ndata)
-        SCREEN(subtle->screens->data[i])->vid = vids[i];
+        SCREEN(subtle->screens->data[i])->viewid = vids[i];
     }
 
   /* Update client tags */
@@ -3588,9 +3593,9 @@ subRubyReloadConfig(void)
     {
       int flags = 0;
 
-      c          = CLIENT(subtle->clients->data[i]);
-      c->gravity = -1;
-      c->flags   = (c->flags & (SUB_TYPE_CLIENT|SUB_CLIENT_FOCUS|
+      c            = CLIENT(subtle->clients->data[i]);
+      c->gravityid = -1;
+      c->flags     = (c->flags & (SUB_TYPE_CLIENT|SUB_CLIENT_FOCUS|
         SUB_CLIENT_INPUT|SUB_CLIENT_CLOSE)); ///< Reset flags
 
       subClientSetType(c, &flags);
@@ -3611,7 +3616,11 @@ subRubyReloadConfig(void)
 
   if((c = CLIENT(subSubtleFind(win, CLIENTID))))
     subClientFocus(c, True);
-  else subSubtleFocus(False);
+  else
+    {
+      c = subClientNext(0);
+      if(c) subClientFocus(c, True);
+    }
 
   /* Hook: Reload */
   subHookCall(SUB_HOOK_RELOAD, NULL);
