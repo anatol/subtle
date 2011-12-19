@@ -356,11 +356,7 @@ EventDestroy(XDestroyWindowEvent *ev)
       subScreenRender();
 
       /* Update focus if necessary */
-      if(-1 != sid)
-        {
-          c = subClientNext(sid);
-          if(c) subClientFocus(c, True);
-        }
+      if((c = subClientNext(sid, False))) subClientFocus(c, True);
     }
   else if((t = TRAY(subSubtleFind(ev->event, TRAYID)))) ///< Tray
     {
@@ -376,11 +372,7 @@ EventDestroy(XDestroyWindowEvent *ev)
       subScreenRender();
 
       /* Update focus if necessary */
-      if(focus)
-        {
-          c = subClientNext(0);
-          if(c) subClientFocus(c, True);
-        }
+      if(focus && (c = subClientNext(0, False))) subClientFocus(c, True);
     }
   else
     {
@@ -620,7 +612,7 @@ EventGrab(XEvent *ev)
 
                     if(!VISIBLE(c))
                       {
-                        c = subClientNext(c->screenid);
+                        c = subClientNext(c->screenid, False);
                         if(c) subClientFocus(c, True);
                       }
 
@@ -677,7 +669,7 @@ EventGrab(XEvent *ev)
                         }
                     }
                   }
-                else found = subClientNext(0);
+                else found = subClientNext(-1, True);
 
                 if(found) subClientFocus(found, True);
               }
@@ -738,8 +730,9 @@ EventGrab(XEvent *ev)
                 int sid = -1;
 
                 /* Find screen: Prefer screen of current window */
-                if((c = CLIENT(subSubtleFind(subtle->windows.focus[0], CLIENTID))) &&
-                    VISIBLE(c))
+                if(subtle->flags & SUB_SUBTLE_SKIP_WARP &&
+                    (c = CLIENT(subSubtleFind(subtle->windows.focus[0],
+                    CLIENTID))) && VISIBLE(c))
                   sid = c->screenid;
                 else subScreenFind(x, y, &sid);
 
@@ -753,8 +746,9 @@ EventGrab(XEvent *ev)
                 int vid = 0, sid = 0;
 
                 /* Find screen: Prefer screen of current window */
-                if((c = CLIENT(subSubtleFind(subtle->windows.focus[0], CLIENTID))) &&
-                    VISIBLE(c))
+                if(subtle->flags & SUB_SUBTLE_SKIP_WARP &&
+                    (c = CLIENT(subSubtleFind(subtle->windows.focus[0],
+                    CLIENTID))) && VISIBLE(c))
                   {
                     s   = SCREEN(subArrayGet(subtle->screens, c->screenid));
                     sid = c->screenid;
@@ -979,7 +973,7 @@ EventMessage(XClientMessageEvent *ev)
                 if(subtle->windows.focus[0] == c->win &&
                     !VISIBLE(c))
                   {
-                    c = subClientNext(c->screenid);
+                    c = subClientNext(c->screenid, False);
                     if(c) subClientFocus(c, True);
                   }
 
@@ -1409,7 +1403,7 @@ EventMessage(XClientMessageEvent *ev)
 
                     if(!VISIBLE(c))
                       {
-                        c = subClientNext(c->screenid);
+                        c = subClientNext(c->screenid, False);
                         if(c) subClientFocus(c, True);
                       }
 
@@ -1567,7 +1561,7 @@ EventProperty(XPropertyEvent *ev)
 #endif
 } /* }}} */
 
-/* EventSelection {{{ */
+/* EventSelft on heection {{{ */
 void
 EventSelection(XSelectionClearEvent *ev)
 {
@@ -1620,11 +1614,7 @@ EventUnmap(XUnmapEvent *ev)
       subScreenRender();
 
       /* Update focus if necessary */
-      if(-1 != sid)
-        {
-          c = subClientNext(sid);
-          if(c) subClientFocus(c, True);
-        }
+      if((c = subClientNext(sid, False))) subClientFocus(c, True);
     }
   else if((t = TRAY(subSubtleFind(ev->window, TRAYID)))) ///< Tray
     {
@@ -1651,11 +1641,7 @@ EventUnmap(XUnmapEvent *ev)
       subScreenRender();
 
       /* Update focus if necessary */
-      if(focus)
-        {
-          c = subClientNext(0);
-          if(c) subClientFocus(c, True);
-        }
+      if(focus && (c = subClientNext(0, False))) subClientFocus(c, True);
     }
 
   subSubtleLogDebugEvents("Unmap: win=%#lx\n", ev->window);
@@ -1742,7 +1728,7 @@ subEventLoop(void)
 
   /* Set grabs and focus first client if any */
   subGrabSet(ROOT, SUB_GRAB_KEY);
-  c = subClientNext(0);
+  c = subClientNext(0, False);
   if(c) subClientFocus(c, True);
 
   /* Hook: Start */
