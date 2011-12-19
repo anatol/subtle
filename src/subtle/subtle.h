@@ -765,7 +765,7 @@ SubClient *subClientNew(Window win);                              ///< Create cl
 void subClientConfigure(SubClient *c);                            ///< Send configure request
 void subClientDimension(int id);                                  ///< Dimension clients
 void subClientFocus(SubClient *c, int warp);                      ///< Focus client
-SubClient *subClientNext(int screenid);                      ///< Focus next client
+SubClient *subClientNext(int screenid, int jump);                 ///< Focus next client
 void subClientWarp(SubClient *c);                                 ///< Warp pointer to client
 void subClientDrag(SubClient *c, int mode, int direction);        ///< Move/drag client
 void subClientUpdate(int vid);                                    ///< Update clients

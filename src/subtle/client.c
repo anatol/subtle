@@ -579,11 +579,13 @@ subClientFocus(SubClient *c,
  /** subClientNext {{{
   * @brief Find next client and set focus to it
   * @param[in]  screenid  Screen id
+  * @param[in]  jump      Jump to other screen
   * @return Returns a new #SubClient or \p NULL
   **/
 
 SubClient *
-subClientNext(int screenid)
+subClientNext(int screenid,
+  int jump)
 {
   int i;
   SubClient *c = NULL;
@@ -594,8 +596,7 @@ subClientNext(int screenid)
       if((c = CLIENT(subSubtleFind(subtle->windows.focus[i], CLIENTID))))
         {
           /* Check visibility on current screen */
-          if(c->screenid == screenid &&
-              ALIVE(c) && VISIBLE(c) &&
+          if(c->screenid == screenid && ALIVE(c) && VISIBLE(c) &&
               c->win != subtle->windows.focus[0])
             return c;
         }
@@ -607,14 +608,13 @@ subClientNext(int screenid)
       c = CLIENT(subtle->clients->data[i]);
 
       /* Check visibility on current screen */
-      if(c->screenid == screenid &&
-          ALIVE(c) && VISIBLE(c) &&
+      if(c->screenid == screenid && ALIVE(c) && VISIBLE(c) &&
           c->win != subtle->windows.focus[0])
         return c;
     }
 
   /* Pass 3: Check client stacking list backwards of any visible screen */
-  if(1 < subtle->screens->ndata)
+  if(1 < subtle->screens->ndata && jump)
     {
       for(i = subtle->clients->ndata - 1; 0 <= i; i--)
         {
@@ -1735,7 +1735,7 @@ subClientClose(SubClient *c)
       /* Update focus if necessary */
       if(-1 != sid)
         {
-          SubClient *k = subClientNext(sid);
+          SubClient *k = subClientNext(sid, False);
 
           if(k) subClientFocus(k, True);
         }
