@@ -249,7 +249,7 @@ subTrayClose(SubTray *t)
       /* Update focus if necessary */
       if(focus)
         {
-          SubClient *c = subClientNext(0);
+          SubClient *c = subClientNext(0, False);
           if(c) subClientFocus(c, True);
         }
     }

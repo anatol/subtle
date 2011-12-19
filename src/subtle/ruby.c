@@ -3618,7 +3618,7 @@ subRubyReloadConfig(void)
     subClientFocus(c, True);
   else
     {
-      c = subClientNext(0);
+      c = subClientNext(0, False);
       if(c) subClientFocus(c, True);
     }
 

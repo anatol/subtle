@@ -112,7 +112,7 @@ subViewFocus(SubView *v,
       if(!((c = CLIENT(subSubtleFind(v->focus, CLIENTID))) &&
           VISIBLETAGS(c, v->tags)))
         {
-          c        = subClientNext(screenid);
+          c        = subClientNext(screenid, False);
           v->focus = None;
         }
 
