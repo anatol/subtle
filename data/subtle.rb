@@ -542,15 +542,23 @@ end
 #                Example: position [ 10, 10 ]
 #                Link:    http://subforge.org/projects/subtle/wiki/Tagging#Position
 #
-# [*resize*]     This property enables the float mode for tagged clients.
+# [*resize*]     This property enables the float mode for tagged clients. When set,
+#                subtle honors size hints, that define various size constraints like
+#                sizes for columns and rows of a terminal.
 #
 #                Example: resize true
 #                Links:   http://subforge.org/projects/subtle/wiki/Tagging#Resize
 #                         http://subforge.org/projects/subtle/wiki/Clients#Resize
 #
-# [*stick*]      This property enables the float mode for tagged clients.
+# [*stick*]      This property enables the stick mode for tagged clients. When set,
+#                clients are visible on all views, even when they don't have matching
+#                tags. On multihead, sticky clients keep the screen they are assigned
+#                on.
+#
+#                Supported values are either true or a number to specify a screen.
 #
 #                Example: stick true
+#                         stick 1
 #                Links:   http://subforge.org/projects/subtle/wiki/Tagging#Stick
 #                         http://subforge.org/projects/subtle/wiki/Clients#Stick
 #
@@ -572,13 +580,15 @@ end
 #                Example: type :desktop
 #                Link:    http://subforge.org/projects/subtle/wiki/Tagging#Type
 #
-# [*urgent*]     This property enables the urgent mode for tagged clients.
+# [*urgent*]     This property enables the urgent mode for tagged clients. When set,
+#                subtle automatically sets this client to urgent.
 #
-#                Example: stick true
+#                Example: urgent true
 #                Links:   http://subforge.org/projects/subtle/wiki/Tagging#Stick
 #                         http://subforge.org/projects/subtle/wiki/Clients#Urgent
 #
-# [*zaphod*]     This property enables the zaphod mode for tagged clients.
+# [*zaphod*]     This property enables the zaphod mode for tagged clients. When set,
+#                the client spans across all connected screens.
 #
 #                Example: zaphod true
 #                Links:   http://subforge.org/projects/subtle/wiki/Tagging#Zaphod
