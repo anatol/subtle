@@ -226,19 +226,20 @@
 #define SUB_CLIENT_MODE_FULL          (1L << 16)                  ///< Fullscreen mode (also used in tags)
 #define SUB_CLIENT_MODE_FLOAT         (1L << 17)                  ///< Float mode
 #define SUB_CLIENT_MODE_STICK         (1L << 18)                  ///< Stick mode
-#define SUB_CLIENT_MODE_URGENT        (1L << 19)                  ///< Urgent mode
-#define SUB_CLIENT_MODE_RESIZE        (1L << 20)                  ///< Resize mode
-#define SUB_CLIENT_MODE_ZAPHOD        (1L << 21)                  ///< Zaphod mode
-#define SUB_CLIENT_MODE_FIXED         (1L << 22)                  ///< Fixed size mode
-#define SUB_CLIENT_MODE_CENTER        (1L << 23)                  ///< Center position mode
-#define SUB_CLIENT_MODE_BORDERLESS    (1L << 24)                  ///< Borderless
+#define SUB_CLIENT_MODE_STICK_SCREEN  (1L << 19)                  ///< Stick tagged screen mode
+#define SUB_CLIENT_MODE_URGENT        (1L << 20)                  ///< Urgent mode
+#define SUB_CLIENT_MODE_RESIZE        (1L << 21)                  ///< Resize mode
+#define SUB_CLIENT_MODE_ZAPHOD        (1L << 22)                  ///< Zaphod mode
+#define SUB_CLIENT_MODE_FIXED         (1L << 23)                  ///< Fixed size mode
+#define SUB_CLIENT_MODE_CENTER        (1L << 24)                  ///< Center position mode
+#define SUB_CLIENT_MODE_BORDERLESS    (1L << 25)                  ///< Borderless
 
-#define SUB_CLIENT_TYPE_NORMAL        (1L << 25)                  ///< Normal type (also used in match)
-#define SUB_CLIENT_TYPE_DESKTOP       (1L << 26)                  ///< Desktop type
-#define SUB_CLIENT_TYPE_DOCK          (1L << 27)                  ///< Dock type
-#define SUB_CLIENT_TYPE_TOOLBAR       (1L << 28)                  ///< Toolbar type
-#define SUB_CLIENT_TYPE_SPLASH        (1L << 29)                  ///< Splash type
-#define SUB_CLIENT_TYPE_DIALOG        (1L << 30)                  ///< Dialog type
+#define SUB_CLIENT_TYPE_NORMAL        (1L << 26)                  ///< Normal type (also used in match)
+#define SUB_CLIENT_TYPE_DESKTOP       (1L << 27)                  ///< Desktop type
+#define SUB_CLIENT_TYPE_DOCK          (1L << 28)                  ///< Dock type
+#define SUB_CLIENT_TYPE_TOOLBAR       (1L << 29)                  ///< Toolbar type
+#define SUB_CLIENT_TYPE_SPLASH        (1L << 30)                  ///< Splash type
+#define SUB_CLIENT_TYPE_DIALOG        (1L << 31)                  ///< Dialog type
 
 /* Client restack */
 #define SUB_CLIENT_RESTACK_DOWN       0                           ///< Restack down

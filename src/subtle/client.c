@@ -895,8 +895,11 @@ subClientTag(SubClient *c,
         }
 
       /* Set screen */
-      if(t->flags & SUB_CLIENT_MODE_STICK)
-        c->screenid  = t->screenid;
+      if(t->flags & SUB_CLIENT_MODE_STICK && -1 != t->screenid)
+        {
+          c->flags    |= SUB_CLIENT_MODE_STICK_SCREEN;
+          c->screenid  = t->screenid;
+        }
 
       /* Set gravity matching views */
       for(i = 0; i < subtle->views->ndata; i++)
@@ -1205,8 +1208,8 @@ subClientToggle(SubClient *c,
                 }
             }
 
-          /* Set screen when unset */
-          if(-1 == c->screenid)
+          /* Set screen when required*/
+          if(!(c->flags & SUB_CLIENT_MODE_STICK_SCREEN))
             {
               /* Find screen: Prefer screen of current window */
               if(subtle->flags & SUB_SUBTLE_SKIP_WARP &&
