@@ -867,10 +867,11 @@ subClientTag(SubClient *c,
 {
   SubTag *t = NULL;
 
+  DEAD(c);
   assert(c);
 
   /* Update flags and tags */
-  if(ALIVE(c) && (t = TAG(subArrayGet(subtle->tags, tag))))
+  if((t = TAG(subArrayGet(subtle->tags, tag))))
     {
       int i;
 
@@ -893,14 +894,18 @@ subClientTag(SubClient *c,
             }
         }
 
-      /* Set gravity and screens for matching views */
+      /* Set screen */
+      if(t->flags & SUB_CLIENT_MODE_STICK)
+        c->screenid  = t->screenid;
+
+      /* Set gravity matching views */
       for(i = 0; i < subtle->views->ndata; i++)
         {
           SubView *v = VIEW(subtle->views->data[i]);
 
-          /* Match only views with this tag */
+          /* Match views with this tag or sticky only */
           if(v->tags & (1L << (tag + 1)) || t->flags & SUB_CLIENT_MODE_STICK)
-            if(t->flags & SUB_TAG_GRAVITY) c->gravities[i] = t->gravity;
+            if(t->flags & SUB_TAG_GRAVITY) c->gravities[i] = t->gravityid;
         }
     }
 } /* }}} */
@@ -1133,13 +1138,13 @@ subClientArrange(SubClient *c,
  /** subClientToggle {{{
   * @brief Toggle various states of client
   * @param[in]  c        A #SubClient
-  * @param[in]  type     Toggle type
+  * @param[in]  flag     Toggle flag
   * @param[in]  gravity  Whether gravity should be set
   **/
 
 void
 subClientToggle(SubClient *c,
-  int type,
+  int flag,
   int gravity)
 {
   int flags = 0, nstates = 0;
@@ -1148,16 +1153,16 @@ subClientToggle(SubClient *c,
   DEAD(c);
   assert(c);
 
-  if(c->flags & type) ///< Unset flags
+  if(c->flags & flag) ///< Unset flags
     {
-      c->flags &= ~type;
+      c->flags &= ~flag;
 
       /* Unset float/center mode */
-      if(type & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_CENTER))
-        c->flags |= SUB_CLIENT_ARRANGE;
+      if(flag & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_CENTER))
+        c->flags |= SUB_CLIENT_ARRANGE; ///< Force rearrange
 
       /* Unset stick mode */
-      if(type & SUB_CLIENT_MODE_STICK)
+      if(flag & SUB_CLIENT_MODE_STICK)
         {
           /* Update highlight urgent client */
           if(c->flags & SUB_CLIENT_MODE_URGENT)
@@ -1165,11 +1170,11 @@ subClientToggle(SubClient *c,
         }
 
       /* Unset borderless or fullscreen mode */
-      if(type & (SUB_CLIENT_MODE_BORDERLESS|SUB_CLIENT_MODE_FULL))
+      if(flag & (SUB_CLIENT_MODE_BORDERLESS|SUB_CLIENT_MODE_FULL))
         {
           c->flags |= SUB_CLIENT_ARRANGE; ///< Force rearrange
 
-          if(type & SUB_CLIENT_MODE_BORDERLESS ||
+          if(flag & SUB_CLIENT_MODE_BORDERLESS ||
               !(c->flags & SUB_CLIENT_MODE_BORDERLESS))
             XSetWindowBorderWidth(subtle->dpy, c->win,
               subtle->styles.clients.border.top);
@@ -1177,10 +1182,10 @@ subClientToggle(SubClient *c,
     }
   else ///< Set flags
     {
-      c->flags |= type;
+      c->flags |= flag;
 
       /* Set sticky mode */
-      if(type & SUB_CLIENT_MODE_STICK)
+      if(flag & SUB_CLIENT_MODE_STICK)
         {
           SubClient *focus = NULL;
 
@@ -1195,22 +1200,27 @@ subClientToggle(SubClient *c,
                   SubView *v = VIEW(subtle->views->data[i]);
 
                   /* Check visibility manually */
-                  if(!(v->tags & c->tags))
-                    if(-1 != c->gravityid) c->gravities[i] = c->gravityid;
+                  if(!(v->tags & c->tags) && -1 != c->gravityid)
+                    c->gravities[i] = c->gravityid;
                 }
             }
 
-          /* Prefer screen of current window, set it and re-arrange*/
-          if((focus = CLIENT(subSubtleFind(subtle->windows.focus[0],
-              CLIENTID))) && VISIBLE(c))
-            c->screenid = focus->screenid;
-          else subScreenCurrent(&c->screenid);
+          /* Set screen when unset */
+          if(-1 == c->screenid)
+            {
+              /* Find screen: Prefer screen of current window */
+              if(subtle->flags & SUB_SUBTLE_SKIP_WARP &&
+                  (focus = CLIENT(subSubtleFind(subtle->windows.focus[0],
+                  CLIENTID))) && VISIBLE(focus))
+                c->screenid = focus->screenid;
+              else subScreenCurrent(&c->screenid);
+            }
 
-          c->flags |= SUB_CLIENT_ARRANGE;
+          c->flags |= SUB_CLIENT_ARRANGE; ///< Force rearrange
         }
 
       /* Set fullscreen mode */
-      if(type & SUB_CLIENT_MODE_FULL)
+      if(flag & SUB_CLIENT_MODE_FULL)
         {
           /* Exclude fixed windows from fullscreen mode */
           if(c->flags & SUB_CLIENT_MODE_FIXED)
@@ -1223,20 +1233,20 @@ subClientToggle(SubClient *c,
         }
 
       /* Set floating or zaphod or borderless mode */
-      if(type & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_ZAPHOD|
+      if(flag & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_ZAPHOD|
           SUB_CLIENT_MODE_BORDERLESS))
         c->flags |= SUB_CLIENT_ARRANGE; ///< Force rearrange
 
       /* Set borderless mode */
-      if(type & SUB_CLIENT_MODE_BORDERLESS)
+      if(flag & SUB_CLIENT_MODE_BORDERLESS)
         XSetWindowBorderWidth(subtle->dpy, c->win, 0);
 
       /* Set urgent mode */
-      if(type & SUB_CLIENT_MODE_URGENT)
+      if(flag & SUB_CLIENT_MODE_URGENT)
         subtle->urgent_tags |= c->tags;
 
       /* Set center mode */
-      if(type & SUB_CLIENT_MODE_CENTER)
+      if(flag & SUB_CLIENT_MODE_CENTER)
         {
           SubScreen *s = SCREEN(subtle->screens->data[c->screenid]);
 
@@ -1250,12 +1260,12 @@ subClientToggle(SubClient *c,
         }
 
       /* Set dock and desktop type */
-      if(type & (SUB_CLIENT_TYPE_DOCK|SUB_CLIENT_TYPE_DESKTOP))
+      if(flag & (SUB_CLIENT_TYPE_DOCK|SUB_CLIENT_TYPE_DESKTOP))
         {
           XSetWindowBorderWidth(subtle->dpy, c->win, 0);
 
           /* Special treatment */
-          if(type & SUB_CLIENT_TYPE_DESKTOP)
+          if(flag & SUB_CLIENT_TYPE_DESKTOP)
             {
               SubScreen *s = SCREEN(subtle->screens->data[c->screenid]);
 
@@ -1275,7 +1285,7 @@ subClientToggle(SubClient *c,
     }
 
   /* Sort for keeping stacking order */
-  if(type & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_FULL|
+  if(flag & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_FULL|
       SUB_CLIENT_TYPE_DESKTOP|SUB_CLIENT_TYPE_DOCK))
     subClientRestack(c, SUB_CLIENT_RESTACK_UP);
 
@@ -1301,7 +1311,7 @@ subClientToggle(SubClient *c,
   /* Hook: Mode */
   subHookCall((SUB_HOOK_TYPE_CLIENT|SUB_HOOK_ACTION_MODE), (void *)c);
 
-  subSubtleLogDebugSubtle("Toggle: type=%d, gravity=%d\n", type, gravity);
+  subSubtleLogDebugSubtle("Toggle: flag=%d, gravity=%d\n", flag, gravity);
 } /* }}} */
 
   /** subClientSetStrut {{{

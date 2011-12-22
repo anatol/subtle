@@ -1039,8 +1039,16 @@ RubyEvalConfig(void)
       if(t->flags & SUB_TAG_GRAVITY)
         {
           /* Disable tag gravity when gravity can't be found */
-          if(-1 == (t->gravity = RubyValueToGravity(t->gravity)))
+          if(-1 == (t->gravityid = RubyValueToGravity(t->gravityid)))
             t->flags &= ~SUB_TAG_GRAVITY;
+        }
+
+      /* Update screens */
+      if(t->flags & SUB_CLIENT_MODE_STICK)
+        {
+          if(-1 != t->screenid &&
+              (0 > t->screenid || subtle->screens->ndata <= t->screenid))
+            t->flags &= ~SUB_CLIENT_MODE_STICK;
         }
     }
 
@@ -2044,8 +2052,8 @@ RubyConfigTag(int argc,
   VALUE *argv,
   VALUE self)
 {
-  int flags = 0;
-  unsigned long gravity = 0;
+  int flags = 0, screenid = -1;
+  unsigned long gravityid = 0;
   XRectangle geom = { 0 };
   VALUE name = Qnil, match = Qnil, params = Qnil, value = Qnil;
 
@@ -2072,8 +2080,8 @@ RubyConfigTag(int argc,
           CHAR2SYM("gravity"))) || T_FIXNUM == rb_type(value) ||
           T_ARRAY == rb_type(value))
         {
-          flags   |= SUB_TAG_GRAVITY;
-          gravity  = value; ///< Lazy eval
+          flags     |= SUB_TAG_GRAVITY;
+          gravityid  = value; ///< Lazy eval
         }
 
       /* Set geometry */
@@ -2105,7 +2113,7 @@ RubyConfigTag(int argc,
           else if(CHAR2SYM("dialog")  == value) flags = SUB_CLIENT_TYPE_DIALOG;
         }
 
-      /* Check tri-state properties */
+      /* Check state properties */
       if(Qtrue == (value = rb_hash_lookup(params,
         CHAR2SYM("borderless")))) flags |= SUB_CLIENT_MODE_BORDERLESS;
 
@@ -2125,13 +2133,22 @@ RubyConfigTag(int argc,
         CHAR2SYM("resize")))) flags |= SUB_CLIENT_MODE_RESIZE;
 
       if(Qtrue == (value = rb_hash_lookup(params,
-        CHAR2SYM("stick")))) flags |= SUB_CLIENT_MODE_STICK;
-
-      if(Qtrue == (value = rb_hash_lookup(params,
         CHAR2SYM("urgent")))) flags |= SUB_CLIENT_MODE_URGENT;
 
       if(Qtrue == (value = rb_hash_lookup(params,
         CHAR2SYM("zaphod")))) flags |= SUB_CLIENT_MODE_ZAPHOD;
+
+      /* Set stick screen */
+      if(RTEST(value = rb_hash_lookup(params, CHAR2SYM("stick"))))
+        {
+          /* Either screen id or just true */
+          if(FIXNUM_P(value))
+            {
+              screenid  = FIX2INT(value);
+              flags    |= SUB_CLIENT_MODE_STICK;
+            }
+          else if(Qtrue == value) flags |= SUB_CLIENT_MODE_STICK;
+        }
     }
 
   /* Check value type */
@@ -2151,9 +2168,10 @@ RubyConfigTag(int argc,
               VALUE entry = Qnil, rargs[2] = { 0 };
 
               /* Set tag values */
-              t->flags   |= flags;
-              t->gravity  = gravity;
-              t->geom     = geom;
+              t->flags     |= flags;
+              t->gravityid = gravityid;
+              t->screenid  = screenid;
+              t->geom      = geom;
 
               /* Add matcher */
               rargs[0] = (VALUE)t;

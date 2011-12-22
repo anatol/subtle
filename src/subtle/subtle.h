@@ -223,7 +223,7 @@
 #define SUB_CLIENT_UNMAP              (1L << 14)                  ///< Ignore unmaps
 #define SUB_CLIENT_ARRANGE            (1L << 15)                  ///< Re-arrange client
 
-#define SUB_CLIENT_MODE_FULL          (1L << 16)                  ///< Fullscreen mode
+#define SUB_CLIENT_MODE_FULL          (1L << 16)                  ///< Fullscreen mode (also used in tags)
 #define SUB_CLIENT_MODE_FLOAT         (1L << 17)                  ///< Float mode
 #define SUB_CLIENT_MODE_STICK         (1L << 18)                  ///< Stick mode
 #define SUB_CLIENT_MODE_URGENT        (1L << 19)                  ///< Urgent mode
@@ -719,7 +719,8 @@ typedef struct subtag_t /* {{{ */
 {
   FLAGS             flags;                                        ///< Tag flags
   char              *name;                                        ///< Tag name
-  unsigned long     gravity;                                      ///< Tag gravity
+  unsigned long     gravityid;                                    ///< Tag gravity
+  int               screenid;                                     ///< Tag screen
   XRectangle        geom;                                         ///< Tag geometry
   struct subarray_t *matcher;                                     ///< Tag matcher
 } SubTag; /* }}} */
@@ -776,7 +777,7 @@ void subClientResize(SubClient *c, XRectangle *bounds,
 void subClientRestack(SubClient *c, int dir);                     ///< Restack clients
 void subClientArrange(SubClient *c, int gravityid,
   int screenid);                                                  ///< Arrange client
-void subClientToggle(SubClient *c, int type, int gravity);        ///< Toggle client state
+void subClientToggle(SubClient *c, int flag, int gravity);        ///< Toggle client state
 void subClientSetStrut(SubClient *c);                             ///< Set client strut
 void subClientSetProtocols(SubClient *c);                         ///< Set client protocols
 void subClientSetSizeHints(SubClient *c, int *flags);             ///< Set client normal hints

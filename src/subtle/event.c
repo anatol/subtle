@@ -898,7 +898,8 @@ EventMessage(XClientMessageEvent *ev)
                     int sid = 0;
 
                     /* Find screen: Prefer screen of current window */
-                    if((c = CLIENT(subSubtleFind(subtle->windows.focus[0],
+                    if(subtle->flags & SUB_SUBTLE_SKIP_WARP &&
+                        (c = CLIENT(subSubtleFind(subtle->windows.focus[0],
                         CLIENTID))) && VISIBLE(c))
                       sid = c->screenid;
                     else subScreenCurrent(&sid);
