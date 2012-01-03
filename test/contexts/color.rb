@@ -38,6 +38,10 @@ context 'Color' do
     topic.eql?(Subtlext::Color.new('#ff0000')) and topic == topic
   end # }}}
 
+  asserts 'Hash and unique' do # {{{
+    1 == [ topic, topic ].uniq.size
+  end # }}}
+
   asserts 'Convert to string' do # {{{
     topic.to_str.match(/<>#[0-9]+<>/)
   end # }}}

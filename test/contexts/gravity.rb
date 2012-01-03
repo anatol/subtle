@@ -53,6 +53,10 @@ context 'Gravity' do
     topic.eql?(Subtlext::Gravity.first(GRAVITY_ID)) and topic == topic
   end # }}}
 
+  asserts 'Hash and unique' do # {{{
+    1 == [ topic, topic ].uniq.size
+  end # }}}
+
   asserts 'Check associations' do # {{{
     clients = topic.clients
 

@@ -43,6 +43,10 @@ context 'Screen' do
     topic.eql?(Subtlext::Screen.current) and topic == topic
   end # }}}
 
+  asserts 'Hash and unique' do # {{{
+    1 == [ topic, topic ].uniq.size
+  end # }}}
+
   asserts 'Change view' do # {{{
     view1 = topic.view
 

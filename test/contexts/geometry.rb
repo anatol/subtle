@@ -38,6 +38,10 @@ context 'Geometry' do
     topic.eql?(Subtlext::Geometry.new(0, 0, 1, 1)) and topic == topic
   end # }}}
 
+  asserts 'Hash and unique' do # {{{
+    1 == [ topic, topic ].uniq.size
+  end # }}}
+
   asserts 'Convert to string' do # {{{
     '0x0+1+1' == topic.to_str
   end # }}}

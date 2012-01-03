@@ -58,6 +58,10 @@ context 'Sublet' do
     topic.eql?(topic) and topic == topic
   end # }}}
 
+  asserts 'Hash and unique' do # {{{
+    1 == [ topic, topic ].uniq.size
+  end # }}}
+
   asserts 'Convert to string' do # {{{
     SUBLET_NAME == topic.to_str
   end # }}}

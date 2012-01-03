@@ -51,6 +51,10 @@ context 'Tray' do
     topic.eql?(Subtlext::Tray.first(TRAY_ID)) and topic == topic
   end # }}}
 
+  asserts 'Hash and unique' do # {{{
+    1 == [ topic, topic ].uniq.size
+  end # }}}
+
   asserts 'Convert to string' do # {{{
     TRAY_NAME == topic.to_str
   end # }}}

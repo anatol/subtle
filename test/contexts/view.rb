@@ -53,6 +53,10 @@ context 'View' do
     topic.eql?(Subtlext::View.first(VIEW_ID)) and topic == topic
   end # }}}
 
+  asserts 'Hash and unique' do # {{{
+    1 == [ topic, topic ].uniq.size
+  end # }}}
+
   asserts 'Check associations' do # {{{
     clients = topic.clients
     tags    = topic.tags

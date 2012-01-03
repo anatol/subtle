@@ -52,6 +52,10 @@ context 'Client' do
     topic.eql?(Subtlext::Client.current) and topic == topic
   end # }}}
 
+  asserts 'Hash and unique' do # {{{
+    1 == [ topic, topic ].uniq.size
+  end # }}}
+
   asserts 'Convert to string' do # {{{
     CLIENT_NAME == topic.to_str
   end # }}}
