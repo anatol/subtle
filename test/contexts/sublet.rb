@@ -47,7 +47,9 @@ context 'Sublet' do
   end # }}}
 
   asserts 'Update sublet' do # {{{
-    nil == topic.update
+    topic.update
+
+    true
   end # }}}
 
   asserts 'Get geometry' do # {{{
