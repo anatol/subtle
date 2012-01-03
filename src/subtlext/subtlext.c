@@ -168,6 +168,28 @@ SubtlextStyle(VALUE self,
   return Qnil;
 } /* }}} */
 
+/* SubtlextHash {{{ */
+/*
+ * call-seq: hash -> Hash
+ *
+ * Convert this object to hash.
+ *
+ *  puts object.hash
+ *  => 1746246187916025425
+ */
+
+static VALUE
+SubtlextHash(VALUE self)
+{
+  VALUE str = Qnil, id = rb_intern("to_str");
+
+  /* Convert to string */
+  if(rb_respond_to(self, id))
+    str = rb_funcall(self, id, 0, Qnil);
+
+  return T_STRING == rb_type(str) ? INT2FIX(rb_str_hash(str)) : Qnil;
+} /* }}} */
+
  /* SubtlextXError {{{ */
 static int
 SubtlextXError(Display *disp,
@@ -1869,6 +1891,7 @@ Init_subtlext(void)
   rb_define_method(client, "<=>",         SubtlextEqualSpaceWindow, 1);
   rb_define_method(client, "==",          SubtlextEqualWindow,      1);
   rb_define_method(client, "eql?",        SubtlextEqualTypedWindow, 1);
+  rb_define_method(client, "hash",        SubtlextHash,             0);
 
   /* Class methods */
   rb_define_method(client, "initialize",        subClientInit,                  1);
@@ -1935,7 +1958,8 @@ Init_subtlext(void)
   rb_define_attr(color, "pixel", 1, 0);
 
   /* General methods */
-  rb_define_method(color, "<=>", SubtlextEqualSpacePixel, 1);
+  rb_define_method(color, "<=>",  SubtlextEqualSpacePixel, 1);
+  rb_define_method(color, "hash", SubtlextHash,            0);
 
   /* Class methods */
   rb_define_method(color, "initialize", subColorInit,         -1);
@@ -1971,6 +1995,9 @@ Init_subtlext(void)
 
   /* Geometry height */
   rb_define_attr(geometry, "height", 1, 1);
+
+  /* General methods */
+  rb_define_method(geometry, "hash", SubtlextHash, 0);
 
   /* Class methods */
   rb_define_method(geometry, "initialize", subGeometryInit,      -1);
@@ -2011,6 +2038,7 @@ Init_subtlext(void)
   rb_define_method(gravity, "<=>",  SubtlextEqualSpaceId, 1);
   rb_define_method(gravity, "==",   SubtlextEqualId,      1);
   rb_define_method(gravity, "eql?", SubtlextEqualTypedId, 1);
+  rb_define_method(gravity, "hash", SubtlextHash,         0);
 
   /* Class methods */
   rb_define_method(gravity, "initialize",   subGravityInit,           -1);
@@ -2053,7 +2081,8 @@ Init_subtlext(void)
   rb_define_alloc_func(icon, subIconAlloc);
 
   /* General methods */
-  rb_define_method(icon, "<=>", SubtlextEqualSpacePixmap, 1);
+  rb_define_method(icon, "<=>",  SubtlextEqualSpacePixmap, 1);
+  rb_define_method(icon, "hash", SubtlextHash,             0);
 
   /* Class methods */
   rb_define_method(icon, "initialize", subIconInit,         -1);
@@ -2096,6 +2125,7 @@ Init_subtlext(void)
   rb_define_method(screen, "<=>",  SubtlextEqualSpaceId, 1);
   rb_define_method(screen, "==",   SubtlextEqualId,      1);
   rb_define_method(screen, "eql?", SubtlextEqualTypedId, 1);
+  rb_define_method(screen, "hash", SubtlextHash,         0);
 
   /* Class methods */
   rb_define_method(screen, "initialize", subScreenInit,       1);
@@ -2165,6 +2195,7 @@ Init_subtlext(void)
   rb_define_method(sublet, "==",     SubtlextEqualId,      1);
   rb_define_method(sublet, "eql?",   SubtlextEqualTypedId, 1);
   rb_define_method(sublet, "style=", SubtlextStyle,        1);
+  rb_define_method(sublet, "hash",   SubtlextHash,         0);
 
   /* Class methods */
   rb_define_method(sublet, "initialize", subSubletInit,           1);
@@ -2206,6 +2237,7 @@ Init_subtlext(void)
   rb_define_method(tag, "<=>",  SubtlextEqualSpaceId, 1);
   rb_define_method(tag, "==",   SubtlextEqualId,      1);
   rb_define_method(tag, "eql?", SubtlextEqualTypedId, 1);
+  rb_define_method(tag, "hash", SubtlextHash,         0);
 
   /* Class methods */
   rb_define_method(tag, "initialize", subTagInit,     1);
@@ -2258,6 +2290,7 @@ Init_subtlext(void)
   rb_define_method(tray, "<=>",         SubtlextEqualSpaceWindow, 1);
   rb_define_method(tray, "==",          SubtlextEqualWindow,      1);
   rb_define_method(tray, "eql?",        SubtlextEqualTypedWindow, 1);
+  rb_define_method(tray, "hash",        SubtlextHash,             0);
 
   /* Class methods */
   rb_define_method(tray, "initialize", subTrayInit,       1);
@@ -2307,6 +2340,7 @@ Init_subtlext(void)
   rb_define_method(view, "==",       SubtlextEqualId,      1);
   rb_define_method(view, "eql?",     SubtlextEqualTypedId, 1);
   rb_define_method(view, "style=",   SubtlextStyle,        1);
+  rb_define_method(view, "hash",     SubtlextHash,         0);
 
   /* Class methods */
   rb_define_method(view, "initialize", subViewInit,          1);
