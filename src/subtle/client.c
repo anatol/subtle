@@ -137,21 +137,21 @@ ClientSnap(SubClient *c,
   DEAD(c);
   assert(c && s && geom);
 
-  /* Snap to screen border - X axis */
-  if(s->geom.x + subtle->snap > geom->x)
+  /* Snap to screen border when value is in snap margin - X axis */
+  if(abs(s->geom.x - geom->x) <= subtle->snap)
     geom->x = s->geom.x + BORDER(c);
-  else if(geom->x > (s->geom.x + s->geom.width +
-      BORDER(c) - geom->width - subtle->snap))
+  else if(abs((s->geom.x + s->geom.width) -
+      (geom->x + geom->width + BORDER(c))) <= subtle->snap)
     {
       geom->x = s->geom.x + s->geom.width -
         geom->width - BORDER(c);
     }
 
-  /* Snap tp screen border - Y axis */
-  if(s->geom.y + subtle->snap > geom->y)
+  /* Snap to screen border when is in snap margin - Y axis */
+  if(abs(s->geom.y - geom->y) <= subtle->snap)
     geom->y = s->geom.y + BORDER(c);
-  else if(geom->y > (s->geom.y + s->geom.height +
-      BORDER(c) - geom->height - subtle->snap))
+  else if(abs((s->geom.y + s->geom.height) -
+      (geom->y + geom->height + BORDER(c))) <= subtle->snap)
     {
       geom->y = s->geom.y + s->geom.height -
         geom->height - BORDER(c);
