@@ -1871,8 +1871,7 @@ RubyConfigSet(VALUE self,
                 if(!(subtle->flags & SUB_SUBTLE_CHECK))
                   subtle->gravity = value; ///< Store for later
               }
-            else subSubtleLogWarn("Cannot find option `:%s'\n",
-              SYM2CHAR(option));
+            else subSubtleLogWarn("Unknown option `:%s'\n", SYM2CHAR(option));
             break; /* }}} */
           case T_SYMBOL: /* {{{ */
             if(CHAR2SYM("gravity") == option ||
@@ -1881,8 +1880,7 @@ RubyConfigSet(VALUE self,
                 if(!(subtle->flags & SUB_SUBTLE_CHECK))
                   subtle->gravity = value; ///< Store for later
               }
-            else subSubtleLogWarn("Cannot find option `:%s'\n",
-              SYM2CHAR(option));
+            else subSubtleLogWarn("Unknown option `:%s'\n", SYM2CHAR(option));
             break; /* }}} */
           case T_TRUE:
           case T_FALSE: /* {{{ */
@@ -1914,21 +1912,10 @@ RubyConfigSet(VALUE self,
                 if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
                   subtle->flags |= SUB_SUBTLE_SKIP_WARP;
               }
-            else subSubtleLogWarn("Cannot find option `:%s'\n",
-              SYM2CHAR(option));
+            else subSubtleLogWarn("Unknown option `:%s'\n", SYM2CHAR(option));
             break; /* }}} */
           case T_STRING: /* {{{ */
-           if(CHAR2SYM("font") == option)
-            {
-              subSubtleLogDeprecated("The `font' option is deprecated, "
-                "please use the styles `font' property instead.\n");
-            }
-           else if(CHAR2SYM("separator") == option)
-              {
-                subSubtleLogDeprecated("The `separator' option is deprecated, "
-                  "please use the styles `separator' property instead.\n");
-              }
-            else if(CHAR2SYM("wmname") == option)
+            if(CHAR2SYM("wmname") == option)
               {
                 /* Set support window to root (broken Java)
                  * and update WM_NAME */
@@ -1942,8 +1929,7 @@ RubyConfigSet(VALUE self,
                       RSTRING_PTR(value));
                   }
               }
-            else subSubtleLogWarn("Cannot find option `%s'\n",
-              SYM2CHAR(option));
+            else subSubtleLogWarn("Unknown option `:%s'\n", SYM2CHAR(option));
             break; /* }}} */
           default:
             rb_raise(rb_eArgError, "Unexpected value type for option `%s'",
