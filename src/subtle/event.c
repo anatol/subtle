@@ -610,11 +610,9 @@ EventGrab(XEvent *ev)
                   {
                     subScreenConfigure();
 
-                    if(!VISIBLE(c))
-                      {
-                        c = subClientNext(c->screenid, False);
-                        if(c) subClientFocus(c, True);
-                      }
+                    /* Find next and focus */
+                    if(!VISIBLE(c) && (c = subClientNext(c->screenid, False)))
+                      subClientFocus(c, True);
 
                     subScreenUpdate();
                     subScreenRender();
