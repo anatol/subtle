@@ -1912,6 +1912,11 @@ RubyConfigSet(VALUE self,
                 if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
                   subtle->flags |= SUB_SUBTLE_SKIP_WARP;
               }
+            else if(CHAR2SYM("skip_urgent_warp") == option)
+              {
+                if(!(subtle->flags & SUB_SUBTLE_CHECK) && Qtrue == value)
+                  subtle->flags |= SUB_SUBTLE_SKIP_URGENT_WARP;
+              }
             else subSubtleLogWarn("Unknown option `:%s'\n", SYM2CHAR(option));
             break; /* }}} */
           case T_STRING: /* {{{ */

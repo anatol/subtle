@@ -355,8 +355,9 @@ subScreenConfigure(void)
               XMapWindow(subtle->dpy, c->win);
               subEwmhSetWMState(c->win, NormalState);
 
-              /* Warp after gravity and screen have been set */
-              if(c->flags & SUB_CLIENT_MODE_URGENT)
+              /* Warp after gravity and screen have been set if not disabled */
+              if(c->flags & SUB_CLIENT_MODE_URGENT &&
+                  !(subtle->flags & SUB_SUBTLE_SKIP_URGENT_WARP))
                 subClientWarp(c);
 
               /* EWMH: Desktop, screen */

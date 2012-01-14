@@ -340,6 +340,7 @@
 #define SUB_SUBTLE_TILING             (1L << 12)                  ///< Enable tiling
 #define SUB_SUBTLE_FOCUS_CLICK        (1L << 13)                  ///< Click to focus
 #define SUB_SUBTLE_SKIP_WARP          (1L << 14)                  ///< Skip pointer warp
+#define SUB_SUBTLE_SKIP_URGENT_WARP   (1L << 15)                  ///< Skip urgent warp
 
 /* Tag flags */
 #define SUB_TAG_GRAVITY               (1L << 10)                  ///< Gravity property
