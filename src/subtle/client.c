@@ -1225,14 +1225,22 @@ subClientToggle(SubClient *c,
       /* Set fullscreen mode */
       if(flag & SUB_CLIENT_MODE_FULL)
         {
-          /* Exclude fixed windows from fullscreen mode */
+          /* Normally, you'd expect, that a fixed size window wants to keep
+           * the size. Apparently, some broken clients just violate that, so we
+           * exclude fixed windows with min != screen size from fullscreen */
           if(c->flags & SUB_CLIENT_MODE_FIXED)
             {
-              c->flags &= ~SUB_CLIENT_MODE_FULL;
+              SubScreen *s = SCREEN(subtle->screens->data[c->screenid]);
 
-              return;
+              if(s->base.width != c->minw || s->base.height != c->minh)
+                {
+                  c->flags &= ~SUB_CLIENT_MODE_FULL;
+
+                  return;
+                }
             }
-          else XSetWindowBorderWidth(subtle->dpy, c->win, 0);
+
+          XSetWindowBorderWidth(subtle->dpy, c->win, 0);
         }
 
       /* Set floating or zaphod or borderless mode */
