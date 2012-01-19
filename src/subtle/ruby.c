@@ -2968,7 +2968,7 @@ RubySubletGeometryReader(VALUE self)
 
       /* Pick sublet style */
       if(subtle->styles.sublets.styles)
-        s = subArrayGet(s->styles, p->sublet->styleid);
+        s = subArrayGet(subtle->styles.sublets.styles, p->sublet->styleid);
 
       subPanelGeometry(p, s ? s : &subtle->styles.sublets, &geom);
 
