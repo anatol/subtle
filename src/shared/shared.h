@@ -38,7 +38,7 @@
 /* }}} */
 
 /* Macros {{{ */
-#define SEPARATOR "<>"                                            ///< Color separator
+#define SEPARATOR "^"                                             ///< Color separator
 #define LENGTH(a) (sizeof(a) / sizeof(a[0]))                      ///< Array length
 #define RINT(r)   printf("<%s:%d> %s: x=%d, y=%d, width=%d, height=%d\n", \
   __FILE__, __LINE__, #r, r.x, r.y, r.width, r.height);           ///< Print a XRectangle
