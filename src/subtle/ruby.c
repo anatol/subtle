@@ -1132,89 +1132,91 @@ RubyEvalStyle(VALUE name,
         s->right = FIX2INT(value);
       else s->right = 50;
     }
-
-  /* Get colors */
-  RubyHashToColor(params, "foreground", &s->fg);
-  RubyHashToColor(params, "background", &s->bg);
-  RubyHashToColor(params, "icon",       &s->icon);
-
-  /* Set all borders */
-  RubyHashToBorder(params, "border", &border, &bw);
-
-  /* Get borders */
-  RubyHashToBorder(params, "border_top",    &s->top,    &s->border.top);
-  RubyHashToBorder(params, "border_right",  &s->right,  &s->border.right);
-  RubyHashToBorder(params, "border_bottom", &s->bottom, &s->border.bottom);
-  RubyHashToBorder(params, "border_left",   &s->left,   &s->border.left);
-
-  /* Apply catchall values */
-  if(-1 != border) s->top = s->right = s->bottom = s->left = border;
-  if(-1 != bw)
-    {
-      s->border.top = s->border.right =
-        s->border.bottom = s->border.left = bw;
-    }
-
-  /* Get padding */
-  if(T_ARRAY == rb_type(value = rb_hash_lookup(params,
-      CHAR2SYM("padding")))) ///< Two or more values
-    RubyArrayToSides(value, &s->padding);
-  else if(FIXNUM_P(value)) ///< Single value
-    {
-      s->padding.top = s->padding.right =
-        s->padding.bottom = s->padding.left = FIX2INT(value);
-    }
   else
     {
-      RubyHashToInt(params, "padding_top",    &s->padding.top);
-      RubyHashToInt(params, "padding_right",  &s->padding.right);
-      RubyHashToInt(params, "padding_bottom", &s->padding.bottom);
-      RubyHashToInt(params, "padding_left",   &s->padding.left);
-    }
+      /* Get colors */
+      RubyHashToColor(params, "foreground", &s->fg);
+      RubyHashToColor(params, "background", &s->bg);
+      RubyHashToColor(params, "icon",       &s->icon);
 
-  /* Get margin */
-  if(T_ARRAY == rb_type(value = rb_hash_lookup(params,
-      CHAR2SYM("margin")))) ///< Two or more values
-    RubyArrayToSides(value, &s->margin);
-  else if(FIXNUM_P(value)) ///< Single value
-    {
-      s->margin.top = s->margin.right =
-        s->margin.bottom = s->margin.left = FIX2INT(value);
-    }
-  else
-    {
-      RubyHashToInt(params, "margin_top",    &s->margin.top);
-      RubyHashToInt(params, "margin_right",  &s->margin.right);
-      RubyHashToInt(params, "margin_bottom", &s->margin.bottom);
-      RubyHashToInt(params, "margin_left",   &s->margin.left);
-    }
+      /* Set all borders */
+      RubyHashToBorder(params, "border", &border, &bw);
 
-  /* Get min width */
-  RubyHashToInt(params, "min_width", &s->min);
-  s->min = MAX(0, s->min);
+      /* Get borders */
+      RubyHashToBorder(params, "border_top",    &s->top,    &s->border.top);
+      RubyHashToBorder(params, "border_right",  &s->right,  &s->border.right);
+      RubyHashToBorder(params, "border_bottom", &s->bottom, &s->border.bottom);
+      RubyHashToBorder(params, "border_left",   &s->left,   &s->border.left);
 
-  /* Style font */
-  if(T_STRING == rb_type(value = rb_hash_lookup(params,
-      CHAR2SYM("font"))) && !s->font)
-    {
-      s->flags |= SUB_STYLE_FONT;
-      s->font   = RubyFont(RSTRING_PTR(value));
+      /* Apply catchall values */
+      if(-1 != border) s->top = s->right = s->bottom = s->left = border;
+      if(-1 != bw)
+        {
+          s->border.top = s->border.right =
+            s->border.bottom = s->border.left = bw;
+        }
 
-      /* EWMH: Font */
-      if(CHAR2SYM("all") == name)
-        subEwmhSetString(ROOT, SUB_EWMH_SUBTLE_FONT, RSTRING_PTR(value));
-  }
+      /* Get padding */
+      if(T_ARRAY == rb_type(value = rb_hash_lookup(params,
+          CHAR2SYM("padding")))) ///< Two or more values
+        RubyArrayToSides(value, &s->padding);
+      else if(FIXNUM_P(value)) ///< Single value
+        {
+          s->padding.top = s->padding.right =
+            s->padding.bottom = s->padding.left = FIX2INT(value);
+        }
+      else
+        {
+          RubyHashToInt(params, "padding_top",    &s->padding.top);
+          RubyHashToInt(params, "padding_right",  &s->padding.right);
+          RubyHashToInt(params, "padding_bottom", &s->padding.bottom);
+          RubyHashToInt(params, "padding_left",   &s->padding.left);
+        }
 
-  /* Style separator */
-  if(T_STRING == rb_type(value = rb_hash_lookup(params,
-      CHAR2SYM("separator"))) && !s->separator)
-    {
-      s->flags |= SUB_STYLE_SEPARATOR;
+      /* Get margin */
+      if(T_ARRAY == rb_type(value = rb_hash_lookup(params,
+          CHAR2SYM("margin")))) ///< Two or more values
+        RubyArrayToSides(value, &s->margin);
+      else if(FIXNUM_P(value)) ///< Single value
+        {
+          s->margin.top = s->margin.right =
+            s->margin.bottom = s->margin.left = FIX2INT(value);
+        }
+      else
+        {
+          RubyHashToInt(params, "margin_top",    &s->margin.top);
+          RubyHashToInt(params, "margin_right",  &s->margin.right);
+          RubyHashToInt(params, "margin_bottom", &s->margin.bottom);
+          RubyHashToInt(params, "margin_left",   &s->margin.left);
+        }
 
-      /* Create new separator */
-      s->separator = (SubSeparator *)subSharedMemoryAlloc(1,
-        sizeof(SubSeparator));
-      s->separator->string  = strdup(RSTRING_PTR(value));
+      /* Get min width */
+      RubyHashToInt(params, "min_width", &s->min);
+      s->min = MAX(0, s->min);
+
+      /* Style font */
+      if(T_STRING == rb_type(value = rb_hash_lookup(params,
+          CHAR2SYM("font"))) && !s->font)
+        {
+          s->flags |= SUB_STYLE_FONT;
+          s->font   = RubyFont(RSTRING_PTR(value));
+
+          /* EWMH: Font */
+          if(CHAR2SYM("all") == name)
+            subEwmhSetString(ROOT, SUB_EWMH_SUBTLE_FONT, RSTRING_PTR(value));
+      }
+
+      /* Style separator */
+      if(T_STRING == rb_type(value = rb_hash_lookup(params,
+          CHAR2SYM("separator"))) && !s->separator)
+        {
+          s->flags |= SUB_STYLE_SEPARATOR;
+
+          /* Create new separator */
+          s->separator = (SubSeparator *)subSharedMemoryAlloc(1,
+            sizeof(SubSeparator));
+          s->separator->string  = strdup(RSTRING_PTR(value));
+       }
    }
 } /* }}} */
 
