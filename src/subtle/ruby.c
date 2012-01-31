@@ -970,8 +970,8 @@ RubyEvalConfig(void)
 {
   int i;
 
-  /* Inherit style values */
-  subStyleInheritance();
+  /* Update style values */
+  subStyleUpdate();
 
   /* Check and update grabs */
   if(0 == subtle->grabs->ndata)

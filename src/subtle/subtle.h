@@ -902,7 +902,7 @@ SubStyle *subStyleFind(SubStyle *s, char *name, int *idx);        ///< Find stat
 void subStyleReset(SubStyle *s, int val);                         ///< Reset style values to given val
 void subStyleMerge(SubStyle *s1, SubStyle *s2);                   ///< Merge style values
 void subStyleKill(SubStyle *s);                                   ///< Kill style
-void subStyleInheritance(void);                                   ///< Inherit values
+void subStyleUpdate(void);                                        ///< Update values
 /* }}} */
 
 /* subtle.c {{{ */

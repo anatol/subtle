@@ -47,25 +47,27 @@ StyleInherit(SubStyle *s1,
   /* Inherit font */
   if(NULL == s1->font) s1->font = s2->font;
 
-  /* Check max height of style */
-  if(s1->font && (s1 != &subtle->styles.clients ||
-      s1 != &subtle->styles.subtle))
+  if(s1->font)
     {
-      int height = STYLE_HEIGHT((*s1)) + s1->font->height;
+      /* Check max height of style */
+      if(s1 != &subtle->styles.clients || s1 != &subtle->styles.subtle)
+        {
+          int height = STYLE_HEIGHT((*s1)) + s1->font->height;
 
-      if(height > subtle->ph) subtle->ph = height;
-    }
+          if(height > subtle->ph) subtle->ph = height;
+        }
 
-  /* Update separator width after font */
-  if(s1->font && s1->separator)
-    {
-      s1->separator->width = subSharedTextWidth(subtle->dpy,
-        s1->font, s1->separator->string,
-        strlen(s1->separator->string), NULL, NULL, True);
+      /* Update separator width after font */
+      if(s1->separator)
+        {
+          s1->separator->width = subSharedTextWidth(subtle->dpy,
+            s1->font, s1->separator->string,
+            strlen(s1->separator->string), NULL, NULL, True);
 
-      /* Add style width to calculate that only once */
-      if(0 < s1->separator->width)
-        s1->separator->width += STYLE_WIDTH((*s1));
+          /* Add style width to calculate it only once */
+          if(0 < s1->separator->width)
+            s1->separator->width += STYLE_WIDTH((*s1));
+        }
     }
 
   /* Check nested styles */
@@ -88,6 +90,20 @@ StyleInherit(SubStyle *s1,
           /* Sanitize icon */
           if(-1 == style->icon) style->icon = style->fg;
         }
+    }
+} /* }}} */
+
+/* StyleFont {{{ */
+static void
+StyleFont(SubStyle *s,
+  const char *name)
+{
+  /* Check if style exists and font is defined */
+  if(s && !s->font)
+    {
+      subSubtleLogError("Cannot find a font definition for style `%s'\n", name); \
+      subSubtleFinish();
+      exit(-1); \
     }
 } /* }}} */
 
@@ -264,12 +280,12 @@ subStyleKill(SubStyle *s)
 
 /* All */
 
- /** subStyleInheritance {{{
+ /** subStyleUpdate {{{
   * Inherit style values from all
   **/
 
 void
-subStyleInheritance(void)
+subStyleUpdate(void)
 {
   /* Inherit styles */
   StyleInherit(&subtle->styles.views,     &subtle->styles.all);
@@ -277,7 +293,16 @@ subStyleInheritance(void)
   StyleInherit(&subtle->styles.sublets,   &subtle->styles.all);
   StyleInherit(&subtle->styles.separator, &subtle->styles.all);
 
-  subSubtleLogDebugSubtle("Inheritance\n");
+  /* Check font */
+  StyleFont(&(subtle->styles.title),     "title");
+  StyleFont(&(subtle->styles.separator), "separator");
+  StyleFont(&(subtle->styles.sublets),   "sublets");
+  StyleFont(subtle->styles.occupied,     "occupied");
+  StyleFont(subtle->styles.focus,        "focus");
+  StyleFont(subtle->styles.viewsep,      "view separator");
+  StyleFont(subtle->styles.subletsep,    "sublet separator");
+
+  subSubtleLogDebugSubtle("Update\n");
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker
