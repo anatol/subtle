@@ -545,8 +545,8 @@ subClientFocus(SubClient *c,
   subtle->windows.focus[0] = c->win;
   subGrabSet(c->win, SUB_GRAB_MOUSE);
 
-  /* Exclude desktop type windows */
-  if(!(c->flags & SUB_CLIENT_TYPE_DESKTOP))
+  /* Exclude desktop and dock type windows */
+  if(!(c->flags & (SUB_CLIENT_TYPE_DESKTOP|SUB_CLIENT_TYPE_DOCK)))
     XSetWindowBorder(subtle->dpy, c->win, subtle->styles.clients.fg);
 
   /* EWMH: Active window */
@@ -971,7 +971,7 @@ subClientResize(SubClient *c,
   if(size_hints) ClientBounds(c, bounds, &c->geom, False, False);
 
   /* Fit into bounds */
-  if(!(c->flags & SUB_CLIENT_MODE_FULL))
+  if(!(c->flags & (SUB_CLIENT_MODE_FULL|SUB_CLIENT_TYPE_DOCK)))
     {
       int maxx = 0, maxy = 0;
 
@@ -1085,6 +1085,13 @@ subClientArrange(SubClient *c,
     {
       c->geom = s->geom;
 
+      /* Just use screen size for desktop windows */
+      XMoveResizeWindow(subtle->dpy, c->win, c->geom.x, c->geom.y,
+        c->geom.width, c->geom.height);
+      XLowerWindow(subtle->dpy, c->win);
+    }
+  else if(c->flags & SUB_CLIENT_TYPE_DOCK)
+    {
       /* Just use screen size for desktop windows */
       XMoveResizeWindow(subtle->dpy, c->win, c->geom.x, c->geom.y,
         c->geom.width, c->geom.height);
@@ -1270,8 +1277,8 @@ subClientToggle(SubClient *c,
           c->flags |= SUB_CLIENT_MODE_FLOAT;
         }
 
-      /* Set dock and desktop type */
-      if(flag & (SUB_CLIENT_TYPE_DOCK|SUB_CLIENT_TYPE_DESKTOP))
+      /* Set desktop and dock type */
+      if(flag & (SUB_CLIENT_TYPE_DESKTOP|SUB_CLIENT_TYPE_DOCK))
         {
           XSetWindowBorderWidth(subtle->dpy, c->win, 0);
 
@@ -1345,22 +1352,18 @@ subClientSetStrut(SubClient *c)
     {
       if(4 == size) ///< Only complete struts
         {
-          subtle->styles.subtle.left   =
-            MAX(subtle->styles.subtle.left, strut[0]);
-          subtle->styles.subtle.right  =
-            MAX(subtle->styles.subtle.right, strut[1]);
-          subtle->styles.subtle.top    = 
-            MAX(subtle->styles.subtle.top, strut[2]);
-          subtle->styles.subtle.bottom =
-            MAX(subtle->styles.subtle.bottom, strut[3]);
+          subtle->styles.subtle.padding.left   =
+            MAX(subtle->styles.subtle.padding.left, strut[0]);
+          subtle->styles.subtle.padding.right  =
+            MAX(subtle->styles.subtle.padding.right, strut[1]);
+          subtle->styles.subtle.padding.top    = 
+            MAX(subtle->styles.subtle.padding.top, strut[2]);
+          subtle->styles.subtle.padding.bottom =
+            MAX(subtle->styles.subtle.padding.bottom, strut[3]);
 
           /* Update screen and clients */
           subScreenResize();
           subScreenConfigure();
-
-          subSubtleLogDebug("SetStrut: left=%ld, right=%d, top=%d, bottom=%d\n",
-            subtle->styles.subtle.left, subtle->styles.subtle.right,
-            subtle->styles.subtle.bottom, subtle->styles.subtle.top);
         }
 
       XFree(strut);
@@ -1496,8 +1499,8 @@ subClientSetSizeHints(SubClient *c,
         }
 
       /* Check for specific position */
-      if((subtle->flags & SUB_SUBTLE_RESIZE ||
-          c->flags & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_RESIZE)))
+      if((subtle->flags & SUB_SUBTLE_RESIZE || c->flags &
+          (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_RESIZE|SUB_CLIENT_TYPE_DOCK)))
         {
           /* User/program size */
           if(hints->flags & (USSize|PSize))
@@ -1693,10 +1696,11 @@ subClientSetType(SubClient *c,
             {
               case SUB_EWMH_NET_WM_WINDOW_TYPE_DESKTOP:
                 c->flags |= SUB_CLIENT_TYPE_DESKTOP;
-                *flags   |= SUB_CLIENT_MODE_FIXED;
+                *flags   |= (SUB_CLIENT_MODE_FIXED|SUB_CLIENT_MODE_STICK);
                 break;
               case SUB_EWMH_NET_WM_WINDOW_TYPE_DOCK:
                 c->flags |= SUB_CLIENT_TYPE_DOCK;
+                *flags   |= (SUB_CLIENT_MODE_FIXED|SUB_CLIENT_MODE_STICK);
                 break;
               case SUB_EWMH_NET_WM_WINDOW_TYPE_TOOLBAR:
                 c->flags |= SUB_CLIENT_TYPE_TOOLBAR;
