@@ -89,17 +89,17 @@ module Subtle # {{{
           ret = nil
 
           # Check if symbol is a method or a var
-          if(self.respond_to?(meth))
+          if self.respond_to?(meth)
             ret = self.send(meth, args)
           else
             sym = ("@" + meth.to_s).to_sym #< Construct symbol
 
             # Check getter or setter
-            if(meth.to_s.index("="))
+            if meth.to_s.index("=")
               sym = sym.to_s.chop.to_sym
 
               self.instance_variable_set(sym, args.first)
-            elsif(self.instance_variable_defined?(sym))
+            elsif self.instance_variable_defined?(sym)
               ret = self.instance_variable_get(sym)
             end
           end
@@ -135,7 +135,7 @@ module Subtle # {{{
         #   => nil
 
         def interval=(interval)
-          raise ArgumentError.new("Unknown value type") unless(interval.is_a?(Fixnum))
+          raise ArgumentError.new("Unknown value type") unless interval.is_a?(Fixnum)
           @interval = interval
         end # }}}
 
@@ -167,7 +167,7 @@ module Subtle # {{{
         #   => nil
 
         def data=(data)
-          raise ArgumentError.new("Unknown value type") unless(data.is_a?(String))
+          raise ArgumentError.new("Unknown value type") unless data.is_a?(String)
           @data = data
         end # }}}
 
@@ -184,7 +184,7 @@ module Subtle # {{{
         #   => nil
 
         def background=(value)
-          unless(value.is_a?(String) or value.is_a?(Object))
+          unless value.is_a?(String) or value.is_a?(Object)
             raise ArgumentError.new("Unknown value type") 
           end
         end # }}}
@@ -216,8 +216,8 @@ module Subtle # {{{
         #   => nil
 
         def watch(path)
-          raise ArgumentError.new("Unknown value type") unless(path.is_a?(String))
-          raise "File not found" unless(File.exist?(path))
+          raise ArgumentError.new("Unknown value type") unless path.is_a?(String)
+          raise "File not found" unless File.exist?(path)
           @path = path
         end # }}}
 
@@ -289,8 +289,8 @@ module Subtle # {{{
         #   end
 
         def configure(name, &blk)
-          raise LocalJumpError.new("No block given") unless(block_given?)
-          raise ArgumentError.new("Unknown value type") unless(name.is_a?(Symbol))
+          raise LocalJumpError.new("No block given") unless block_given?
+          raise ArgumentError.new("Unknown value type") unless name.is_a?(Symbol)
 
           @name = name
 
@@ -314,18 +314,18 @@ module Subtle # {{{
         #   end
 
         def on(event, &blk)
-          raise LocalJumpError.new("No block given") unless(block_given?)
-          raise ArgumentError.new("Unknown value type") unless(event.is_a?(Symbol))
+          raise LocalJumpError.new("No block given") unless block_given?
+          raise ArgumentError.new("Unknown value type") unless event.is_a?(Symbol)
 
           # Get proc information
           arity = blk.arity
           sing  = self.class
 
           # Check events
-          if(Subtle::Sur::Test::Sublet::EVENTS.has_key?(event))
+          if Subtle::Sur::Test::Sublet::EVENTS.has_key?(event)
             need = Subtle::Sur::Test::Sublet::EVENTS[event]
 
-            if(-1 == arity || (1 <= arity && need >= arity))
+            if -1 == arity or (1 <= arity and need >= arity)
               sing.send(:define_method, ("__%s" % [ event ]).to_sym, blk)
             else
               raise "Wrong number of arguments (%d for %d)" % [ arity, need ]
@@ -333,7 +333,7 @@ module Subtle # {{{
           end
 
           # Check hooks
-          if(Subtle::Sur::Test::Sublet::HOOKS.include?(event))
+          if Subtle::Sur::Test::Sublet::HOOKS.include?(event)
             sing.send(:define_method, ("__%s" % [ event ]).to_sym, blk)
           end
         end # }}}
@@ -354,7 +354,7 @@ module Subtle # {{{
         #   end
 
         def helper(&blk)
-          raise LocalJumpError.new("No block given") unless(block_given?)
+          raise LocalJumpError.new("No block given") unless block_given?
 
           # Yield and eval block
           yield(self)
@@ -377,19 +377,19 @@ module Subtle # {{{
         ret = nil
 
         # Check if symbol is a method or a var
-        if(self.respond_to?(meth))
+        if self.respond_to?(meth)
           ret = self.send(meth, args)
         else
           sym = ("@" + meth.to_s).to_sym #< Construct symbol
 
           # Check getter or setter
-          if(meth.to_s.index("="))
+          if meth.to_s.index("=")
             sym = sym.to_s.chop.to_sym
 
             self.instance_variable_set(sym, args.first)
           else
             ret = self.instance_variable_get(sym)
-            ret = self if(ret.nil?)
+            ret = self if ret.nil?
           end
         end
 
@@ -410,18 +410,18 @@ module Subtle # {{{
       def self.run(config, args)
         args.each do |arg|
           # Load sublet
-          if(File.exist?(arg))
+          if File.exist?(arg)
             begin
               sublet = Subtle::Sur::Test::Sublet.new
 
               # Eval sublet in anonymous module
               sublet.instance_eval(File.read(arg))
             rescue => err
-              puts ">>> WARNING: Couldn't load sublet: %s" % [
+              puts ">>> WARNING: Cannot load sublet: %s" % [
                 err.message
               ]
 
-              unless(error.is_a?(RuntimeError))
+              unless error.is_a?(RuntimeError)
                 puts error.backtrace
               end
 
@@ -429,7 +429,7 @@ module Subtle # {{{
             end
 
             # Check if sublet exists
-            unless(sublet.nil?)
+            unless sublet.nil?
               methods = []
               dummy   = Subtle::Sur::Test::Dummy.new
 
@@ -438,11 +438,11 @@ module Subtle # {{{
 
               # Configure and run sublet
               sublet.__configure(sublet)
-              sublet.__run(sublet) if(sublet.respond_to?(:__run))
+              sublet.__run(sublet) if sublet.respond_to?(:__run)
 
               # Sanitize
-              if(!sublet.instance_variable_defined?("@interval") or
-                  0 >= sublet.interval)
+              if !sublet.instance_variable_defined?("@interval") or
+                  0 >= sublet.interval
                 sublet.interval = 60
               end
 
@@ -450,7 +450,7 @@ module Subtle # {{{
               Subtle::Sur::Test::Sublet::EVENTS.each do |k, v|
                 name = ("__%s" % [ k ]).to_sym
 
-                if(sublet.respond_to?(name))
+                if sublet.respond_to?(name)
                   methods.push({
                     :name      => k,
                     :arity     => sublet.method(name).arity,
@@ -463,7 +463,7 @@ module Subtle # {{{
               Subtle::Sur::Test::Sublet::HOOKS.each do |k|
                 name = ("__%s" % [ k ]).to_sym
 
-                if(sublet.respond_to?(name))
+                if sublet.respond_to?(name)
                   methods.push({
                     :name      => k,
                     :arity     => sublet.method(name).arity,
@@ -513,7 +513,7 @@ module Subtle # {{{
                 num = STDIN.readline.to_i
 
                 begin
-                  if(0 < num && methods.size >= num)
+                  if 0 < num and methods.size >= num
                     meth = methods[num - 1]
                     name = meth[:singleton] ? meth[:name] :
                       ("__%s" % [ meth[:name] ]).to_sym
@@ -533,7 +533,7 @@ module Subtle # {{{
                 rescue => error
                   puts ">>> ERROR: #{error}"
 
-                  unless(error.is_a?(RuntimeError))
+                  unless error.is_a?(RuntimeError)
                     puts error.backtrace
                   end
                 end

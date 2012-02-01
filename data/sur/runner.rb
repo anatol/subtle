@@ -85,49 +85,49 @@ module Subtle # {{{
 
           args = no_opt
         rescue
-          raise "Couldn't find required arguments"
+          raise "Cannot find required arguments"
         end
 
         # Run
         cmd  = args.shift
         case cmd
           when "annotate"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Client.new.annotate(args.first, @version)
           when "build"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Client.new.build(args.first)
           when "config"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Client.new.config(args.first, @use_color)
           when "fetch"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Client.new.fetch(args, @version, @use_tags)
           when "grabs"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Client.new.grabs(args.first, @use_color)
           when "help" then usage(nil)
           when "info"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Sur::Client.new.info(args, @use_color)
           when "install"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Sur::Client.new.install(args, @version, @use_tags, @reload)
           when "list"
             Subtle::Sur::Client.new.list(@repo, @use_color)
           when "notes"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Client.new.notes(args.first)
           when "query"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Client.new.query(args.first, @repo,
               @version, @use_regex, @use_tags, @use_color
@@ -139,21 +139,21 @@ module Subtle # {{{
 
             Sur::Server.new(@port).run
           when "submit"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Client.new.submit(args.first)
           when "template"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Specification.template(args.first)
           when "test"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             require "subtle/sur/test"
 
             Subtle::Sur::Test.run(@config, args)
           when "uninstall"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Client.new.uninstall(args,
               @version, @use_tags, @reload)
@@ -166,7 +166,7 @@ module Subtle # {{{
             Subtle::Sur::Client.new.upgrade(@use_color, @assume, @reload)
           when "version" then version
           when "yank"
-            usage(cmd) if(args.empty?)
+            usage(cmd) if args.empty?
 
             Subtle::Sur::Client.new.update(args.first, @version)
           else usage(nil)

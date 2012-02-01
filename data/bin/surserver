@@ -19,19 +19,19 @@ rescue LoadError => error
   missing = error.to_s.split(" ").last
 
   # Check missing files
-  if("archive/tar/minitar" == missing)
+  if "archive/tar/minitar" == missing
     missing = "archive-tar-minitar"
   end
 
   puts <<EOF
->>> ERROR: Couldn't find the gem #{missing}
+>>> ERROR: Cannot find the gem #{missing}
 >>>        Please install it with following command:
 >>>        gem install #{missing}
 EOF
 rescue => error
   puts ">>> ERROR: #{error}"
 
-  unless(error.is_a?(RuntimeError))
+  unless error.is_a?(RuntimeError)
     puts error.backtrace
   end
 end

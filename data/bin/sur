@@ -22,11 +22,11 @@ rescue LoadError => error
   missing = error.to_s.split(" ").last
 
   # Check missing files
-  if("archive/tar/minitar" == missing)
+  if "archive/tar/minitar" == missing
     missing = "archive-tar-minitar"
-  elsif(missing.match("subtle"))
+  elsif missing.match("subtle")
     puts <<EOF
->>> ERROR: Couldn't find runtime files of sur
+>>> ERROR: Cannot find runtime files of sur
 >>>        Please make sure that you installed subtle into the
 >>>        current ruby environment (#{RUBY_VERSION})
 EOF
@@ -34,14 +34,14 @@ EOF
   end
 
   puts <<EOF
->>> ERROR: Couldn't find the gem `#{missing}'
+>>> ERROR: Cannot find the gem `#{missing}'
 >>>        Please install it with following command:
 >>>        gem install #{missing}
 EOF
 rescue => error
   puts ">>> ERROR: #{error}"
 
-  unless(error.is_a?(RuntimeError))
+  unless error.is_a?(RuntimeError)
     puts error.backtrace
   end
 end

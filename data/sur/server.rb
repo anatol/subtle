@@ -147,8 +147,8 @@ module Subtle # {{{
         #DataMapper::Model.raise_on_save_failure = true
 
         # Create database and store
-        DataMapper.auto_migrate!  unless(File.exists?(DATABASE))
-        Dir.mkdir(REPOSITORY)     unless(File.exists?(REPOSITORY))
+        DataMapper.auto_migrate!  unless File.exists?(DATABASE)
+        Dir.mkdir(REPOSITORY)     unless File.exists?(REPOSITORY)
 
         # Configure sinatra application
         set :port, port
@@ -212,7 +212,7 @@ module Subtle # {{{
             sublets = []
 
             # Find sublets in interval
-            if(2 == args.size)
+            if 2 == args.size
               Sur::Model::Sublet.all(
                   :created_at.gte => Time.at(args[0]),
                   :created_at.lte => Time.at(args[1])
@@ -391,7 +391,7 @@ EOF
     %span.italic= @tag
 
   %ul
-    -if(!@list.nil?)
+    -if !@list.nil?
       -@list.each do |s|
         %li
           %a#download{:href => "/get/%s" % [ s.digest ] }
@@ -455,30 +455,7 @@ EOF
           haml(:index)
         end # }}}
 
-        get "/get/:digest" do # {{{
-          if((s = Sur::Model::Sublet.first(:digest => params[:digest])))
-            # Increment count
-            s.downloads = s.downloads + 1
-            s.save
 
-            # Send requested file
-            send_file(File.join(REPOSITORY, s.path),
-              :type     => "application/x-tar",
-              :filename => File.basename(s.path)
-            )
-          else
-            halt 404
-          end
-        end # }}}
-
-        get "/list" do # {{{
-          # Check cache age
-          if(!File.exist?(CACHE) or (86400 < (Time.now - File.new(CACHE).ctime)))
-            build_cache
-          end
-
-          send_file(CACHE, :type => "text/plain", :last_modified => File.new(CACHE).ctime)
-        end # }}}
 
         get "/tag/:tag" do # {{{
           @tag  = params[:tag].capitalize
@@ -505,7 +482,7 @@ EOF
         end # }}}
 
         post "/annotate" do # {{{
-          if((s = Sur::Model::Sublet.first(:digest => params[:digest])))
+          if (s = Sur::Model::Sublet.first(:digest => params[:digest]))
             # Find or create user
             u = Sur::Model::User.first_or_create(
               { :name       => params[:user] },
@@ -525,128 +502,8 @@ EOF
 
             puts ">>> Added annotation from `#{u.name}` for `#{s.name}'"
           else
-            puts ">>> WARNING: Couldn't find sublet with digest `#{params[:digest]}`"
+            puts ">>> WARNING: Cannot find sublet with digest `#{params[:digest]}`"
             halt 404
-          end
-        end # }}}
-
-        post "/submit" do # {{{
-          # Check if required params are available
-          if(params[:file] and params[:file][:tempfile] and params[:user])
-            file = params[:file][:tempfile]
-
-            # Validate spec
-            spec = Sur::Specification.extract_spec(file.path)
-            halt 415 unless(spec.valid?)
-
-            begin
-              # Create or find sublet
-              s = Sur::Model::Sublet.first_or_create(
-                { :name => spec.name, :version => spec.version },
-                {
-                  :contact     => spec.contact,
-                  :description => spec.description,
-                  :date        => spec.date,
-                  :path        => spec.to_s + ".sublet",
-                  :digest      => Digest::MD5.hexdigest(File.read(file.path)),
-                  :ip          => request.env["REMOTE_ADDR"][/.[^,]+/],
-                  :required    => spec.required_version,
-                  :created_at  => Time.now
-                }
-              )
-
-              # Create or find user
-              u = Sur::Model::User.first_or_create(
-                { :name       => params[:user] },
-                { :created_at => Time.now      }
-              )
-
-              # Parse authors
-              spec.authors.each do |user|
-                # Check if user exists
-                u = Sur::Model::User.first_or_create(
-                  { :name       => user     },
-                  { :created_at => Time.now }
-                )
-
-                # Find or create assoc
-                assoc = Sur::Model::Assoc::Author.first_or_create(
-                  { :user_id    => u.id, :sublet_id => s.id },
-                  { :created_at => Time.now                 }
-                )
-              end
-
-              # Parse tags
-              spec.tags.each do |tag|
-                # Find or create tag
-                t = Sur::Model::Tag.first_or_create(
-                  { :name       => tag      },
-                  { :created_at => Time.now }
-                )
-
-                # Find or create assoc
-                assoc = Sur::Model::Assoc::Tag.first_or_create(
-                  { :tag_id     => t.id, :sublet_id => s.id },
-                  { :created_at => Time.now                 }
-                )
-              end
-            rescue => error
-              p error
-              halt 500
-            end
-
-            # Copy file and update cache
-            begin
-              FileUtils.copy(file.path, File.join(REPOSITORY, s.path))
-              build_cache
-            rescue => error
-              p error
-              halt 500
-            end
-
-            # Post via identi.ca
-            unless(USERNAME.empty? or PASSWORD.empty?)
-              uri = URI.parse("http://identi.ca/api/statuses/update.xml")
-
-              # Create request
-              req = Net::HTTP::Post.new(uri.path)
-              req.basic_auth(USERNAME, PASSWORD)
-              req.set_form_data(
-                {
-                  "status" => "New sublet: %s (%s) !subtle" % [
-                    spec.name, spec.version
-                  ]
-                }, ";"
-              )
-
-              # Finally send request
-              Net::HTTP.new(uri.host).start { |http| http.request(req) }
-            end
-
-            halt 200
-          else
-            halt 405
-          end
-        end # }}}
-
-        post "/xmlrpc" do # {{{
-          xml = @request.body.read
-
-          if(xml.empty?)
-            error = 400
-            return
-          end
-
-          # Parse xml
-          method, arguments = XMLRPC::Marshal.load_call(xml)
-          method = method.gsub(/([A-Z])/, '_\1').downcase
-
-          # Check if method exists
-          if(respond_to?(method))
-            content_type("text/xml", :charset => "utf-8")
-            send(method, arguments)
-          else
-            error = 404
           end
         end # }}}
 

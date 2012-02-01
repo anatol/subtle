@@ -77,7 +77,7 @@ module Subtle # {{{
         # Create folders
         [ xdg_cache_home, xdg_data_home, @path_icons,
             @path_specs, @path_sublets ].each do |p|
-          FileUtils.mkdir_p([ p ]) unless(File.exist?(p))
+          FileUtils.mkdir_p([ p ]) unless File.exist?(p)
         end
       end # }}}
 
@@ -99,7 +99,7 @@ module Subtle # {{{
         build_remote
 
         # Check if sublet exists
-        if((specs = search(name, @cache_remote, version, false)) and specs.empty?)
+        if (specs = search(name, @cache_remote, version, false)) and specs.empty?
           raise "Sublet `#{name}' does not exist"
         end
 
@@ -112,7 +112,7 @@ module Subtle # {{{
           }
         )
 
-        raise "Couldn't annotate sublet: Sublet not found" if(404 == res.code)
+        raise "Cannot annotate sublet: Sublet not found" if 404 == res.code
       end # }}}
 
       ## Sur::Client::build {{{
@@ -132,7 +132,7 @@ module Subtle # {{{
         spec = Sur::Specification.load_spec(file)
 
         # Check specification
-        if(spec.valid?)
+        if spec.valid?
           begin
             sublet = "%s-%s.sublet" % [
               File.join(Dir.pwd, spec.name.downcase),
@@ -142,15 +142,15 @@ module Subtle # {{{
 
             # Check if files exist
             (spec.files | spec.icons).each do |f|
-              unless(File.exist?(File.join(File.dirname(file), f)))
-                raise "Couldn't find file `#{f}'"
+              unless File.exist?(File.join(File.dirname(file), f))
+                raise "Cannot find file `#{f}'"
               end
             end
 
             # Check gem version
-            unless(spec.dependencies.empty?)
+            unless spec.dependencies.empty?
               spec.dependencies.each do |name, version|
-                if(version.match(/^(\d*\.){1,2}\d*$/))
+                if version.match(/^(\d*\.){1,2}\d*$/)
                   puts ">>> WARNING: Gem dependency `%s' " \
                        "requires exact gem version (=%s)" % [ name, version ]
                 end
@@ -208,7 +208,7 @@ module Subtle # {{{
         build_local
 
         # Check if sublet is installed
-        if((specs = search(name, @cache_local)) and !specs.empty?)
+        if (specs = search(name, @cache_local)) and !specs.empty?
           spec = specs.first
 
           show_config(spec, use_color)
@@ -236,9 +236,9 @@ module Subtle # {{{
         # Install all sublets
         names.each do |name|
           # Check if remote sublet exists
-          if((specs = search(name, @cache_remote, version, use_tags)) and
-              specs.empty?)
-            puts ">>> WARNING: Couldn't find sublet `#{name}' " \
+          if (specs = search(name, @cache_remote, version, use_tags)) and
+              specs.empty?
+            puts ">>> WARNING: Cannot find sublet `#{name}' " \
                  "in remote repository"
 
             next
@@ -247,7 +247,7 @@ module Subtle # {{{
           spec = specs.first
 
           # Download and copy sublet to current directory
-          unless((temp = download(spec)).nil?)
+          unless (temp = download(spec)).nil?
             FileUtils.cp(temp.path,
               File.join(
                 Dir.getwd,
@@ -276,7 +276,7 @@ module Subtle # {{{
         build_local
 
         # Check if sublet is installed
-        if((specs = search(name, @cache_local)) and !specs.empty?)
+        if (specs = search(name, @cache_local)) and !specs.empty?
           spec = specs.first
 
           show_grabs(spec, use_color)
@@ -304,7 +304,7 @@ module Subtle # {{{
         # Show info for all sublets
         names.each do |name|
           # Check if sublet is installed
-          if((specs = search(name, @cache_local)) and !specs.empty?)
+          if (specs = search(name, @cache_local)) and !specs.empty?
             spec = specs.first
 
             show_info(spec, use_color)
@@ -335,24 +335,24 @@ module Subtle # {{{
         # Install all sublets
         names.each do |name|
           # Check if sublet is already installed
-          if((specs = search(name, @cache_local, version, use_tags)) and
-              !specs.empty?)
+          if (specs = search(name, @cache_local, version, use_tags)) and
+              !specs.empty?
             puts ">>> WARNING: Sublet `#{name}' is already installed"
 
             next
           end
 
           # Check if sublet is local
-          if(File.exist?(name))
+          if File.exist?(name)
             install_sublet(name)
 
             next
           end
 
           # Check if remote sublet exists
-          if((specs = search(name, @cache_remote, version, use_tags)) and
-              specs.empty?)
-            puts ">>> WARNING: Couldn't find sublet `#{name}' " \
+          if (specs = search(name, @cache_remote, version, use_tags)) and
+              specs.empty?
+            puts ">>> WARNING: Cannot find sublet `#{name}' " \
                  "in remote repository"
 
             next
@@ -360,17 +360,17 @@ module Subtle # {{{
 
           # Check dependencies
           spec = specs.first
-          next unless(spec.satisfied?)
+          next unless spec.satisfied?
 
           # Download and install sublet
-          unless((temp = download(spec)).nil?)
+          unless (temp = download(spec)).nil?
             install_sublet(temp.path)
           end
         end
 
         build_local(true)
 
-        reload_sublets if(reload)
+        reload_sublets if reload
       end # }}}
 
       ## Sur::Client::list {{{
@@ -416,7 +416,7 @@ module Subtle # {{{
         build_local
 
         # Check if sublet is installed
-        if((specs = search(name, @cache_local)) and !specs.empty?)
+        if (specs = search(name, @cache_local)) and !specs.empty?
           spec = specs.first
 
           show_notes(spec)
@@ -444,16 +444,16 @@ module Subtle # {{{
         case repo
           when "local"
             build_local
-            unless((specs = search(query, @cache_local, version,
-                use_regex, use_tags)) and !specs.empty?)
-              raise "Couldn't find `#{query}' in local repository"
+            unless (specs = search(query, @cache_local, version,
+                use_regex, use_tags)) and !specs.empty?
+              raise "Cannot find `#{query}' in local repository"
             end
           when "remote"
             build_local
             build_remote
-            unless((specs = search(query, @cache_remote, version,
-                use_regex, use_tags)) and !specs.empty?)
-              raise "Couldn't find `#{query}' in remote repository"
+            unless (specs = search(query, @cache_remote, version,
+                use_regex, use_tags)) and !specs.empty?
+              raise "Cannot find `#{query}' in remote repository"
             end
         end
 
@@ -484,7 +484,7 @@ module Subtle # {{{
               a = File.basename(f)
               b = File.basename(sf)
 
-              if(a == b || File.fnmatch("[0-9_]*#{b}", a))
+              if a == b or File.fnmatch("[0-9_]*#{b}", a)
                 list.push([ s.name.downcase, a])
               end
             end
@@ -500,7 +500,7 @@ module Subtle # {{{
         line = STDIN.readline
         i    = 0
 
-        if("\n" != line)
+        if "\n" != line
           line.split(" ").each do |tok|
             idx = tok.to_i
 
@@ -510,7 +510,7 @@ module Subtle # {{{
             new_path  = '%s/%d_%s.rb' % [ @path_sublets, i, name ]
 
             # Check if file exists before moving
-            unless(File.exist?(new_path))
+            unless File.exist?(new_path)
               FileUtils.mv(File.join(@path_sublets, file), new_path)
             end
           end
@@ -532,17 +532,17 @@ module Subtle # {{{
       #   => nil
 
       def submit(file)
-        if(!file.nil? and File.file?(file) and ".sublet" == File.extname(file))
+        if !file.nil? and File.file?(file) and ".sublet" == File.extname(file)
           spec = Sur::Specification.extract_spec(file)
 
-          if(spec.valid?)
+          if spec.valid?
             upload(file)
             build_remote(true)
           else
             spec.validate
           end
         else
-          raise "Couldn't find file `#{file}'"
+          raise "Cannot find file `#{file}'"
         end
       end # }}}
 
@@ -567,8 +567,8 @@ module Subtle # {{{
         # Install all sublets
         names.each do |name|
           # Check if sublet is installed
-          if((specs = search(name, @cache_local, version, use_tags)) and
-              !specs.empty?)
+          if (specs = search(name, @cache_local, version, use_tags)) and
+              !specs.empty?
             spec = specs.first
 
             # Uninstall files
@@ -578,7 +578,7 @@ module Subtle # {{{
                 a = File.basename(f)
                 b = File.basename(file)
 
-                if(a == b || File.fnmatch("[0-9_]*#{a}", b))
+                if a == b or File.fnmatch("[0-9_]*#{a}", b)
                   puts ">>>>>> Uninstalling file `#{b}'"
                   FileUtils.remove_file(File.join(@path_sublets, b), true)
                 end
@@ -602,14 +602,14 @@ module Subtle # {{{
 
             puts ">>> Uninstalled sublet #{spec.to_s}"
           else
-            puts ">>> WARNING: Couldn't find sublet `#{name}' in local " \
+            puts ">>> WARNING: Cannot find sublet `#{name}' in local " \
                  "repository"
           end
         end
 
         build_local(true)
 
-        reload_sublets if(reload)
+        reload_sublets if reload
       end # }}}
 
       ## Sur::Client::unpack {{{
@@ -632,12 +632,12 @@ module Subtle # {{{
         # Install all sublets
         names.each do |name|
           # Check if sublet is installed
-          if((specs = search(name, @cache_remote, version, use_tags)) and
-              !specs.empty?)
+          if (specs = search(name, @cache_remote, version, use_tags)) and
+              !specs.empty?
             spec = specs.first
 
             # Download and unpack sublet
-            unless((temp = download(spec)).nil?)
+            unless (temp = download(spec)).nil?
               base  = File.join(Dir.pwd, spec.to_str)
               icons = File.join(base, "icons")
 
@@ -694,11 +694,11 @@ module Subtle # {{{
         # Iterate over server-side sorted list
         @cache_local.each do |spec_a|
           @cache_remote.each do |spec_b|
-            if(spec_a.name == spec_b.name and
-                spec_a.version.to_f < spec_b.version.to_f)
+            if spec_a.name == spec_b.name and
+                spec_a.version.to_f < spec_b.version.to_f
               list << spec_b.name
 
-              if(use_color)
+              if use_color
                 puts ">>> %s: %s -> %s" % [
                   spec_a.name,
                   colorize(5, spec_a.version),
@@ -715,20 +715,20 @@ module Subtle # {{{
           end
         end
 
-        return if(list.empty?)
+        return if list.empty?
 
         # Really?
-        unless(assume)
+        unless assume
           print ">>> Upgrade sublets (y/n)? "
 
-          return unless("y" == STDIN.readline.strip.downcase)
+          return unless "y" == STDIN.readline.strip.downcase
         end
 
         # Finally upgrade
         uninstall(list)
         install(list)
 
-        reload_sublets if(reload)
+        reload_sublets if reload
       end # }}}
 
       ## Sur::Client::yank {{{
@@ -753,8 +753,8 @@ module Subtle # {{{
       def see_also(spec) # {{{
         also = [ "info", "config" ]
 
-        also << "notes" unless(spec.notes.nil?)
-        also << "grabs" unless(spec.grabs.nil?)
+        also << "notes" unless spec.notes.nil?
+        also << "grabs" unless spec.grabs.nil?
 
         puts "See also: #{also.join(", ")}"
       end # }}}
@@ -781,15 +781,15 @@ module Subtle # {{{
         req["Content-Type"] = "multipart/form-data; boundary=#{BOUNDARY}"
 
         # Check result
-        case(http.request(req).code.to_i)
+        case http.request(req).code.to_i
           when 200
              puts ">>> Submitted sublet `#{base}'"
 
             build_remote
-          when 405 then raise "Couldn't submit sublet: Invalid request"
-          when 415 then raise "Couldn't submit sublet: Invalid Spec"
-          when 500 then raise "Couldn't submit sublet: Server error"
-          else raise "Couldn't submit sublet"
+          when 405 then raise "Cannot submit sublet: Invalid request"
+          when 415 then raise "Cannot submit sublet: Invalid Spec"
+          when 500 then raise "Cannot submit sublet: Server error"
+          else raise "Cannot submit sublet"
         end
       end # }}}
 
@@ -809,7 +809,7 @@ module Subtle # {{{
         # Fetch file
         http.request_get("/get/" + spec.digest) do |response|
           # Check result
-          case(response.code.to_i)
+          case response.code.to_i
             when 200
               total = 0
 
@@ -826,8 +826,8 @@ module Subtle # {{{
               end
 
               temp.close
-            when 404 then raise "Couldn't download sublet: Sublet not found"
-            else raise "Couldn't download sublet: Server error"
+            when 404 then raise "Cannot download sublet: Sublet not found"
+            else raise "Cannot download sublet: Server error"
           end
         end
 
@@ -837,7 +837,7 @@ module Subtle # {{{
       end # }}}
 
       def progress(mesg, total, now) # {{{
-        if(0.0 < total)
+        if 0.0 < total
           percent = (now.to_f * 100 / total.to_f).floor
 
           $stdout.sync = true
@@ -851,11 +851,11 @@ module Subtle # {{{
 
         # Search in repo
         repo.each do |s|
-          if(!query.nil? and (s.name.downcase == query.downcase ||
-              (use_regex and s.name.downcase.match(query)) ||
-              (use_tags  and s.tags.include?(query.capitalize))))
+          if !query.nil? and (s.name.downcase == query.downcase or
+              (use_regex and s.name.downcase.match(query)) or
+              (use_tags  and s.tags.include?(query.capitalize)))
             # Check version?
-            if(version.nil? || s.version == version)
+            if version.nil? or s.version == version
               results.push(s)
             end
           end
@@ -875,7 +875,7 @@ module Subtle # {{{
         @cache_local = []
 
         # Load local cache
-        if(!force and File.exist?(@path_local))
+        if !force and File.exist?(@path_local)
           yaml = YAML::load(File.open(@path_local))
 
           @cache_local = YAML::load(yaml)
@@ -889,14 +889,14 @@ module Subtle # {{{
             spec = Sur::Specification.load_spec(file)
 
             # Validate
-            if(spec.valid?)
+            if spec.valid?
               spec.path = file
               @cache_local.push(spec)
             else
               spec.validate
             end
           rescue
-            puts ">>> WARNING: Couldn't parse specification `#{file}'"
+            puts ">>> WARNING: Cannot parse specification `#{file}'"
           end
         end
 
@@ -917,8 +917,8 @@ module Subtle # {{{
         http          = Net::HTTP.new(uri.host, uri.port)
 
         # Check age of cache
-        if(!force and File.exist?(@path_remote) and
-            86400 > (Time.now - File.new(@path_remote).ctime))
+        if !force and File.exist?(@path_remote) and
+            86400 > (Time.now - File.new(@path_remote).ctime)
           yaml = YAML::load(File.open(@path_remote))
 
           @cache_remote = YAML::load(yaml)
@@ -929,7 +929,7 @@ module Subtle # {{{
         # Fetch file
         http.request_get("/list") do |response|
           # Check result
-          case(response.code.to_i)
+          case response.code.to_i
             when 200
               total = 0
               data  = ""
@@ -958,7 +958,7 @@ module Subtle # {{{
               end
 
               puts ">>> Updated remote cache with #{@cache_remote.size} entries"
-            else raise "Couldn't download sublet list: Server error"
+            else raise "Cannot download sublet list: Server error"
           end
         end
       end # }}}
@@ -967,26 +967,26 @@ module Subtle # {{{
         list = []
 
         # Skip if specs list is empty
-        if(specs.any?)
+        if specs.any?
           prev = nil
 
           specs.sort { |a, b| [ a.name, a.version ] <=> [ b.name, b.version ] }.reverse!
 
           # Compress versions
           specs.each do |s|
-            if(!prev.nil? and prev.name == s.name)
-              if(prev.version.is_a?(Array))
+            if !prev.nil? and prev.name == s.name
+              if prev.version.is_a?(Array)
                 prev.version << s.version
               else
                 prev.version = [ prev.version, s.version ]
               end
             else
-              list << prev unless(prev.nil?)
+              list << prev unless prev.nil?
               prev = s
             end
           end
 
-          list << prev unless(prev.nil? and prev.name == s.name)
+          list << prev unless prev.nil? and prev.name == s.name
         end
 
         list
@@ -1000,7 +1000,7 @@ module Subtle # {{{
           # Find if installed
           installed = ""
           @cache_local.each do |cs|
-            if(cs.name == s.name)
+            if cs.name == s.name
               installed = "[%s installed]" % [ cs.version ]
               break
             end
@@ -1010,7 +1010,7 @@ module Subtle # {{{
           version = s.version.is_a?(Array) ? s.version.join(", ") : s.version
 
           # Do we like colors?
-          if(use_color)
+          if use_color
             puts "%s %s (%s) %s" % [
               colorize(2, i.to_s, false, :bg),
               colorize(1, s.name.downcase, true),
@@ -1019,14 +1019,14 @@ module Subtle # {{{
             ]
             puts "   %s" % [ s.description ]
 
-            unless(s.tags.empty?)
+            unless s.tags.empty?
               puts "   %s" % [ s.tags.map { |t| colorize(5, "##{t}") }.join(" ") ]
             end
           else
             puts "(%d) %s (%s) %s" % [ i, s.name.downcase, version, installed ]
             puts "   %s" % [ s.description ]
 
-            unless(s.tags.empty?)
+            unless s.tags.empty?
               puts "   %s" % [ s.tags.map { |t| "##{t}" }.join(" ") ]
             end
           end
@@ -1036,7 +1036,7 @@ module Subtle # {{{
       end # }}}
 
       def show_notes(spec) # {{{
-        unless(spec.notes.nil? or spec.notes.empty?)
+        unless spec.notes.nil? or spec.notes.empty?
           puts
           puts spec.notes
           puts
@@ -1044,7 +1044,7 @@ module Subtle # {{{
       end # }}}
 
       def show_config(spec, use_color) # {{{
-        unless(spec.nil?)
+        unless spec.nil?
           puts
 
           # Add default config settings
@@ -1065,7 +1065,7 @@ module Subtle # {{{
           ]
 
           # Merge configs
-          unless(spec.config.nil?)
+          unless spec.config.nil?
             skip = []
 
             spec.config.each do |c|
@@ -1081,7 +1081,7 @@ module Subtle # {{{
           end
 
           # Header
-          if(use_color)
+          if use_color
             puts "%-24s  %-19s  %-39s  %s" % [
               colorize(1, "Name", true),
               colorize(1, "Type", true),
@@ -1096,7 +1096,7 @@ module Subtle # {{{
 
           # Dump all settings
           config.each do |c|
-            if(use_color)
+            if use_color
               puts "%-25s  %-20s  %-40s  %s" % [
                 colorize(2, c[:name][0..24]).ljust(25),
                 colorize(5, c[:type][0..19]).ljust(20),
@@ -1118,11 +1118,11 @@ module Subtle # {{{
       end # }}}
 
       def show_grabs(spec, use_color) # {{{
-        unless(spec.nil? or spec.grabs.nil? or spec.grabs.empty?)
+        unless spec.nil? or spec.grabs.nil? or spec.grabs.empty?
           puts
 
           # Header
-          if(use_color)
+          if use_color
             puts "%-24s  %s" % [
               colorize(1, "Name", true),
               colorize(1, "Description", true)
@@ -1135,7 +1135,7 @@ module Subtle # {{{
 
           # Dump all settings
           spec.grabs.each do |k, v|
-            if(use_color)
+            if use_color
               puts "%-25s  %s" % [
                 colorize(2, k[0..24]).ljust(25), v
               ]
@@ -1151,15 +1151,15 @@ module Subtle # {{{
       end # }}}
 
       def show_info(spec, use_color) # {{{
-        unless(spec.nil?)
+        unless spec.nil?
           authors = spec.authors.join(", ")
           tags    = spec.tags.map { |t| "##{t}" }.join(" ")
           files   = spec.files.join(", ")
           icons   = spec.icons.map { |i| File.basename(i) }.join(", ")
           deps    = spec.dependencies.map { |k, v| "#{k} (#{v})" }.join(", ")
 
-          if(use_color)
-            puts <<EOF
+          if use_color
+            puts <<-EOF
 
 #{colorize(1, "Name:", true)}     #{spec.name}
 #{colorize(1, "Version:", true)}  #{colorize(2, spec.version)}
@@ -1170,9 +1170,9 @@ module Subtle # {{{
 #{colorize(1, "Icons:", true)}    #{icons}
 #{colorize(1, "Deps:", true)}     #{spec.dependencies.map { |k, v| "#{k} (#{colorize(2, v)})" }.join(", ")}
 
-EOF
+            EOF
           else
-            puts <<EOF
+            puts <<-EOF
 
 Name:     #{spec.name}
 Version:  #{spec.version}
@@ -1183,7 +1183,7 @@ Files:    #{files}
 Icons:    #{icons}
 Deps:     #{spec.dependencies.map { |k, v| "#{k} (#{v})" }.join(", ")}
 
-EOF
+            EOF
           end
         end
       end # }}}
@@ -1196,7 +1196,7 @@ EOF
         File.open(sublet, "rb") do |input|
           Archive::Tar::Minitar::Input.open(input) do |tar|
             tar.each do |entry|
-              case(File.extname(entry.full_name))
+              case File.extname(entry.full_name)
                 when ".spec" then
                   puts ">>>>>> Installing specification `#{spec.to_s}.spec'"
                   path = File.join(specs, spec.to_s + ".spec")
@@ -1227,7 +1227,7 @@ EOF
 
           Subtlext::Subtle.reload
         rescue
-          raise "Couldn't reload sublets"
+          raise "Cannot reload sublets"
         end
       end # }}}
     end # }}}

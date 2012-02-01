@@ -88,7 +88,7 @@ module Subtle # {{{
         @path             = Dir.pwd
 
         # Pass to block
-        yield(self) if(block_given?)
+        yield(self) if block_given?
       end # }}}
 
       ## Subtle::Sur::Specification::load_spec {{{
@@ -117,9 +117,9 @@ module Subtle # {{{
         end
 
         # Check object
-        if(spec.nil? || !spec.is_a?(Specification))
-          raise "Can't extract specification from file `#{file}'"
-        elsif(!spec.valid?)
+        if spec.nil? or !spec.is_a?(Specification)
+          raise "Cannot read specification file `#{file}'"
+        elsif !spec.valid?
           raise spec.validate
         end
 
@@ -147,7 +147,7 @@ module Subtle # {{{
           File.open(file, "rb") do |input|
             Archive::Tar::Minitar::Input.open(input) do |tar|
               tar.each do |entry|
-                if(".spec" == File.extname(entry.full_name))
+                if ".spec" == File.extname(entry.full_name)
                   spec = eval(entry.read)
                 end
               end
@@ -158,9 +158,9 @@ module Subtle # {{{
         end
 
         # Check object
-        if(spec.nil? || !spec.is_a?(Specification))
-          raise "Can't extract specification from file `#{file}'"
-        elsif(!spec.valid?)
+        if spec.nil? or !spec.is_a?(Specification)
+          raise "Cannot extract specification from file `#{file}'"
+        elsif !spec.valid?
           raise spec.validate
         end
 
@@ -190,7 +190,7 @@ module Subtle # {{{
         spec    = File.join(folder, name + ".spec")
         sublet  = File.join(folder, name + ".rb")
 
-        unless(File.exist?(name))
+        unless File.exist?(name)
           FileUtils.mkdir_p([ folder ])
 
           # Create spec
@@ -273,8 +273,8 @@ EOF
       #   => true
 
       def valid?
-        (!@name.nil? && !@authors.empty? && !@contact.nil? && \
-          !@description.nil? && !@version.nil? && !@files.empty?)
+        (!@name.nil? and !@authors.empty? and !@contact.nil? and \
+          !@description.nil? and !@version.nil? and !@files.empty?)
       end # }}}
 
       ## Subtle::Sur::Specification::validate {{{
@@ -298,7 +298,7 @@ EOF
         fields.push("version")     if(@version.nil?)
         fields.push("files")       if(@files.empty?)
 
-        unless(fields.empty?)
+        unless fields.empty?
           raise SpecificationValidationError,
             "Couldn't find `#{fields.join(", ")}' in specification"
         end
@@ -337,7 +337,7 @@ EOF
         missing   = []
 
         # Check subtlext version
-        unless(@required_version.nil?)
+        unless @required_version.nil?
           begin
             require "subtle/subtlext"
 
@@ -375,7 +375,7 @@ EOF
         end
 
         # Dump errors
-        unless(satisfied_version or satisfied_deps)
+        unless satisfied_version or satisfied_deps
           puts ">>> ERROR: Couldn't install `#{@name}' due to unsatisfied requirements."
 
           unless(satisfied_version)
@@ -417,7 +417,7 @@ EOF
         ret = nil
 
         # Check if symbol is a method or a var
-        if(self.respond_to?(meth))
+        if self.respond_to?(meth)
           ret = self.send(meth, args)
         else
           sym = ("@" + meth.to_s).to_sym #< Construct symbol
