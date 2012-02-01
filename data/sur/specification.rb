@@ -112,7 +112,7 @@ module Subtle # {{{
           # Create spec
           spec      = eval(File.open(file).read)
           spec.path = File.dirname(file)
-        rescue
+        rescue Exception => e
           spec = nil
         end
 

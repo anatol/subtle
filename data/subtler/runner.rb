@@ -155,7 +155,7 @@ module Subtle # {{{
         arg2 = Integer(arg2) rescue arg2
 
         # Pipes?
-        arg1 = ARGF.read.chop if('-' == arg1)
+        arg1 = ARGF.read.chop if '-' == arg1
 
         if '-' == arg2
           # Read pipe until EOF
