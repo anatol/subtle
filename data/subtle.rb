@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 #
 # Author::  Christoph Kappel <unexist@subforge.org>
 # Version:: $Id$
