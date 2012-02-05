@@ -1102,6 +1102,8 @@ RubyEvalStyle(VALUE name,
   /* Special cases */
   if(CHAR2SYM("subtle") == name)
     {
+      /* Get colors */
+      RubyHashToColor(params, "background",   &s->bg);
       RubyHashToColor(params, "panel_top",    &s->top);
       RubyHashToColor(params, "panel_bottom", &s->bottom);
       RubyHashToColor(params, "stipple",      &s->fg);
