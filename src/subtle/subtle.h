@@ -779,7 +779,7 @@ void subClientResize(SubClient *c, XRectangle *bounds,
 void subClientRestack(SubClient *c, int dir);                     ///< Restack clients
 void subClientArrange(SubClient *c, int gravityid,
   int screenid);                                                  ///< Arrange client
-void subClientToggle(SubClient *c, int flag, int gravity);        ///< Toggle client state
+void subClientToggle(SubClient *c, int flags, int set_gravity);   ///< Toggle client flags
 void subClientSetStrut(SubClient *c);                             ///< Set client strut
 void subClientSetProtocols(SubClient *c);                         ///< Set client protocols
 void subClientSetSizeHints(SubClient *c, int *flags);             ///< Set client normal hints

@@ -41,17 +41,6 @@ ClientMask(XRectangle *geom)
     geom->width + 1, geom->height + 1);
 } /* }}} */
 
-/* ClientCopy {{{ */
-void
-ClientCopy(SubClient *c,
-  SubClient *k)
-{
-  /* Copy stick flag, tags and screens */
-  c->flags    |= (k->flags & SUB_CLIENT_MODE_STICK);
-  c->tags     |= k->tags;
-  c->screenid |= k->screenid;
-} /* }}} */
-
 /* ClientGravity {{{ */
 int
 ClientGravity(void)
@@ -1147,60 +1136,43 @@ subClientArrange(SubClient *c,
 
  /** subClientToggle {{{
   * @brief Toggle various states of client
-  * @param[in]  c        A #SubClient
-  * @param[in]  flag     Toggle flag
-  * @param[in]  gravity  Whether gravity should be set
+  * @param[in]  c            A #SubClient
+  * @param[in]  flags        Toggle flag
+  * @param[in]  set_gravity  Whether gravity should be set
   **/
 
 void
 subClientToggle(SubClient *c,
-  int flag,
-  int gravity)
+  int flags,
+  int set_gravity)
 {
-  int flags = 0, nstates = 0;
+  int nstates = 0;
   Atom states[3] = { None };
 
   DEAD(c);
   assert(c);
 
-  if(c->flags & flag) ///< Unset flags
-    {
-      c->flags &= ~flag;
+  /* Set arrange flags for certain modes */
+  if(flags & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_STICK|SUB_CLIENT_MODE_FULL|
+      SUB_CLIENT_MODE_ZAPHOD|SUB_CLIENT_MODE_BORDERLESS|SUB_CLIENT_MODE_CENTER))
+    c->flags |= SUB_CLIENT_ARRANGE; ///< Force rearrange
 
-      /* Unset float/center mode */
-      if(flag & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_CENTER))
-        c->flags |= SUB_CLIENT_ARRANGE; ///< Force rearrange
+  /* Handle sticky mode */
+  if(flags & SUB_CLIENT_MODE_STICK)
+    {
+      SubClient *focus = NULL;
 
       /* Unset stick mode */
-      if(flag & SUB_CLIENT_MODE_STICK)
+      if(c->flags & SUB_CLIENT_MODE_STICK)
         {
           /* Update highlight urgent client */
           if(c->flags & SUB_CLIENT_MODE_URGENT)
             subtle->urgent_tags &= ~c->tags;
         }
-
-      /* Unset borderless or fullscreen mode */
-      if(flag & (SUB_CLIENT_MODE_BORDERLESS|SUB_CLIENT_MODE_FULL))
+      else
         {
-          c->flags |= SUB_CLIENT_ARRANGE; ///< Force rearrange
-
-          if(flag & SUB_CLIENT_MODE_BORDERLESS ||
-              !(c->flags & SUB_CLIENT_MODE_BORDERLESS))
-            XSetWindowBorderWidth(subtle->dpy, c->win,
-              subtle->styles.clients.border.top);
-        }
-    }
-  else ///< Set flags
-    {
-      c->flags |= flag;
-
-      /* Set sticky mode */
-      if(flag & SUB_CLIENT_MODE_STICK)
-        {
-          SubClient *focus = NULL;
-
           /* Check if gravity should be set */
-          if(gravity)
+          if(set_gravity)
             {
               int i;
 
@@ -1225,23 +1197,31 @@ subClientToggle(SubClient *c,
                 c->screenid = focus->screenid;
               else subScreenCurrent(&c->screenid);
             }
+      }
+  }
 
-          c->flags |= SUB_CLIENT_ARRANGE; ///< Force rearrange
+  /* Handle fullscreen mode */
+  if(flags & SUB_CLIENT_MODE_FULL)
+    {
+      if(c->flags & SUB_CLIENT_MODE_FULL)
+        {
+          if(!(c->flags & SUB_CLIENT_MODE_BORDERLESS))
+            XSetWindowBorderWidth(subtle->dpy, c->win,
+              subtle->styles.clients.border.top);
         }
-
-      /* Set fullscreen mode */
-      if(flag & SUB_CLIENT_MODE_FULL)
+      else
         {
           /* Normally, you'd expect, that a fixed size window wants to keep
            * the size. Apparently, some broken clients just violate that, so we
            * exclude fixed windows with min != screen size from fullscreen */
+
           if(c->flags & SUB_CLIENT_MODE_FIXED)
             {
               SubScreen *s = SCREEN(subtle->screens->data[c->screenid]);
 
               if(s->base.width != c->minw || s->base.height != c->minh)
                 {
-                  c->flags &= ~SUB_CLIENT_MODE_FULL;
+                  flags &= ~SUB_CLIENT_MODE_FULL;
 
                   return;
                 }
@@ -1249,22 +1229,31 @@ subClientToggle(SubClient *c,
 
           XSetWindowBorderWidth(subtle->dpy, c->win, 0);
         }
+    }
 
-      /* Set floating or zaphod or borderless mode */
-      if(flag & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_ZAPHOD|
-          SUB_CLIENT_MODE_BORDERLESS))
-        c->flags |= SUB_CLIENT_ARRANGE; ///< Force rearrange
+  /* Handle borderless mode */
+  if(flags & SUB_CLIENT_MODE_BORDERLESS)
+    {
+      /* Unset borderless or fullscreen mode */
+      if(!(c->flags & SUB_CLIENT_MODE_BORDERLESS))
+        XSetWindowBorderWidth(subtle->dpy, c->win,
+          subtle->styles.clients.border.top);
+      else XSetWindowBorderWidth(subtle->dpy, c->win, 0);
+    }
 
-      /* Set borderless mode */
-      if(flag & SUB_CLIENT_MODE_BORDERLESS)
-        XSetWindowBorderWidth(subtle->dpy, c->win, 0);
+  /* Handle urgent mode */
+  if(flags & SUB_CLIENT_MODE_URGENT)
+    subtle->urgent_tags |= c->tags;
 
-      /* Set urgent mode */
-      if(flag & SUB_CLIENT_MODE_URGENT)
-        subtle->urgent_tags |= c->tags;
-
-      /* Set center mode */
-      if(flag & SUB_CLIENT_MODE_CENTER)
+  /* Handle center mode */
+  if(flags & SUB_CLIENT_MODE_CENTER)
+    {
+      if(c->flags & SUB_CLIENT_MODE_CENTER)
+        {
+          c->flags &= ~SUB_CLIENT_MODE_FLOAT;
+          c->flags |= SUB_CLIENT_ARRANGE;
+        }
+      else
         {
           SubScreen *s = SCREEN(subtle->screens->data[c->screenid]);
 
@@ -1274,36 +1263,41 @@ subClientToggle(SubClient *c,
           c->geom.y = s->geom.y +
             (s->geom.height - c->geom.height - 2 * BORDER(c)) / 2;
 
-          c->flags |= SUB_CLIENT_MODE_FLOAT;
-        }
-
-      /* Set desktop and dock type */
-      if(flag & (SUB_CLIENT_TYPE_DESKTOP|SUB_CLIENT_TYPE_DOCK))
-        {
-          XSetWindowBorderWidth(subtle->dpy, c->win, 0);
-
-          /* Special treatment */
-          if(flag & SUB_CLIENT_TYPE_DESKTOP)
-            {
-              SubScreen *s = SCREEN(subtle->screens->data[c->screenid]);
-
-              c->geom = s->base;
-
-              /* Add panel heights without struts */
-              if(s->flags & SUB_SCREEN_PANEL1)
-                {
-                  c->geom.y      += subtle->ph;
-                  c->geom.height -= subtle->ph;
-                }
-
-              if(s->flags & SUB_SCREEN_PANEL2)
-                c->geom.height -= subtle->ph;
-            }
+          flags    |= SUB_CLIENT_MODE_FLOAT;
+          c->flags |= SUB_CLIENT_ARRANGE;
         }
     }
 
+  /* Handle desktop and dock type (one way) */
+  if(flags & (SUB_CLIENT_TYPE_DESKTOP|SUB_CLIENT_TYPE_DOCK))
+    {
+      XSetWindowBorderWidth(subtle->dpy, c->win, 0);
+
+      /* Special treatment */
+      if(flags & SUB_CLIENT_TYPE_DESKTOP)
+        {
+          SubScreen *s = SCREEN(subtle->screens->data[c->screenid]);
+
+          c->geom = s->base;
+
+          /* Add panel heights without struts */
+          if(s->flags & SUB_SCREEN_PANEL1)
+            {
+              c->geom.y      += subtle->ph;
+              c->geom.height -= subtle->ph;
+            }
+
+          if(s->flags & SUB_SCREEN_PANEL2)
+            c->geom.height -= subtle->ph;
+        }
+    }
+
+  /* Finally toggle mode flags only */
+  c->flags = ((c->flags & ~MODES_ALL) |
+    ((c->flags & MODES_ALL) ^ (flags & MODES_ALL)));
+
   /* Sort for keeping stacking order */
-  if(flag & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_FULL|
+  if(c->flags & (SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_FULL|
       SUB_CLIENT_TYPE_DESKTOP|SUB_CLIENT_TYPE_DOCK))
     subClientRestack(c, SUB_CLIENT_RESTACK_UP);
 
@@ -1329,7 +1323,7 @@ subClientToggle(SubClient *c,
   /* Hook: Mode */
   subHookCall((SUB_HOOK_TYPE_CLIENT|SUB_HOOK_ACTION_MODE), (void *)c);
 
-  subSubtleLogDebugSubtle("Toggle: flag=%d, gravity=%d\n", flag, gravity);
+  subSubtleLogDebugSubtle("Toggle: flags=%d, gravity=%d\n", flags, gravity);
 } /* }}} */
 
   /** subClientSetStrut {{{
@@ -1563,7 +1557,11 @@ subClientSetWMHints(SubClient *c,
 
           /* Copy tags and modes */
           if((k = CLIENT(subSubtleFind(hints->window_group, CLIENTID))))
-            ClientCopy(c, k);
+            {
+              *flags      |= (k->flags & MODES_ALL);
+              c->tags     |= k->tags;
+              c->screenid |= k->screenid;
+            }
         }
 
       /* Handle just false value of input hint since it is default */
@@ -1661,7 +1659,12 @@ subClientSetTransient(SubClient *c,
         SUB_CLIENT_MODE_FLOAT|SUB_CLIENT_MODE_URGENT : SUB_CLIENT_MODE_FLOAT;
 
       /* Find parent window */
-      if((k = CLIENT(subSubtleFind(trans, CLIENTID)))) ClientCopy(c, k);
+      if((k = CLIENT(subSubtleFind(trans, CLIENTID))))
+        {
+          *flags      |= (k->flags & MODES_ALL);
+          c->tags     |= k->tags;
+          c->screenid |= k->screenid;
+        }
      }
 
   subSubtleLogDebugSubtle("SetTransient\n");
