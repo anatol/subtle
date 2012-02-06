@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 #
 # @package subtle
 #
@@ -123,10 +124,10 @@ CLOBBER.include(@options["builddir"], "config.h", "config.log", "config.yml")
 
 def silent_sh(cmd, msg, &block)
   # FIXME: Hide raw messages in 0.8.7 and 0.9.1
-  unless(true === RakeFileUtils.verbose or
+  unless true === RakeFileUtils.verbose or
       (defined? Rake::FileUtilsExt and
       Rake::FileUtilsExt.respond_to? :verbose_flag and
-      true === Rake::FileUtilsExt.verbose_flag))
+      true === Rake::FileUtilsExt.verbose_flag)
     rake_output_message(msg)
   else
     rake_output_message(Array == cmd.class ? cmd.join(" ") : cmd) #< Check type
@@ -192,7 +193,7 @@ end # }}}
  ##
 
 def compile(src, out = nil, options = "")
-  out = File.join(@options["builddir"], File.basename(src).ext("o")) unless(!out.nil?)
+  out = File.join(@options["builddir"], File.basename(src).ext("o")) if out.nil?
   opt = ["shared.c", "subtlext.c"].include?(File.basename(src)) ? " -fPIC " : ""
   opt << options
 
@@ -246,18 +247,18 @@ task(:config) do
     File.join(@options["builddir"], "subtle"),
     File.join(@options["builddir"], "subtlext")
   ].each do |dir|
-    FileUtils.mkdir_p(dir) unless(File.exist?(dir))
+    FileUtils.mkdir_p(dir) unless File.exist?(dir)
   end
 
   # Check if options.yaml exists or config is run explicitly
-  if((!ARGV.nil? && !ARGV.include?("config")) && File.exist?("config.yml"))
+  if( !ARGV.nil? and !ARGV.include?("config")) and File.exist?("config.yml")
     yaml = YAML::load(File.open("config.yml"))
     @options, @defines = YAML::load(yaml)
 
-    make_config unless(checksums)
+    make_config unless checksums
   else
     # Check version
-    if(1 != RbConfig::CONFIG["MAJOR"].to_i or 9 != RbConfig::CONFIG["MINOR"].to_i)
+    if 1 != RbConfig::CONFIG["MAJOR"].to_i or 9 != RbConfig::CONFIG["MINOR"].to_i
       fail("Ruby 1.9.0 or higher required")
     end
 
@@ -268,29 +269,29 @@ task(:config) do
 
     # Get options
     @options.each_key do |k|
-      if(!ENV[k].nil?)
+      unless ENV[k].nil?
         @options[k] = ENV[k]
       end
     end
 
     # Debug
-    if("yes" == @options["debug"])
+    if "yes" == @options["debug"]
       @options["cflags"] << " -g -DDEBUG"
     else
       @options["cflags"] << " -DNDEBUG"
     end
 
     # Get revision
-    if(File.exists?(".hg") && (hg = find_executable0("hg")))
+    if File.exists?(".hg") and (hg = find_executable0("hg"))
       match = `#{hg} tip`.match(/^[^:]+:\s*(\d+).*/)
 
-      if(!match.nil? && 2 == match.size)
+      if !match.nil? and 2 == match.size
         @options["revision"] = match[1]
       end
     end
 
     # Get ruby header dir
-    if(RbConfig::CONFIG["rubyhdrdir"].nil?)
+    if RbConfig::CONFIG["rubyhdrdir"].nil?
       @options["hdrdir"] = RbConfig.expand(
         RbConfig::CONFIG["archdir"]
       )
@@ -311,7 +312,7 @@ task(:config) do
     )
     [@options, @defines].each do |hash|
       hash.each do |k, v|
-        if(v.is_a?(String))
+        if v.is_a?(String)
           hash[k] = RbConfig.expand(
             v, CONFIG.merge(@options.merge(@defines))
           )
@@ -321,9 +322,7 @@ task(:config) do
 
     # Check header
     HEADER.each do |h|
-      unless(have_header(h))
-        fail("Header #{h} was not found")
-      end
+      fail("Header #{h} was not found") unless have_header(h)
     end
 
     # Check optional headers
@@ -337,12 +336,12 @@ task(:config) do
       lib = " -lexecinfo"
 
       # Check if execinfo is a separate lib (freebsd)
-      if(find_header("execinfo.h"))
-        if(try_func("backtrace", ""))
+      if find_header("execinfo.h")
+        if try_func("backtrace", "")
           $defs.push("-DHAVE_EXECINFO_H")
 
           ret = true
-        elsif(try_func("backtrace", lib))
+        elsif try_func("backtrace", lib)
           @options["ldflags"] << lib
           $defs.push("-DHAVE_EXECINFO_H")
 
@@ -356,9 +355,7 @@ task(:config) do
     # Check pkg-config for X11
     checking_for("X11/Xlib.h") do
       cflags, ldflags, libs = pkg_config("x11")
-      if(libs.nil?)
-        fail("X11 was not found")
-      end
+      fail("X11 was not found") if libs.nil?
 
       # Update flags
       @options["cflags"]   << " %s" % [ cflags ]
@@ -369,12 +366,12 @@ task(:config) do
     end
 
     # Check pkg-config for Xpm
-    if("yes" == @options["xpm"])
+    if "yes" == @options["xpm"]
       checking_for("X11/Xpm.h") do
         ret = false
 
         cflags, ldflags, libs = pkg_config("xpm")
-        unless(libs.nil?)
+        unless libs.nil?
           # Update flags
           @options["cpppath"] << " %s" % [ cflags ]
           @options["extflags"] << " %s %s" % [ ldflags, libs ]
@@ -390,12 +387,12 @@ task(:config) do
     end
 
     # Check pkg-config for Xft
-    if("yes" == @options["xft"])
+    if "yes" == @options["xft"]
       checking_for("X11/Xft/Xft.h") do
         ret = false
 
         cflags, ldflags, libs = pkg_config("xft")
-        unless(libs.nil?)
+        unless libs.nil?
           # Update flags
           @options["cpppath"] << " %s" % [ cflags ]
           @options["ldflags"] << " %s %s" % [ ldflags, libs ]
@@ -412,23 +409,23 @@ task(:config) do
     end
 
     # Xinerama
-    if("yes" == @options["xinerama"])
-      if(have_header("X11/extensions/Xinerama.h"))
+    if "yes" == @options["xinerama"]
+      if have_header("X11/extensions/Xinerama.h")
         @options["ldflags"]  << " -lXinerama"
         @options["extflags"] << " -lXinerama"
       end
     end
 
     # Check Xrandr
-    if("yes" == @options["xrandr"])
+    if "yes" == @options["xrandr"]
       ret = false
 
       # Pkg-config
       checking_for("X11/extensions/Xrandr.h") do
         cflags, ldflags, libs = pkg_config("xrandr")
-        unless(libs.nil?)
+        unless libs.nil?
           # Version check (xrandr >= 1.3)
-          if(try_func("XRRGetScreenResourcesCurrent", libs))
+          if try_func("XRRGetScreenResourcesCurrent", libs)
             # Update flags
             @options["cflags"]  << " %s" % [ cflags ]
             @options["ldflags"] << " %s %s" % [ ldflags, libs ]
@@ -441,19 +438,19 @@ task(:config) do
           end
         end
 
-        @options["xrandr"] = "no" unless(ret)
+        @options["xrandr"] = "no" unless ret
 
         ret
       end
     end
 
     # Xtest
-    if("yes" == @options["xtest"])
+    if "yes" == @options["xtest"]
       ret = false
 
       checking_for("X11/extensions/XTest.h") do
         # Check for debian header/lib separation
-        if(try_func("XTestFakeKeyEvent", "-lXtst"))
+        if try_func("XTestFakeKeyEvent", "-lXtst")
           @options["extflags"] << " -lXtst"
 
           $defs.push("-DHAVE_X11_EXTENSIONS_XTEST_H")
@@ -463,7 +460,7 @@ task(:config) do
           puts "XTestFakeKeyEvent couldn't be found"
         end
 
-        @options["xtest"] = "no" unless(ret)
+        @options["xtest"] = "no" unless ret
 
         ret
       end
@@ -471,9 +468,7 @@ task(:config) do
 
     # Check functions
     FUNCS.each do |f|
-      if(!have_func(f))
-        fail("Func #{f} was not found")
-      end
+      fail("Func #{f} was not found") unless have_func(f)
     end
 
     # Encoding
