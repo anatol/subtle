@@ -539,7 +539,7 @@ SubtlextTagReload(VALUE self)
 
 /* SubtlextSendButton {{{ */
 /*
- * call-seq: send_click(button, x, y) -> nil
+ * call-seq: send_click(button, x, y) -> Object
  *
  * Emulate a click on a window with optional button
  * and x/y position
@@ -548,7 +548,7 @@ SubtlextTagReload(VALUE self)
  *  => nil
  *
  *  object.send_button(2)
- *  => nil
+ *  => Object
  */
 
 static VALUE
@@ -598,7 +598,7 @@ SubtlextSendButton(int argc,
   XSendEvent(display, NUM2LONG(win), True, ButtonReleaseMask, &event);
   XFlush(display);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 #ifdef HAVE_X11_EXTENSIONS_XTEST_H
@@ -643,12 +643,12 @@ SubtlextSendModifier(unsigned long state,
 
 /* SubtlextSendKey {{{ */
 /*
- * call-seq: send_key(key, x, y) -> nil
+ * call-seq: send_key(key, x, y) -> Object
  *
  * Emulate a keypress on a window
  *
  *  object.send_key("d")
- *  => nil
+ *  => Object
  */
 
 static VALUE
@@ -750,7 +750,7 @@ SubtlextSendKey(int argc,
   else rb_raise(rb_eArgError, "Unexpected value-type `%s'",
     rb_obj_classname(keys));
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* Focus */
