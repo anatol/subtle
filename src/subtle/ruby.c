@@ -479,6 +479,41 @@ RubyHashToBorder(VALUE hash,
     }
 } /* }}} */
 
+/* RubyHashToSides {{{ */
+static void
+RubyHashToSides(VALUE params,
+  const char *name,
+  SubSides *s)
+{
+  VALUE value = Qnil;
+
+  /* Get sides value */
+  if(T_ARRAY == rb_type(value = rb_hash_lookup(params,
+      CHAR2SYM(name)))) ///< Two or more values
+    RubyArrayToSides(value, s);
+  else if(FIXNUM_P(value)) ///< Single value
+    {
+      s->top = s->right = s->bottom = s->left = FIX2INT(value);
+    }
+  else
+    {
+      char buf[15] = { 0 };
+
+      /* Painful string concat.. */
+      snprintf(buf, sizeof(buf), "%s_top", name);
+      RubyHashToInt(params, buf, &s->top);
+
+      snprintf(buf, sizeof(buf), "%s_right", name);
+      RubyHashToInt(params, buf, &s->right);
+
+      snprintf(buf, sizeof(buf), "%s_bottom", name);
+      RubyHashToInt(params, buf, &s->bottom);
+
+      snprintf(buf, sizeof(buf), "%s_left", name);
+      RubyHashToInt(params, buf, &s->left);
+    }
+} /* }}} */
+
 /* Eval */
 
 /* RubyEvalHook {{{ */
@@ -1124,10 +1159,15 @@ RubyEvalStyle(VALUE name,
     {
       /* We misuse some style values here:
        * border-top   <-> client border
-       * border-right <-> title length */
+       * border-right <-> title length
+       * margin       <-> client gap */
 
+      /* Set border color and width */
       RubyHashToBorder(params, "active",   &s->fg, &s->border.top);
       RubyHashToBorder(params, "inactive", &s->bg, &s->border.top);
+
+      /* Get client margin */
+      RubyHashToSides(params, "margin", &s->margin);
 
       /* FIXME: Set title width, but that should be a title style, right? */
       if(FIXNUM_P(value = rb_hash_lookup(params, CHAR2SYM("width"))))
@@ -1158,39 +1198,9 @@ RubyEvalStyle(VALUE name,
             s->border.bottom = s->border.left = bw;
         }
 
-      /* Get padding */
-      if(T_ARRAY == rb_type(value = rb_hash_lookup(params,
-          CHAR2SYM("padding")))) ///< Two or more values
-        RubyArrayToSides(value, &s->padding);
-      else if(FIXNUM_P(value)) ///< Single value
-        {
-          s->padding.top = s->padding.right =
-            s->padding.bottom = s->padding.left = FIX2INT(value);
-        }
-      else
-        {
-          RubyHashToInt(params, "padding_top",    &s->padding.top);
-          RubyHashToInt(params, "padding_right",  &s->padding.right);
-          RubyHashToInt(params, "padding_bottom", &s->padding.bottom);
-          RubyHashToInt(params, "padding_left",   &s->padding.left);
-        }
-
-      /* Get margin */
-      if(T_ARRAY == rb_type(value = rb_hash_lookup(params,
-          CHAR2SYM("margin")))) ///< Two or more values
-        RubyArrayToSides(value, &s->margin);
-      else if(FIXNUM_P(value)) ///< Single value
-        {
-          s->margin.top = s->margin.right =
-            s->margin.bottom = s->margin.left = FIX2INT(value);
-        }
-      else
-        {
-          RubyHashToInt(params, "margin_top",    &s->margin.top);
-          RubyHashToInt(params, "margin_right",  &s->margin.right);
-          RubyHashToInt(params, "margin_bottom", &s->margin.bottom);
-          RubyHashToInt(params, "margin_left",   &s->margin.left);
-        }
+      /* Get padding/margin */
+      RubyHashToSides(params, "padding", &s->padding);
+      RubyHashToSides(params, "margin",  &s->margin);
 
       /* Get min width */
       RubyHashToInt(params, "min_width", &s->min);
