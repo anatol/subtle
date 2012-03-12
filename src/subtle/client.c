@@ -1323,7 +1323,7 @@ subClientToggle(SubClient *c,
   /* Hook: Mode */
   subHookCall((SUB_HOOK_TYPE_CLIENT|SUB_HOOK_ACTION_MODE), (void *)c);
 
-  subSubtleLogDebugSubtle("Toggle: flags=%d, gravity=%d\n", flags, gravity);
+  subSubtleLogDebugSubtle("Toggle: flags=%d, set_gravity=%d\n", flags, set_gravity);
 } /* }}} */
 
   /** subClientSetStrut {{{
