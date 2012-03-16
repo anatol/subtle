@@ -1552,22 +1552,18 @@ RubyWrapRelease(VALUE value)
   return Qnil;
 } /* }}} */
 
-/* RubyWrapRead {{{ */
+/* RubyWrapEvalFile {{{ */
 static VALUE
-RubyWrapRead(VALUE file)
+RubyWrapEvalFile(VALUE data)
 {
-  VALUE str = rb_funcall(rb_cFile, rb_intern("read"), 1, file);
+  VALUE *rargs = (VALUE *)data, rargs2[3] = { Qnil };
 
-  return str;
-} /* }}} */
+  /* Wrap data */
+  rargs2[0] = rb_funcall(rb_cFile, rb_intern("read"), 1, rargs[0]);
+  rargs2[1] = rargs[0];
+  rargs2[2] = rargs[1];
 
-/* RubyWrapEval {{{ */
-static VALUE
-RubyWrapEval(VALUE data)
-{
-  VALUE *rargs = (VALUE *)data;
-
-  rb_obj_instance_eval(2, rargs, rargs[2]);
+  rb_obj_instance_eval(2, rargs2, rargs[1]);
 
   return Qnil;
 } /* }}} */
@@ -1766,7 +1762,7 @@ RubyOptionsGravity(VALUE self,
  *
  * Overwrite global style method
  *
- *  option.state :urgent do
+ *  option.style :urgent do
  *    foreground "#fecf35"
  *  end
  *  => nil
@@ -2507,6 +2503,79 @@ RubyConfigStyle(VALUE self,
     rb_obj_classname(name));
 
   return Qnil;
+} /* }}} */
+
+/* RubyConfigLoadConfig {{{ */
+/*
+ * call-seq: load_config(file) -> true or false
+ *
+ * Load config file
+ *
+ *  load_config "gravities.rb"
+ *  => true
+ */
+
+static VALUE
+RubyConfigLoadConfig(VALUE self,
+  VALUE file)
+{
+  int state = 0;
+  char buf[100] = { 0 };
+  VALUE rargs[2] = { Qnil };
+
+  /* Check if file exists otherwise try to find it */
+  if(-1 == access(RSTRING_PTR(file), R_OK))
+    {
+      int len = 0;
+      char *home = NULL, *dirs = NULL, *tok = NULL,
+        tokens[200] = { 0 }, *tokensp = tokens;
+
+      /* Combine XDG paths */
+      if((home = getenv("XDG_CONFIG_HOME")))
+        len += snprintf(tokens, sizeof(tokens), "%s/%s", home, PKG_NAME);
+      else len += snprintf(tokens, sizeof(tokens), "%s/.config/%s",
+        getenv("HOME"), PKG_NAME);
+
+      if((dirs = getenv("XDG_CONFIG_DIRS")))
+        len += snprintf(tokens + len, sizeof(tokens), ":%s", dirs);
+      else len += snprintf(tokens + len, sizeof(tokens), "%s:%s",
+        tokens, "/etc/xdg");
+
+      if((home = getenv("XDG_DATA_HOME")))
+        {
+          snprintf(buf, sizeof(buf), "%s:%s/%s/sublets",
+            tokens, home, PKG_NAME);
+        }
+      else snprintf(buf, sizeof(buf), "%s:%s/.local/share/%s/sublets",
+        tokens, getenv("HOME"), PKG_NAME);
+
+      /* Search file in XDG paths */
+      while((tok = strsep(&tokensp, ":")))
+        {
+          snprintf(buf, sizeof(buf), "%s/%s", tok, RSTRING_PTR(file));
+
+          if(-1 != access(buf, R_OK)) ///< Check if config file exists
+            break;
+        }
+    }
+  else snprintf(buf, sizeof(buf), "%s", RSTRING_PTR(file));
+
+  printf("Reading file `%s'\n", buf);
+
+  /* Carefully load and eval file */
+  rargs[0] = rb_str_new2(buf);
+  rargs[1] = self;
+
+  rb_protect(RubyWrapEvalFile, (VALUE)&rargs, &state);
+  if(state)
+    {
+      subSubtleLogWarn("Cannot load file `%s'\n", buf);
+      RubyBacktrace();
+
+      return Qfalse;
+    }
+
+  return Qtrue;
 } /* }}} */
 
 /* Sublet */
@@ -3361,6 +3430,7 @@ subRubyInit(void)
   rb_define_method(config, "sublet",                 RubyConfigSublet,    1);
   rb_define_method(config, "screen",                 RubyConfigScreen,    1);
   rb_define_method(config, "style",                  RubyConfigStyle,     1);
+  rb_define_method(config, "load_config",            RubyConfigLoadConfig,  1);
 
   /*
    * Document-class: Options
@@ -3423,42 +3493,13 @@ subRubyInit(void)
  /** subRubyLoadConfig {{{
   * @brief Load config file
   * @param[in]  path  Path to config file
-  * @retval  1  Success
-  * @retval  0  Failure
   **/
 
-int
+void
 subRubyLoadConfig(void)
 {
-  int state = 0;
-  char buf[100] = { 0 }, path[100] = { 0 };
-  VALUE str = Qnil , klass = Qnil, rargs[3] = { Qnil };
+  VALUE klass = Qnil;
   SubTag *t = NULL;
-
-  /* Check config paths */
-  if(subtle->paths.config)
-    snprintf(path, sizeof(path), "%s", subtle->paths.config);
-  else
-    {
-      char *tok = NULL, *bufp = buf, *home = getenv("XDG_CONFIG_HOME"),
-        *dirs = getenv("XDG_CONFIG_DIRS");
-
-      /* Combine paths */
-      snprintf(path, sizeof(path), "%s/.config", getenv("HOME"));
-      snprintf(buf, sizeof(buf), "%s:%s",
-        home ? home : path, dirs ? dirs : "/etc/xdg");
-
-      /* Search config in XDG path */
-      while((tok = strsep(&bufp, ":")))
-        {
-          snprintf(path, sizeof(path), "%s/%s/%s", tok, PKG_NAME, PKG_CONFIG);
-
-          if(-1 != access(path, R_OK)) ///< Check if config file exists
-            break;
-
-          subSubtleLogDebugRuby("LoadConfig: path=%s\n", path);
-        }
-    }
 
   /* Create default tag */
   if(!(subtle->flags & SUB_SUBTLE_CHECK) &&
@@ -3489,57 +3530,27 @@ subRubyLoadConfig(void)
   rb_gc_register_address(&config_sublets);
   rb_gc_register_address(&config_methods);
 
-  /* Carefully read config */
-  printf("Using config `%s'\n", path);
-  str = rb_protect(RubyWrapRead, rb_str_new2(path), &state);
-  if(state)
-    {
-      subSubtleLogWarn("Cannot read config `%s'\n", path);
-      RubyBacktrace();
-
-      /* Exit when not checking only */
-      if(!(subtle->flags & SUB_SUBTLE_CHECK))
-        {
-          subSubtleFinish();
-
-          exit(-1);
-        }
-      else return !state;
-    }
-
-  /* Create config */
+  /* Load supplied config or default */
   klass           = rb_const_get(mod, rb_intern("Config"));
   config_instance = rb_funcall(klass, rb_intern("new"), 0, NULL);
   rb_gc_register_address(&config_instance);
 
-  /* Carefully eval file */
-  rargs[0] = str;
-  rargs[1] = rb_str_new2(path);
-  rargs[2] = config_instance;
-
-  rb_protect(RubyWrapEval, (VALUE)&rargs, &state);
-  if(state)
+  if(Qfalse == RubyConfigLoadConfig(config_instance,
+      rb_str_new2(subtle->paths.config ? subtle->paths.config : PKG_CONFIG)))
     {
-      subSubtleLogWarn("Cannot load config `%s'\n", path);
-      RubyBacktrace();
+      subSubtleFinish();
 
-      /* Exit when not checking only */
-      if(!(subtle->flags & SUB_SUBTLE_CHECK))
-        {
-          subSubtleFinish();
-
-          exit(-1);
-        }
-      else return !state;
+      exit(-1);
     }
+  else if(subtle->flags & SUB_SUBTLE_CHECK) printf("Syntax OK\n");
 
-  /* If not check only lazy eval config values */
+  /* If not check only, lazy eval config values */
   if(!(subtle->flags & SUB_SUBTLE_CHECK)) RubyEvalConfig();
 
   /* Release methods list */
   rb_gc_unregister_address(&config_methods);
 
-  return !state;
+  return;
 } /* }}} */
 
  /** subRubyReloadConfig {{{
@@ -3660,48 +3671,17 @@ void
 subRubyLoadSublet(const char *file)
 {
   int state = 0;
-  char buf[100] = { 0 };
   SubPanel *p = NULL;
-  VALUE str = Qnil, klass = Qnil, rargs[3] = { Qnil };
+  VALUE rargs[3] = { Qnil };
 
-  /* Check path */
-  if(subtle->paths.sublets)
-    snprintf(buf, sizeof(buf), "%s/%s", subtle->paths.sublets, file);
-  else
-    {
-      char *home = getenv("XDG_DATA_HOME"), path[50] = { 0 };
-
-      /* Combine paths */
-      snprintf(path, sizeof(path), "%s/.local/share", getenv("HOME"));
-      snprintf(buf, sizeof(buf), "%s/%s/sublets/%s",
-        home ? home : path, PKG_NAME, file);
-    }
-  subSubtleLogDebugRuby("LoadSublet: name=%s\n", buf);
-
-  /* Carefully read sublet */
-  str = rb_protect(RubyWrapRead, rb_str_new2(buf), &state);
-  if(state)
-    {
-      subSubtleLogWarn("Cannot load sublet `%s'\n", file);
-      RubyBacktrace();
-
-      return;
-    }
-
-  /* Create sublet */
+  /* Load sublet */
   p = subPanelNew(SUB_PANEL_SUBLET);
-  klass               = rb_const_get(mod, rb_intern("Sublet"));
-  p->sublet->instance = Data_Wrap_Struct(klass, NULL, NULL, (void *)p);
+  p->sublet->instance = Data_Wrap_Struct(rb_const_get(mod,
+    rb_intern("Sublet")), NULL, NULL, (void *)p);
 
   rb_ary_push(shelter, p->sublet->instance); ///< Protect from GC
 
-  /* Carefully eval file */
-  rargs[0] = str;
-  rargs[1] = rb_str_new2(buf);
-  rargs[2] = p->sublet->instance;
-
-  rb_protect(RubyWrapEval, (VALUE)&rargs, &state);
-  if(state)
+  if(Qfalse == RubyConfigLoadConfig(p->sublet->instance, rb_str_new2(file)))
     {
       subSubtleLogWarn("Cannot load sublet `%s'\n", file);
       RubyBacktrace();
@@ -3828,8 +3808,8 @@ subRubyLoadPanels(void)
 void
 subRubyLoadSublets(void)
 {
-  int i, num;
-  char buf[100];
+  int i, num, len = 0;
+  char buf[100] = { 0 };
   struct dirent **entries = NULL;
 
 #ifdef HAVE_SYS_INOTIFY_H
@@ -3849,23 +3829,32 @@ subRubyLoadSublets(void)
 
   /* Check path */
   if(subtle->paths.sublets)
-    snprintf(buf, sizeof(buf), "%s", subtle->paths.sublets);
+    len += snprintf(buf, sizeof(buf), "%s", subtle->paths.sublets);
   else
     {
-      char *data = getenv("XDG_DATA_HOME"), path[50] = { 0 };
+      char *home = NULL;
 
-      /* Combine paths */
-      snprintf(path, sizeof(path), "%s/.local/share", getenv("HOME"));
-      snprintf(buf, sizeof(buf), "%s/%s/sublets", data ? data : path, PKG_NAME);
+      if((home = getenv("XDG_DATA_HOME")))
+        {
+          len += snprintf(buf, sizeof(buf), "%s/%s/sublets",
+            home, PKG_NAME);
+        }
+      else len += snprintf(buf, sizeof(buf), "%s/.local/share/%s/sublets",
+        getenv("HOME"), PKG_NAME);
     }
-  printf("Loading sublets from `%s'\n", buf);
 
   /* Scan directory */
   if(0 < ((num = scandir(buf, &entries, RubyFilter, alphasort))))
     {
       for(i = 0; i < num; i++)
         {
-          subRubyLoadSublet(entries[i]->d_name);
+          /* Temporary append file name to path */
+          snprintf(buf + len, sizeof(buf), "/%s", entries[i]->d_name);
+
+          subRubyLoadSublet(buf);
+
+          /* Restore path */
+          buf[strlen(buf) - (strlen(entries[i]->d_name) + 1)] = '\0';
 
           free(entries[i]);
         }
