@@ -870,7 +870,7 @@ void subPanelKill(SubPanel *p);                                   ///< Kill pane
 
 /* ruby.c {{{ */
 void subRubyInit(void);                                           ///< Init Ruby stack
-int subRubyLoadConfig(void);                                      ///< Load config file
+void subRubyLoadConfig(void);                                     ///< Load config file
 void subRubyReloadConfig(void);                                   ///< Reload config file
 void subRubyLoadSublet(const char *file);                         ///< Load sublet
 void subRubyUnloadSublet(SubPanel *p);                            ///< Unload sublet
