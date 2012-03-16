@@ -559,7 +559,7 @@ EventGrab(XEvent *ev)
 
           /* Bind any keys to exit chain on invalid link */
           subGrabUnset(ROOT);
-          printf("DEBUG %s:%d\n", __FILE__, __LINE__);
+
           XGrabKey(subtle->dpy, AnyKey, AnyModifier, ROOT, True,
             GrabModeAsync, GrabModeAsync);
 

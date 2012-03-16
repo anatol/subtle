@@ -681,7 +681,7 @@ subPanelPublish(void)
   for(i = 0; i < subtle->sublets->ndata; i++)
     free(sublets[i]);
 
-  subSubtleLogDebugSubtle("publish=panel, n=%d\n", subtle->sublets->ndata);
+  subSubtleLogDebugSubtle("Publish: sublets=%d\n", subtle->sublets->ndata);
 
   XSync(subtle->dpy, False); ///< Sync all changes
 
