@@ -226,22 +226,26 @@ subSubtleFinish(void)
       if(subtle->dpy)
         XSync(subtle->dpy, False); ///< Sync before going on
 
-      /* Hook: Exit */
-      subHookCall(SUB_HOOK_EXIT, NULL);
+      /* Handle hooks first */
+      if(subtle->hooks)
+        {
+          /* Hook: Exit */
+          subHookCall(SUB_HOOK_EXIT, NULL);
 
-      /* Clear hooks first to stop calling */
-      subArrayClear(subtle->hooks, True);
+          /* Clear hooks first to stop calling */
+          subArrayClear(subtle->hooks, True);
+        }
 
       /* Kill arrays */
-      subArrayKill(subtle->clients,   True);
-      subArrayKill(subtle->grabs,     True);
-      subArrayKill(subtle->gravities, True);
-      subArrayKill(subtle->screens,   True);
-      subArrayKill(subtle->sublets,   False);
-      subArrayKill(subtle->tags,      True);
-      subArrayKill(subtle->trays,     True);
-      subArrayKill(subtle->views,     True);
-      subArrayKill(subtle->hooks,     False);
+      if(subtle->clients)   subArrayKill(subtle->clients,   True);
+      if(subtle->grabs)     subArrayKill(subtle->grabs,     True);
+      if(subtle->gravities) subArrayKill(subtle->gravities, True);
+      if(subtle->screens)   subArrayKill(subtle->screens,   True);
+      if(subtle->sublets)   subArrayKill(subtle->sublets,   False);
+      if(subtle->tags)      subArrayKill(subtle->tags,      True);
+      if(subtle->trays)     subArrayKill(subtle->trays,     True);
+      if(subtle->views)     subArrayKill(subtle->views,     True);
+      if(subtle->hooks)     subArrayKill(subtle->hooks,     False);
 
       /* Reset styles to free fonts and substyles */
       subStyleReset(&subtle->styles.all,       0);
@@ -337,18 +341,13 @@ main(int argc,
   /* Load and check config only */
   if(subtle->flags & SUB_SUBTLE_CHECK)
     {
-      int ret = 0;
-
       subRubyInit();
-
-      if((ret = subRubyLoadConfig()))
-        printf("Syntax OK\n");
-
+      subRubyLoadConfig();
       subRubyFinish();
 
-      free(subtle);
+      free(subtle); ///< We just need to free this
 
-      return !ret;
+      return 0;
     }
 
   /* Alloc arrays */
