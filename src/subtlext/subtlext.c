@@ -539,7 +539,7 @@ SubtlextTagReload(VALUE self)
 
 /* SubtlextSendButton {{{ */
 /*
- * call-seq: send_click(button, x, y) -> Object
+ * call-seq: send_button(button, x, y) -> Object
  *
  * Emulate a click on a window with optional button
  * and x/y position
@@ -780,7 +780,7 @@ SubtlextFocus(VALUE self)
 
   subSharedMessage(display, ROOT, "_NET_ACTIVE_WINDOW", data, 32, True);
 
-  return Qnil;
+  return self;
 } /* }}} */
 
 /* SubtlextAskFocus {{{ */
