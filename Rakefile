@@ -65,8 +65,8 @@ end
   "revision"   => "3008", #< Latest stable
   "cflags"     => "-Wall -Werror -Wpointer-arith -Wstrict-prototypes -Wunused -Wshadow -std=gnu99",
   "cpppath"    => "-I. -I$(builddir) -Isrc -Isrc/shared -Isrc/subtle -idirafter$(hdrdir) -idirafter$(archdir)",
-  "ldflags"    => "-L$(libdir) $(rpath) -l$(RUBY_SO_NAME)",
-  "extflags"   => "$(LDFLAGS) $(rpath) -l$(RUBY_SO_NAME)",
+  "ldflags"    => "-L$(libdir) $(rpath) $(LIBS) -l$(RUBY_SO_NAME)",
+  "extflags"   => "$(LDFLAGS) $(rpath) $(LIBS) -l$(RUBY_SO_NAME)",
   "rpath"      => "-L$(libdir) -Wl,-rpath=$(libdir)",
   "checksums"  => []
 }
@@ -318,6 +318,11 @@ task(:config) do
           )
         end
       end
+    end
+
+    # Check arch
+    if RbConfig::CONFIG["arch"].match(/openbsd/)
+      $defs.push("-DIS_OPENBSD")
     end
 
     # Check header
