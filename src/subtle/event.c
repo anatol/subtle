@@ -545,8 +545,10 @@ EventGrab(XEvent *ev)
                 subtle->panels.keychain.keychain->keys, (len +
                 subtle->panels.keychain.keychain->len + 1) * sizeof(char));
 
-              sprintf(subtle->panels.keychain.keychain->keys +
-                subtle->panels.keychain.keychain->len, "%s%s", buf, key);
+              snprintf(subtle->panels.keychain.keychain->keys +
+                subtle->panels.keychain.keychain->len,
+                subtle->panels.keychain.keychain->len + len,
+                "%s%s", buf, key);
 
               subtle->panels.keychain.keychain->len += len;
 
