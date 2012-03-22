@@ -75,7 +75,11 @@ RubyBacktrace(void)
 
 /* RubyFilter {{{ */
 static inline int
+#ifdef IS_OPENBSD
+RubyFilter(struct dirent *entry)
+#else
 RubyFilter(const struct dirent *entry)
+#endif
 {
   return !fnmatch("*.rb", entry->d_name, FNM_PATHNAME);
 } /* }}} */
