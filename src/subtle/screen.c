@@ -336,14 +336,20 @@ subScreenConfigure(void)
               /* Find visible clients */
               if(VISIBLETAGS(c, v->tags))
                 {
-                  gravityid = c->gravities[s->viewid];
-                  viewid    = s->viewid;
-                  screenid  = j;
-                  visible++;
-
-                  /* Keep screen on sticky mode */
+                  /* Keep screen when sticky */
                   if(c->flags & SUB_CLIENT_MODE_STICK)
-                    screenid = c->screenid;
+                    {
+                      /* Keep gravity from sticky screen/view and not the one
+                       * of the current screen/view in loop */
+                      s = SCREEN(subtle->screens->data[c->screenid]);
+
+                      screenid = c->screenid;
+                    }
+                  else screenid = j;
+
+                  viewid    = s->viewid;
+                  gravityid = c->gravities[s->viewid];
+                  visible++;
                 }
             }
 
