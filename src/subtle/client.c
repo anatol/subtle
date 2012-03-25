@@ -1125,11 +1125,11 @@ subClientArrange(SubClient *c,
           subEwmhSetCardinals(c->win, SUB_EWMH_SUBTLE_CLIENT_GRAVITY,
             (long *)&c->gravityid, 1);
 
+          XSync(subtle->dpy, False); ///< Sync before going on
+
           /* Hook: Gravity */
           subHookCall((SUB_HOOK_TYPE_CLIENT|SUB_HOOK_ACTION_GRAVITY),
             (void *)c);
-
-          XSync(subtle->dpy, False); ///< Sync all changes
         }
     }
 } /* }}} */
