@@ -1149,7 +1149,8 @@ RubyEvalStyle(VALUE name,
 
       /* Set strut */
       if(T_ARRAY == rb_type(value = rb_hash_lookup(params,
-          CHAR2SYM("strut"))))
+          CHAR2SYM("strut"))) || T_ARRAY == rb_type(value =
+          rb_hash_lookup(params, CHAR2SYM("padding"))))
         RubyArrayToSides(value, &s->padding);
 
       /* Set both panel colors */
