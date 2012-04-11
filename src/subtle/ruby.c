@@ -1148,10 +1148,8 @@ RubyEvalStyle(VALUE name,
       RubyHashToColor(params, "stipple",      &s->fg);
 
       /* Set strut */
-      if(T_ARRAY == rb_type(value = rb_hash_lookup(params,
-          CHAR2SYM("strut"))) || T_ARRAY == rb_type(value =
-          rb_hash_lookup(params, CHAR2SYM("padding"))))
-        RubyArrayToSides(value, &s->padding);
+      RubyHashToSides(params, "strut",   &s->padding);
+      RubyHashToSides(params, "padding", &s->padding);
 
       /* Set both panel colors */
       if(!NIL_P(value = rb_hash_lookup(params, CHAR2SYM("panel"))))
