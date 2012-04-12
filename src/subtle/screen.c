@@ -195,7 +195,7 @@ subScreenNew(int x,
   s->geom.width  = width;
   s->geom.height = height;
   s->base        = s->geom; ///< Backup size
-  s->viewid         = subtle->screens->ndata; ///< Init
+  s->viewid      = subtle->screens->ndata; ///< Init
 
   /* Create panel windows */
   sattrs.event_mask        = ButtonPressMask|EnterWindowMask|
@@ -363,7 +363,8 @@ subScreenConfigure(void)
 
               /* Warp after gravity and screen have been set if not disabled */
               if(c->flags & SUB_CLIENT_MODE_URGENT &&
-                  !(subtle->flags & SUB_SUBTLE_SKIP_URGENT_WARP))
+                  !(subtle->flags & SUB_SUBTLE_SKIP_URGENT_WARP) &&
+                  !(subtle->flags & SUB_SUBTLE_SKIP_WARP))
                 subClientWarp(c);
 
               /* EWMH: Desktop, screen */
@@ -650,9 +651,8 @@ subScreenWarp(SubScreen *s)
   assert(s);
 
   /* Move pointer to screen center */
-  if(!(subtle->flags & SUB_SUBTLE_SKIP_WARP))
-    XWarpPointer(subtle->dpy, None, ROOT, 0, 0, s->geom.x, s->geom.y,
-      s->geom.x + s->geom.width / 2, s->geom.y + s->geom.height / 2);
+  XWarpPointer(subtle->dpy, None, ROOT, 0, 0, s->geom.x, s->geom.y,
+    s->geom.x + s->geom.width / 2, s->geom.y + s->geom.height / 2);
 
   subSubtleLogDebugSubtle("Warp\n");
 } /* }}} */

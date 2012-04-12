@@ -558,7 +558,7 @@ subClientFocus(SubClient *c,
     (void *)c);
 
   /* Warp pointer */
-  if(warp) subClientWarp(c);
+  if(warp && !(subtle->flags & SUB_SUBTLE_SKIP_WARP)) subClientWarp(c);
 
   /* Update screen */
   subScreenUpdate();
@@ -631,9 +631,8 @@ subClientWarp(SubClient *c)
   assert(c);
 
   /* Move pointer to window center */
-  if(!(subtle->flags & SUB_SUBTLE_SKIP_WARP))
-    XWarpPointer(subtle->dpy, None, ROOT, 0, 0, 0, 0,
-      c->geom.x + c->geom.width / 2, c->geom.y + c->geom.height / 2);
+  XWarpPointer(subtle->dpy, None, ROOT, 0, 0, 0, 0,
+    c->geom.x + c->geom.width / 2, c->geom.y + c->geom.height / 2);
 
   subSubtleLogDebugSubtle("Warp\n");
 } /* }}} */

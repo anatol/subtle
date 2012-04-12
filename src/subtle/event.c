@@ -712,7 +712,10 @@ EventGrab(XEvent *ev)
                   {
                     subClientArrange(c, id, c->screenid);
                     subClientRestack(c, SUB_CLIENT_RESTACK_UP);
-                    subClientWarp(c);
+
+                    /* Warp pointer */
+                    if(!(subtle->flags & SUB_SUBTLE_SKIP_WARP))
+                      subClientWarp(c);
 
                     /* Hook: Tile */
                     subHookCall(SUB_HOOK_TILE, NULL);
@@ -1016,7 +1019,10 @@ EventMessage(XClientMessageEvent *ev)
                       {
                         subClientArrange(c, c->gravities[(int)ev->data.l[2]], c->screenid);
                         XRaiseWindow(subtle->dpy, c->win);
-                        subClientWarp(c);
+
+                        /* Warp pointer */
+                        if(!(subtle->flags & SUB_SUBTLE_SKIP_WARP))
+                          subClientWarp(c);
 
                         /* Hook: Tile */
                         subHookCall(SUB_HOOK_TILE, NULL);
@@ -1026,7 +1032,10 @@ EventMessage(XClientMessageEvent *ev)
                   {
                     subClientArrange(c, (int)ev->data.l[1], c->screenid);
                     XRaiseWindow(subtle->dpy, c->win);
-                    subClientWarp(c);
+
+                    /* Warp pointer */
+                    if(!(subtle->flags & SUB_SUBTLE_SKIP_WARP))
+                      subClientWarp(c);
 
                     /* Hook: Tile */
                     subHookCall(SUB_HOOK_TILE, NULL);
@@ -1115,7 +1124,10 @@ EventMessage(XClientMessageEvent *ev)
                       {
                         subClientArrange(c, 0, -1); ///< Fallback to first gravity
                         XRaiseWindow(subtle->dpy, c->win);
-                        subClientWarp(c);
+
+                        /* Warp pointer */
+                        if(!(subtle->flags & SUB_SUBTLE_SKIP_WARP))
+                          subClientWarp(c);
                       }
                   }
 
