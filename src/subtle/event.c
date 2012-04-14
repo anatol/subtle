@@ -890,26 +890,22 @@ EventMessage(XClientMessageEvent *ev)
             /* Switchs views of screen */
             if(0 <= ev->data.l[0] && ev->data.l[0] < subtle->views->ndata)
               {
-                /* Focus view of specified or current screen */
-                if(0 <= ev->data.l[2] && ev->data.l[2] < subtle->screens->ndata)
-                  {
-                    subViewFocus(subtle->views->data[ev->data.l[0]],
-                      ev->data.l[2], False, True);
-                  }
-                else
-                  {
-                    int sid = 0;
+                int sid = 0;
 
+                /* Focus view of specified or current screen */
+                if(0 > ev->data.l[2] || ev->data.l[2] >= subtle->screens->ndata)
+                  {
                     /* Find screen: Prefer screen of current window */
                     if(subtle->flags & SUB_SUBTLE_SKIP_WARP &&
                         (c = CLIENT(subSubtleFind(subtle->windows.focus[0],
                         CLIENTID))) && VISIBLE(c))
                       sid = c->screenid;
                     else subScreenCurrent(&sid);
-
-                    subViewFocus(subtle->views->data[ev->data.l[0]],
-                      sid, False, True);
                   }
+                else sid = ev->data.l[2];
+
+                subViewFocus(subtle->views->data[ev->data.l[0]],
+                  sid, True, True);
               }
             break; /* }}} */
           case SUB_EWMH_NET_ACTIVE_WINDOW: /* {{{ */

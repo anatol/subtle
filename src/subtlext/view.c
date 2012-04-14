@@ -493,6 +493,7 @@ subViewJump(VALUE self)
 
   /* Send message */
   data.l[0] = FIX2INT(id);
+  data.l[2] = -1;
 
   subSharedMessage(display, DefaultRootWindow(display),
     "_NET_CURRENT_DESKTOP", data, 32, True);
