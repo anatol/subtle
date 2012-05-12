@@ -2407,8 +2407,6 @@ Init_subtlext(void)
   rb_define_method(window, "background=",   subWindowBackgroundWriter,  1);
   rb_define_method(window, "border_color=", subWindowBorderColorWriter, 1);
   rb_define_method(window, "border_size=",  subWindowBorderSizeWriter,  1);
-  rb_define_method(window, "write",         subWindowWrite,             3);
-  rb_define_method(window, "read",          subWindowRead,             -1);
   rb_define_method(window, "on",            subWindowOn,               -1);
   rb_define_method(window, "draw_point",    subWindowDrawPoint,        -1);
   rb_define_method(window, "draw_line",     subWindowDrawLine,         -1);
@@ -2417,8 +2415,6 @@ Init_subtlext(void)
   rb_define_method(window, "draw_icon",     subWindowDrawIcon,         -1);
   rb_define_method(window, "clear",         subWindowClear,            -1);
   rb_define_method(window, "redraw",        subWindowRedraw,            0);
-  rb_define_method(window, "completion",    subWindowCompletion,        0);
-  rb_define_method(window, "input",         subWindowInput,             0);
   rb_define_method(window, "geometry",      subWindowGeometryReader,    0);
   rb_define_method(window, "geometry=",     subWindowGeometryWriter,    1);
   rb_define_method(window, "raise",         subWindowRaise,             0);

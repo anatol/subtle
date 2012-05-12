@@ -12,17 +12,11 @@
 #include "subtlext.h"
 
 /* Flags {{{ */
-#define WINDOW_COMPLETION_FUNC (1L << 1)
 #define WINDOW_INPUT_FUNC      (1L << 2)
 #define WINDOW_FOREIGN_WIN     (1L << 3)
 /* }}} */
 
 /* Typedefs {{{ */
-typedef struct subtlextwindowtext_t {
-  int     x, y;
-  SubText *text;
-} SubtlextWindowText;
-
 typedef struct subtlextwindow_t
 {
   GC                 gc;
@@ -31,7 +25,6 @@ typedef struct subtlextwindow_t
   Window             win;
   VALUE              instance, expose, keyboard, pointer;
   SubFont            *font;
-  SubtlextWindowText *text;
 } SubtlextWindow;
 /* }}} */
 
@@ -42,9 +35,9 @@ WindowMark(SubtlextWindow *w)
   if(w)
     {
       rb_gc_mark(w->instance);
-      if(RTEST(w->expose))   rb_gc_mark(w->expose);
-      if(RTEST(w->keyboard)) rb_gc_mark(w->keyboard);
-      if(RTEST(w->pointer))  rb_gc_mark(w->pointer);
+      if(RTEST(w->expose))     rb_gc_mark(w->expose);
+      if(RTEST(w->keyboard))   rb_gc_mark(w->keyboard);
+      if(RTEST(w->pointer))    rb_gc_mark(w->pointer);
     }
 } /* }}} */
 
@@ -59,17 +52,6 @@ WindowSweep(SubtlextWindow *w)
         XDestroyWindow(display, w->win);
 
       if(0 != w->gc) XFreeGC(display, w->gc);
-
-      /* Free text */
-      if(w->text)
-        {
-          int i;
-
-          for(i = 0; i < w->ntext; i++)
-            subSharedTextFree(w->text[i].text);
-
-          free(w->text);
-        }
       if(w->font) subSharedFontKill(display, w->font);
 
       free(w);
@@ -91,8 +73,6 @@ WindowExpose(SubtlextWindow *w)
 {
   if(w)
     {
-      int i;
-
       XClearWindow(display, w->win);
 
       /* Call expose proc if any */
@@ -112,51 +92,8 @@ WindowExpose(SubtlextWindow *w)
           if(state) subSubtlextBacktrace();
         }
 
-      /* Render all text */
-      for(i = 0; i < w->ntext; i++)
-        {
-          subSharedTextRender(display, DefaultGC(display, 0), w->font,
-            w->win, w->text[i].x, w->text[i].y, w->fg, w->fg,
-            w->bg, w->text[i].text);
-        }
-
      XSync(display, False); ///< Sync with X
   }
-} /* }}} */
-
-/* WindowDefine {{{ */
-static VALUE
-WindowDefine(VALUE self,
-  int argc,
-  int flag,
-  VALUE sym)
-{
-  SubtlextWindow *w = NULL;
-
-  /* Check ruby object */
-  rb_check_frozen(self);
-  rb_need_block();
-
-  Data_Get_Struct(self, SubtlextWindow, w);
-  if(w && rb_block_given_p())
-    {
-      VALUE p = rb_block_proc();
-      int arity = rb_proc_arity(p);
-
-      /* Check arity */
-      if(argc == arity)
-        {
-          VALUE sing = rb_singleton_class(w->instance);
-
-          w->flags |= flag;
-
-          rb_funcall(sing, rb_intern("define_method"), 2, sym, p);
-        }
-      else rb_raise(rb_eArgError, "Wrong number of arguments (%d for %d)",
-        arity, argc);
-    }
-
-  return Qnil;
 } /* }}} */
 
 /* WindowGrab {{{ */
@@ -167,7 +104,7 @@ WindowGrab(SubtlextWindow *w)
   int loop = True, state = 0;
   char buf[32] = { 0 };
   unsigned long *focus = NULL, mask = 0;
-  VALUE result = Qnil, rargs[5] = { Qnil }, sym = Qnil;
+  VALUE result = Qnil, rargs[5] = { Qnil }, sym = Qnil, ary = Qnil;
   KeySym keysym;
 
   /* Add grabs */
@@ -226,11 +163,31 @@ WindowGrab(SubtlextWindow *w)
                 default:           sym = CHAR2SYM(buf);
               }
 
+            /* Translate modifier keys */
+            if(0 != ev.xkey.state)
+              {
+                ary = rb_ary_new();
+
+                if(ev.xkey.state & ShiftMask)
+                  rb_ary_push(ary, CHAR2SYM("shift"));
+                if(ev.xkey.state & ControlMask)
+                  rb_ary_push(ary, CHAR2SYM("control"));
+                if(ev.xkey.state & Mod1Mask)
+                  rb_ary_push(ary, CHAR2SYM("alt"));
+                if(ev.xkey.state & Mod2Mask)
+                  rb_ary_push(ary, CHAR2SYM("meta"));
+                if(ev.xkey.state & Mod3Mask)
+                  rb_ary_push(ary, CHAR2SYM("super"));
+                if(ev.xkey.state & Mod4Mask)
+                  rb_ary_push(ary, CHAR2SYM("altgr"));
+              }
+
             /* Wrap up data */
             rargs[0] = w->keyboard;
             rargs[1] = rb_intern("call");
-            rargs[2] = 1;
+            rargs[2] = 2;
             rargs[3] = sym;
+            rargs[4] = ary;
 
             /* Carefully call listen proc */
             result = rb_protect(WindowCall, (VALUE)&rargs, &state);
@@ -874,286 +831,6 @@ subWindowGeometryWriter(VALUE self,
   return value;
 } /* }}} */
 
-/* subWindowWrite {{{ */
-/*
- * call-seq: write(x, y, string) -> Fixnum
- *
- * Write a string onto this Window at given x/y coordinates, that
- * <b>won't</b> be visible unless the Window content is updated
- * with #redraw.
- *
- *  win.write(10, 10, "subtle")
- *  => 15
- */
-
-VALUE
-subWindowWrite(VALUE self,
-  VALUE x,
-  VALUE y,
-  VALUE text)
-{
-  int len = 0;
-  SubtlextWindow *w = NULL;
-
-  /* Check ruby object */
-  rb_check_frozen(self);
-
-  Data_Get_Struct(self, SubtlextWindow, w);
-  if(w)
-    {
-      /* Check object type */
-      if(T_FIXNUM == rb_type(x) && T_FIXNUM == rb_type(y) &&
-          T_STRING == rb_type(text))
-        {
-          int i, xi = FIX2INT(x), yi = FIX2INT(y);
-          SubtlextWindowText *wt = NULL;
-
-          /* Find text at x/y position and re-use it */
-          for(i = 0; i < w->ntext; i++)
-            {
-              if(w->text[i].x == xi && w->text[i].y == yi)
-                {
-                  wt = &w->text[i];
-                  break;
-                }
-            }
-
-          /* Create new text item */
-          if(!wt)
-            {
-              w->text = (SubtlextWindowText *)subSharedMemoryRealloc(w->text,
-                (w->ntext + 1) * sizeof(SubtlextWindowText));
-
-              w->text[w->ntext].text = subSharedTextNew();
-
-              wt    = &w->text[w->ntext];
-              wt->x = xi;
-              wt->y = yi;
-
-              w->ntext++;
-            }
-
-          len = subSharedTextParse(display, w->font, wt->text,
-            RSTRING_PTR(text));
-        }
-      else rb_raise(rb_eArgError, "Unexpected value-types");
-    }
-
-  return INT2FIX(len);
-} /* }}} */
-
-/* subWindowRead {{{ */
-/*
- * call-seq: read(x, y, width) -> String
- *
- * Read input from given x/y coordinates and width.
- *
- *  string = read(10, 10, 10)
- *  => "subtle"
- */
-
-VALUE
-subWindowRead(int argc,
-  VALUE *argv,
-  VALUE self)
-{
-  VALUE ret = Qnil;
-  SubtlextWindow *w = NULL;
-
-  /* Check ruby object */
-  rb_check_frozen(self);
-
-  Data_Get_Struct(self, SubtlextWindow, w);
-  if(w)
-    {
-      XEvent ev;
-      int pos = 0, len = 0, loop = True, start = 0;
-      int guess = -1, state = 0, window = 10;
-      char buf[32] = { 0 }, text[1024] = { 0 }, last[32] = { 0 }, *textwin = NULL;
-      unsigned long *focus = NULL;
-      VALUE x = Qnil, y = Qnil, width = Qnil, rargs[5] = { Qnil }, result = Qnil;
-      Atom selection = None;
-      KeySym sym;
-
-      rb_scan_args(argc, argv, "21", &x, &y, &width);
-
-      /* Check object type */
-      if(T_FIXNUM != rb_type(x) || T_FIXNUM != rb_type(y))
-        {
-          rb_raise(rb_eArgError, "Unexpected value types");
-
-          return Qnil;
-        }
-
-      if(FIXNUM_P(width)) window = FIX2INT(width);
-
-      /* Grab and set focus */
-      XGrabKeyboard(display, DefaultRootWindow(display), True,
-        GrabModeAsync, GrabModeAsync, CurrentTime);
-      XMapRaised(display, w->win);
-      XSelectInput(display, w->win, KeyPressMask|ButtonPressMask);
-      XSetInputFocus(display, w->win, RevertToPointerRoot, CurrentTime);
-      selection = XInternAtom(display, "SUBTLEXT_SELECTION", False);
-      XFlush(display);
-
-      while(loop)
-        {
-          text[len] = '_';
-          textwin   = text + (len > window ? len - window : 0); ///< Apply text window size
-
-          WindowExpose(w);
-          subSharedTextDraw(display, DefaultGC(display, 0), w->font,
-            w->win, FIX2INT(x), FIX2INT(y), w->fg, w->bg,
-            textwin, strlen(textwin));
-
-          XFlush(display);
-          XNextEvent(display, &ev);
-
-          switch(ev.type)
-            {
-              case ButtonPress: /* {{{ */
-                if(Button2 == ev.xbutton.button)
-                  {
-                    /* Check if there is a selection owner */
-                    if(None != XGetSelectionOwner(display, XA_PRIMARY))
-                      {
-                        XConvertSelection(display, XA_PRIMARY, XA_STRING,
-                          selection, w->win, CurrentTime); ///< Convert to atom
-
-                        XFlush(display);
-                      }
-                  }
-                break; /* }}} */
-              case SelectionNotify: /* {{{ */
-                  {
-                    Window selowner = None;
-
-                    /* Get selection owner */
-                    if(None != (selowner = XGetSelectionOwner(display,
-                        XA_PRIMARY)))
-                      {
-                        unsigned long size = 0;
-                        char *data = NULL;
-
-                        /* Get selection data */
-                        if((data = subSharedPropertyGet(display,
-                              ev.xselection.requestor, XA_STRING,
-                              selection, &size)))
-                          {
-                            strncpy(text + len, data, sizeof(text) - len);
-                            len += size;
-
-                            XFree(data);
-                          }
-                      }
-                  }
-                break; /* }}} */
-              case KeyPress: /* {{{ */
-                pos = XLookupString(&ev.xkey, buf, sizeof(buf), &sym, NULL);
-
-                switch(sym)
-                  {
-                    case XK_Return:
-                    case XK_KP_Enter: /* {{{ */
-                      loop   = False;
-                      text[len] = 0; ///< Remove underscore
-                      ret       = rb_str_new2(text);
-                      break; /* }}} */
-                    case XK_Escape: /* {{{ */
-                      loop = False;
-                      break; /* }}} */
-                    case XK_BackSpace: /* {{{ */
-                      if(0 < len) text[len--] = 0;
-                      text[len] = 0;
-                      break; /* }}} */
-                    case XK_Tab: /* {{{ */
-                      if(w->flags & WINDOW_COMPLETION_FUNC)
-                        {
-                          /* Select guess number */
-                          if(0 == ++guess) 
-                            {
-                              int i;
-
-                              /* Find start of current word */
-                              for(i = len; 0 < i; i--)
-                                if(' ' == text[i]) 
-                                  {
-                                    start = i + 1;
-                                    break;
-                                  }
-
-                              strncpy(last, text + start, len - start); ///< Store match
-                            }
-
-                          /* Wrap up data */
-                          rargs[0] = w->instance;
-                          rargs[1] = rb_intern("__completion");
-                          rargs[2] = 2;
-                          rargs[3] = rb_str_new2(last);
-                          rargs[4] = INT2FIX(guess);
-
-                          /* Carefully call completion proc */
-                          result = rb_protect(WindowCall, (VALUE)&rargs, &state);
-                          if(state)
-                            {
-                              subSubtlextBacktrace();
-
-                              continue;
-                            }
-
-                          /* Check type */
-                          if(T_STRING == rb_type(result))
-                            {
-                              strncpy(text + start, RSTRING_PTR(result), sizeof(text) - len);
-
-                              len = strlen(text);
-                            }
-                        }
-                      break; /* }}} */
-                    default: /* {{{ */
-                      guess    = -1;
-                      buf[pos] = 0;
-                      strncpy(text + len, buf, sizeof(text) - len);
-                      len += pos;
-                      break; /* }}} */
-                  }
-                break; /* }}} */
-              default: break;
-            }
-
-          /* Call input proc */
-          if(loop && (SelectionNotify == ev.type || KeyPress == ev.type) &&
-              w->flags & WINDOW_INPUT_FUNC)
-            {
-              /* Wrap up data */
-              rargs[0] = w->instance;
-              rargs[1] = rb_intern("__input");
-              rargs[2] = 1;
-              rargs[3] = rb_str_new2(text);
-
-              /* Carefully call completion proc */
-              rb_protect(WindowCall, (VALUE)&rargs, &state);
-              if(state) subSubtlextBacktrace();
-            }
-        }
-
-      XSelectInput(display, w->win, NoEventMask);
-      XUngrabKeyboard(display, CurrentTime);
-
-      /* Restore logical focus */
-      if((focus = (unsigned long *)subSharedPropertyGet(display,
-          DefaultRootWindow(display), XA_WINDOW,
-          XInternAtom(display, "_NET_ACTIVE_WINDOW", False), NULL)))
-        {
-          XSetInputFocus(display, *focus, RevertToPointerRoot, CurrentTime);
-
-          free(focus);
-        }
-    }
-
-  return ret;
-} /* }}} */
-
 /* subWindowOn {{{ */
 /*
  * call-seq: on(event, &block) -> Subtlext::Window
@@ -1186,7 +863,8 @@ subWindowOn(int argc,
   if(w)
     {
       /* Check value type */
-      if(CHAR2SYM("draw") == event)
+      if(CHAR2SYM("draw") == event || CHAR2SYM("redraw") == event
+          || CHAR2SYM("expose") == event)
         {
           w->expose = value;
         }
@@ -1538,45 +1216,6 @@ subWindowRedraw(VALUE self)
   if(w) WindowExpose(w);
 
   return self;
-} /* }}} */
-
-/* subWindowCompletion {{{ */
-/*
- * call-seq: completion(&block) -> Subtlext::Window
- *
- * Add completion block to this Window, that is called whenever the
- * tab key is pressed.
- *
- *  win.completion do |str, guess|
- *    str
- *  end
- *  => #<Subtlext::Window:xxx>
- */
-
-VALUE
-subWindowCompletion(VALUE self)
-{
-  return WindowDefine(self, 2, WINDOW_COMPLETION_FUNC,
-    CHAR2SYM("__completion"));
-} /* }}} */
-
-/* subWindowInput {{{ */
-/*
- * call-seq: input(&block) -> Subtlext::Window
- *
- * Add input block that to this Window, that is called whenever the user
- * makes any input in a #read call.
- *
- *  win.input do |str|
- *    str
- *  end
- *  => #<Subtlext::Window:xxx>
- */
-
-VALUE
-subWindowInput(VALUE self)
-{
-  return WindowDefine(self, 1, WINDOW_INPUT_FUNC, CHAR2SYM("__input"));
 } /* }}} */
 
 /* subWindowRaise {{{ */
