@@ -365,241 +365,9 @@ subSharedPropertyDelete(Display *disp,
   XDeleteProperty(disp, win, prop);
 } /* }}} */
 
-/* Text */
+/* Draw */
 
- /** subSharedTextNew {{{
-  * @brief Parse text
-  * @return New #SubText
-  **/
-
-SubText *
-subSharedTextNew(void)
-{
-  return TEXT(subSharedMemoryAlloc(1, sizeof(SubText)));
-} /* }}} */
-
- /** subSharedTextParse {{{
-  * @brief Parse text
-  * @param[in]  disp  Display
-  * @param[in]  f     A #SubFont
-  * @param[in]  t     A #SubText
-  * @param[in]  text  String to parse
-  **/
-
-int
-subSharedTextParse(Display *disp,
-  SubFont *f,
-  SubText *t,
-  char *text)
-{
-  int i = 0, left = 0, right = 0;
-  char *tok = NULL;
-  long color = -1, pixmap = 0;
-  SubTextItem *item = NULL;
-
-  assert(f && t);
-
-  t->width = 0;
-
-  /* Split and iterate over tokens */
-  while((tok = strsep(&text, SEPARATOR)))
-    {
-      if('#' == *tok) color = strtol(tok + 1, NULL, 0); ///< Color
-      else if('\0' != *tok) ///< Text or icon
-        {
-          /* Re-use items to save alloc cycles */
-          if(i < t->nitems && (item = ITEM(t->items[i])))
-            {
-              if(!(item->flags & (SUB_TEXT_BITMAP|SUB_TEXT_PIXMAP)) &&
-                  item->data.string)
-                free(item->data.string);
-
-              item->flags &= ~(SUB_TEXT_EMPTY|SUB_TEXT_BITMAP|SUB_TEXT_PIXMAP);
-            }
-          else if((item = ITEM(subSharedMemoryAlloc(1, sizeof(SubTextItem)))))
-            {
-              /* Add icon to array */
-              t->items = (SubTextItem **)subSharedMemoryRealloc(t->items,
-                (t->nitems + 1) * sizeof(SubTextItem *));
-              t->items[(t->nitems)++] = item;
-            }
-
-          /* Get geometry of bitmap/pixmap */
-          if(('!' == *tok || '&' == *tok) &&
-              (pixmap = strtol(tok + 1, NULL, 0)))
-            {
-              XRectangle geometry = { 0 };
-
-              subSharedPropertyGeometry(disp, pixmap, &geometry);
-
-              item->flags    |= ('!' == *tok ? SUB_TEXT_BITMAP :
-                SUB_TEXT_PIXMAP);
-              item->data.num  = pixmap;
-              item->width     = geometry.width;
-              item->height    = geometry.height;
-
-              /* Add spacing and check if icon is first */
-              t->width += item->width + (0 == i ? 3 : 6);
-
-              item->color = color;
-            }
-          else ///< Ordinary text
-            {
-              item->data.string = strdup(tok);
-              item->width       = subSharedTextWidth(disp, f, tok,
-                strlen(tok), &left, &right, False);
-
-              /* Remove left bearing from first text item */
-              t->width += item->width - (0 == i ? left : 0);
-
-              item->color = color;
-            }
-
-          i++;
-        }
-    }
-
-  /* Mark other items a clean */
-  for(; i < t->nitems; i++)
-    ITEM(t->items[i])->flags |= SUB_TEXT_EMPTY;
-
-  /* Fix spacing of last item */
-  if(item)
-    {
-      if(item->flags & (SUB_TEXT_BITMAP|SUB_TEXT_PIXMAP))
-        t->width -= 2;
-      else
-        {
-          t->width    -= right;
-          item->width -= right;
-        }
-    }
-
-  return t->width;
-} /* }}} */
-
- /** subSharedTextRender {{{
-  * @brief Render text
-  * @param[in]  disp  Display
-  * @param[in]  gc    GC
-  * @param[in]  f     A #SubFont
-  * @param[in]  win   A #Window
-  * @param[in]  x     X position
-  * @param[in]  y     Y position
-  * @param[in]  fg    Foreground color
-  * @param[in]  icon  Icon color
-  * @param[in]  bg    Background color
-  * @param[in]  t     A #SubText
-  **/
-
-void
-subSharedTextRender(Display *disp,
-  GC gc,
-  SubFont *f,
-  Window win,
-  int x,
-  int y,
-  long fg,
-  long icon,
-  long bg,
-  SubText *t)
-{
-  int i, width = x;
-
-  assert(t);
-
-  /* Render text items */
-  for(i = 0; i < t->nitems; i++)
-    {
-      SubTextItem *item = ITEM(t->items[i]);
-
-      if(item->flags & SUB_TEXT_EMPTY) ///< Empty text
-        {
-          break; ///< Break loop
-        }
-      else if(item->flags & (SUB_TEXT_BITMAP|SUB_TEXT_PIXMAP)) ///< Icons
-        {
-          int icony = 0, dx = (0 == i) ? 0 : 3; ///< Add spacing when icon isn't first
-
-          icony = item->height > f->height ?
-            y - f->y - ((item->height - f->height) / 2): y - item->height;
-
-          subSharedTextIconDraw(disp, gc, win, width + dx, icony,
-            item->width, item->height, (-1 == item->color) ? icon : item->color,
-            bg, (Pixmap)item->data.num, (item->flags & SUB_TEXT_BITMAP));
-
-          /* Add spacing when icon isn't last */
-          width += item->width + dx + (i != t->nitems - 1 ? 3 : 0);
-        }
-      else ///< Text
-        {
-          subSharedTextDraw(disp, gc, f, win, width, y,
-            (-1 == item->color) ? fg : item->color, bg, 
-            item->data.string, strlen(item->data.string));
-
-          width += item->width;
-        }
-    }
-} /* }}} */
-
- /** subSharedTextWidth {{{
-  * @brief Get width of the smallest enclosing box
-  * @param[in]     disp    Display
-  * @param[in]     text    The text
-  * @param[in]     len     Length of the string
-  * @param[inout]  left    Left bearing
-  * @param[inout]  right   Right bearing
-  * @param[in]     center  Center text
-  * @return Width of the box
-  **/
-
-int
-subSharedTextWidth(Display *disp,
-  SubFont *f,
-  const char *text,
-  int len,
-  int *left,
-  int *right,
-  int center)
-{
-  int width = 0, lbearing = 0, rbearing = 0;
-
-  assert(f);
-
-  /* Get text extents based on font */
-  if(text && 0 < len)
-    {
-#ifdef HAVE_X11_XFT_XFT_H
-      if(f->xft) ///< XFT
-        {
-          XGlyphInfo extents;
-
-          XftTextExtentsUtf8(disp, f->xft, (XftChar8 *)text, len, &extents);
-
-          width    = extents.xOff;
-          lbearing = extents.x;
-        }
-      else ///< XFS
-#endif /* HAVE_X11_XFT_XFT_H */
-        {
-          XRectangle overall_ink = { 0 }, overall_logical = { 0 };
-
-          XmbTextExtents(f->xfs, text, len,
-            &overall_ink, &overall_logical);
-
-          width    = overall_logical.width;
-          lbearing = overall_logical.x;
-        }
-
-      /* Get left and right spacing */
-      if(left)  *left  = lbearing;
-      if(right) *right = rbearing;
-    }
-
-  return center ? width - abs(lbearing - rbearing) : width;
-} /* }}} */
-
- /** subSharedTextDraw {{{
+ /** subSharedDrawString {{{
   * @brief Draw text
   * @param[in]  disp  Display
   * @param[in]  gc    GC
@@ -614,7 +382,7 @@ subSharedTextWidth(Display *disp,
   **/
 
 void
-subSharedTextDraw(Display *disp,
+subSharedDrawString(Display *disp,
   GC gc,
   SubFont *f,
   Window win,
@@ -661,7 +429,7 @@ subSharedTextDraw(Display *disp,
     }
 } /* }}} */
 
- /** subSharedTextIconDraw {{{
+ /** subSharedDrawIcon {{{
   * @brief Draw text
   * @param[in]  disp    Display
   * @param[in]  gc      GC
@@ -677,7 +445,7 @@ subSharedTextDraw(Display *disp,
   **/
 
 void
-subSharedTextIconDraw(Display *disp,
+subSharedDrawIcon(Display *disp,
   GC gc,
   Window win,
   int x,
@@ -702,33 +470,6 @@ subSharedTextIconDraw(Display *disp,
 #ifdef HAVE_X11_XPM_H
   else XCopyArea(disp, pixmap, win, gc, 0, 0, width, height, x, y);
 #endif /* HAVE_X11_XPM_H */
-} /* }}} */
-
- /** subSharedTextFree {{{
-  * @brief Free text
-  * @param[in]  t  A #SubText
-  **/
-
-void
-subSharedTextFree(SubText *t)
-{
-  int i;
-
-  assert(t);
-
-  for(i = 0; i < t->nitems; i++)
-    {
-      SubTextItem *item = (SubTextItem *)t->items[i];
-
-      if(!(item->flags & (SUB_TEXT_BITMAP|SUB_TEXT_PIXMAP)) &&
-          item->data.string)
-        free(item->data.string);
-
-      free(t->items[i]);
-    }
-
-  free(t->items);
-  free(t);
 } /* }}} */
 
 /* Font */
@@ -949,6 +690,63 @@ subSharedSpawn(char *cmd)
     }
 
   return pid;
+} /* }}} */
+
+ /** subSharedStringWidth {{{
+  * @brief Get width of the smallest enclosing box
+  * @param[in]     disp    Display
+  * @param[in]     text    The text
+  * @param[in]     len     Length of the string
+  * @param[inout]  left    Left bearing
+  * @param[inout]  right   Right bearing
+  * @param[in]     center  Center text
+  * @return Width of the box
+  **/
+
+int
+subSharedStringWidth(Display *disp,
+  SubFont *f,
+  const char *text,
+  int len,
+  int *left,
+  int *right,
+  int center)
+{
+  int width = 0, lbearing = 0, rbearing = 0;
+
+  assert(f);
+
+  /* Get text extents based on font */
+  if(text && 0 < len)
+    {
+#ifdef HAVE_X11_XFT_XFT_H
+      if(f->xft) ///< XFT
+        {
+          XGlyphInfo extents;
+
+          XftTextExtentsUtf8(disp, f->xft, (XftChar8 *)text, len, &extents);
+
+          width    = extents.xOff;
+          lbearing = extents.x;
+        }
+      else ///< XFS
+#endif /* HAVE_X11_XFT_XFT_H */
+        {
+          XRectangle overall_ink = { 0 }, overall_logical = { 0 };
+
+          XmbTextExtents(f->xfs, text, len,
+            &overall_ink, &overall_logical);
+
+          width    = overall_logical.width;
+          lbearing = overall_logical.x;
+        }
+
+      /* Get left and right spacing */
+      if(left)  *left  = lbearing;
+      if(right) *right = rbearing;
+    }
+
+  return center ? width - abs(lbearing - rbearing) : width;
 } /* }}} */
 
 #ifndef SUBTLE

@@ -68,8 +68,8 @@
 #define SUB_EWMH_BORDERLESS (1L << 8)                             ///< EWMH fixed flag
 #define SUB_EWMH_VISIBLE    (1L << 9)                             ///< EWMH visible flag
 #define SUB_EWMH_HIDDEN     (1L << 10)                            ///< EWMH hidden flag
-#define SUB_EWMH_HORZ       (1L << 12)                            ///< EWMH horizontal flag
-#define SUB_EWMH_VERT       (1L << 11)                            ///< EWMH vertical flag
+#define SUB_EWMH_HORZ       (1L << 11)                            ///< EWMH horizontal flag
+#define SUB_EWMH_VERT       (1L << 12)                            ///< EWMH vertical flag
 
 /* Match types flags */
 #define SUB_MATCH_NAME      (1L << 0)                             ///< Match SUBTLE_NAME
@@ -79,11 +79,6 @@
 #define SUB_MATCH_ROLE      (1L << 4)                             ///< Match window role
 #define SUB_MATCH_PID       (1L << 5)                             ///< Match pid
 #define SUB_MATCH_EXACT     (1L << 6)                             ///< Match exact string
-
-/* Text flags */
-#define SUB_TEXT_EMPTY      (1L << 0)                             ///< Empty text
-#define SUB_TEXT_BITMAP     (1L << 1)                             ///< Text bitmap
-#define SUB_TEXT_PIXMAP     (1L << 2)                             ///< Text pixmap
 /* }}} */
 
 /* Typedefs {{{ */
@@ -92,20 +87,6 @@ typedef union subdata_t /* {{{ */
   unsigned long num;                                              ///< Data number
   char          *string;                                          ///< Data string
 } SubData; /* }}} */
-
-typedef struct subtextitem_t /* {{{ */
-{
-  int             flags, width, height;                           ///< Text flags, width, height
-  long            color;                                          ///< Text color
-
-  union subdata_t data;                                           ///< Text data
-} SubTextItem; /* }}} */
-
-typedef struct subtext_t /* {{{ */
-{
-  struct subtextitem_t **items;                                   ///< Item text items
-  int                  flags, nitems, width;                      ///< Item flags, count, width
-} SubText; /* }}} */
 
 typedef struct subfont_t /* {{{ */
 {
@@ -154,20 +135,11 @@ void subSharedPropertyDelete(Display *disp, Window win,
   Atom prop);                                                     ///< Delete window property
 /* }}} */
 
-/* Text {{{ */
-SubText *subSharedTextNew(void);                                  ///< Create new text
-int subSharedTextParse(Display *disp, SubFont *f,
-  SubText *t, char *text);                                        ///< Parse text
-void subSharedTextRender(Display *disp, GC gc, SubFont *f,
-  Window win, int x, int y, long fg, long icon,
-  long bg, SubText *t);                                           ///< Render text
-int subSharedTextWidth(Display *disp, SubFont *f,
-  const char *text, int len, int *left, int *right, int center);  ///< Get text width
-void subSharedTextFree(SubText *t);                               ///< Free text
-void subSharedTextIconDraw(Display *disp, GC gc, Window win,
+/* Draw {{{ */
+void subSharedDrawIcon(Display *disp, GC gc, Window win,
   int x, int y, int width, int height, long fg, long bg,
   Pixmap pixmap, int bitmap);                                     ///< Draw icons
-void subSharedTextDraw(Display *disp, GC gc, SubFont *f,
+void subSharedDrawString(Display *disp, GC gc, SubFont *f,
   Window win, int x, int y, long fg, long bg,
   const char *text, int len);                                     ///< Draw text
 /* }}} */
@@ -182,6 +154,8 @@ unsigned long subSharedParseColor(Display *disp, char *name);     ///< Parse col
 KeySym subSharedParseKey(Display *disp, const char *key,
   unsigned int *code, unsigned int *state, int *mouse);           ///< Parse keys
 pid_t subSharedSpawn(char *cmd);                                  ///< Spawn command
+int subSharedStringWidth(Display *disp, SubFont *f,
+  const char *text, int len, int *left, int *right, int center);  ///< Get text width
 /* }}} */
 
 #ifndef SUBTLE

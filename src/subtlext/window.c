@@ -602,7 +602,7 @@ subWindowFontWidth(VALUE self,
 
   Data_Get_Struct(self, SubtlextWindow, w);
   if(w && w->font && T_STRING == rb_type(string))
-    ret = INT2FIX(subSharedTextWidth(display, w->font,
+    ret = INT2FIX(subSharedStringWidth(display, w->font,
       RSTRING_PTR(string), RSTRING_LEN(string), NULL, NULL, False));
 
   return ret;
@@ -1094,7 +1094,7 @@ subWindowDrawText(int argc,
       /* Parse colors */
       if(!NIL_P(color)) lcolor = subColorPixel(color, Qnil, Qnil, NULL);
 
-      subSharedTextDraw(display, w->gc, w->font, w->win, FIX2INT(x),
+      subSharedDrawString(display, w->gc, w->font, w->win, FIX2INT(x),
         FIX2INT(y), lcolor, w->bg, RSTRING_PTR(text), RSTRING_LEN(text));
     }
 
@@ -1147,7 +1147,7 @@ subWindowDrawIcon(int argc,
       pixmap = rb_iv_get(icon, "@pixmap");
       bitmap = Qtrue == subIconAskBitmap(icon) ? True : False;
 
-      subSharedTextIconDraw(display, w->gc, w->win, FIX2INT(x),
+      subSharedDrawIcon(display, w->gc, w->win, FIX2INT(x),
         FIX2INT(y), FIX2INT(width), FIX2INT(height), lfg, lbg,
         NUM2LONG(pixmap), bitmap);
     }
