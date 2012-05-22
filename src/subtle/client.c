@@ -347,7 +347,7 @@ subClientNew(Window win)
   c = CLIENT(subSharedMemoryAlloc(1, sizeof(SubClient)));
   c->gravities = (int *)subSharedMemoryAlloc(subtle->views->ndata, sizeof(int));
   c->flags     = (SUB_TYPE_CLIENT|SUB_CLIENT_INPUT);
-  c->gravityid   = -1; ///< Force update
+  c->gravityid = -1; ///< Force update
   c->dir       = -1;
   c->win       = win;
 
@@ -911,7 +911,7 @@ void
 subClientRetag(SubClient *c,
   int *flags)
 {
-  int i, visible = 0;
+  int i;
 
   DEAD(c);
   assert(c);
@@ -927,14 +927,21 @@ subClientRetag(SubClient *c,
     }
 
   /* Check if client is visible on at least one screen w/o stick */
-  for(i = 0; i < subtle->views->ndata; i++)
-    if(VIEW(subtle->views->data[i])->tags & c->tags)
-      {
-        visible++;
-        break;
-      }
+  if(!(c->flags & SUB_CLIENT_MODE_STICK) && !(*flags & SUB_CLIENT_MODE_STICK))
+    {
+      int visible = 0;
 
-  if(0 == visible) subClientTag(c, 0, flags); ///< Set default tag
+      for(i = 0; i < subtle->views->ndata; i++)
+        {
+          if(VIEW(subtle->views->data[i])->tags & c->tags)
+            {
+              visible++;
+              break;
+            }
+        }
+
+      if(0 == visible) subClientTag(c, 0, flags); ///< Set default tag
+    }
 
   /* EWMH: Tags */
   subEwmhSetCardinals(c->win, SUB_EWMH_SUBTLE_CLIENT_TAGS, (long *)&c->tags, 1);
