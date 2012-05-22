@@ -56,7 +56,7 @@ PanelSeparator(int x,
   /* Set window background and border*/
   PanelRect(drawable, x, s->separator->width, s);
 
-  subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
+  subSharedDrawString(subtle->dpy, subtle->gcs.draw,
     s->font, drawable, x + STYLE_LEFT((*s)),
     s->font->y + STYLE_TOP((*s)), s->fg, s->bg,
     s->separator->string, strlen(s->separator->string));
@@ -84,7 +84,7 @@ PanelClientModes(SubClient *c,
   if(c->flags & SUB_CLIENT_MODE_FIXED)
     x += snprintf(buf + x, sizeof(buf), "%c", '!');
 
-  *width = subSharedTextWidth(subtle->dpy, subtle->styles.title.font,
+  *width = subSharedStringWidth(subtle->dpy, subtle->styles.title.font,
     buf, strlen(buf), NULL, NULL, True);
 } /* }}} */
 
@@ -169,7 +169,7 @@ subPanelNew(int type)
 
         /* Sublet specific */
         p->sublet->time    = subSubtleTime();
-        p->sublet->text    = subSharedTextNew();
+        p->sublet->text    = subTextNew();
         p->sublet->styleid = -1;
         break; /* }}} */
       case SUB_PANEL_VIEWS: /* {{{ */
@@ -206,7 +206,7 @@ subPanelUpdate(SubPanel *p)
         if(p->keychain && p->keychain->keys)
           {
             /* Font offset, panel border and padding */
-            p->width = subSharedTextWidth(subtle->dpy,
+            p->width = subSharedStringWidth(subtle->dpy,
               subtle->styles.separator.font, p->keychain->keys,
               p->keychain->len, NULL, NULL, True) +
               subtle->styles.separator.padding.left +
@@ -243,7 +243,7 @@ subPanelUpdate(SubPanel *p)
                     PanelClientModes(c, buf, &width);
 
                     /* Font offset, panel border and padding */
-                    p->width = subSharedTextWidth(subtle->dpy,
+                    p->width = subSharedStringWidth(subtle->dpy,
                       subtle->styles.title.font, c->name,
                       /* Limit string length */
                       len > subtle->styles.clients.right ?
@@ -282,7 +282,7 @@ subPanelUpdate(SubPanel *p)
                   v->width = v->icon->width + STYLE_WIDTH((s));
                 else
                   {
-                    v->width = subSharedTextWidth(subtle->dpy, s.font,
+                    v->width = subSharedStringWidth(subtle->dpy, s.font,
                       v->name, strlen(v->name), NULL, NULL, True) +
                       STYLE_WIDTH((s)) + (v->icon ? v->icon->width + 3 : 0);
                   }
@@ -336,7 +336,7 @@ subPanelRender(SubPanel *p,
             icony = p->icon->height > y ? subtle->styles.separator.margin.top :
               y - p->icon->height;
 
-            subSharedTextIconDraw(subtle->dpy, subtle->gcs.draw,
+            subSharedDrawIcon(subtle->dpy, subtle->gcs.draw,
               drawable, p->x + 2 + subtle->styles.separator.padding.left, icony,
               p->icon->width, p->icon->height, subtle->styles.sublets.fg,
               subtle->styles.sublets.bg, p->icon->pixmap, p->icon->bitmap);
@@ -345,7 +345,7 @@ subPanelRender(SubPanel *p,
       case SUB_PANEL_KEYCHAIN: /* {{{ */
         if(p->keychain && p->keychain->keys)
           {
-            subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
+            subSharedDrawString(subtle->dpy, subtle->gcs.draw,
               subtle->styles.separator.font, drawable,
               p->x + STYLE_LEFT(subtle->styles.separator),
               subtle->styles.separator.font->y +
@@ -362,9 +362,9 @@ subPanelRender(SubPanel *p,
             PanelRect(drawable, p->x, p->width, s);
 
             /* Render text parts */
-            subSharedTextRender(subtle->dpy, subtle->gcs.draw, s->font,
+            subTextRender(p->sublet->text, s->font, subtle->gcs.draw,
               drawable, p->x + STYLE_LEFT((*s)), s->font->y +
-              STYLE_TOP((*s)), s->fg, s->icon, s->bg, p->sublet->text);
+              STYLE_TOP((*s)), s->fg, s->icon, s->bg);
           }
         break; /* }}} */
       case SUB_PANEL_TITLE: /* {{{ */
@@ -391,12 +391,12 @@ subPanelRender(SubPanel *p,
                 y   = subtle->styles.title.font->y +
                   STYLE_TOP(subtle->styles.title);
 
-                subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
+                subSharedDrawString(subtle->dpy, subtle->gcs.draw,
                   subtle->styles.title.font, drawable, x, y,
                   subtle->styles.title.fg, subtle->styles.title.bg,
                   buf, strlen(buf));
 
-                subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
+                subSharedDrawString(subtle->dpy, subtle->gcs.draw,
                   subtle->styles.title.font, drawable, x + width, y,
                   subtle->styles.title.fg, subtle->styles.title.bg, c->name,
                   /* Limit string length */
@@ -439,7 +439,7 @@ subPanelRender(SubPanel *p,
                     icony = v->icon->height > y ? s.margin.top :
                       y - v->icon->height;
 
-                    subSharedTextIconDraw(subtle->dpy, subtle->gcs.draw,
+                    subSharedDrawIcon(subtle->dpy, subtle->gcs.draw,
                       drawable, vx + x, icony, v->icon->width,
                       v->icon->height, s.icon, s.bg, v->icon->pixmap,
                       v->icon->bitmap);
@@ -449,7 +449,7 @@ subPanelRender(SubPanel *p,
                   {
                     if(v->flags & SUB_VIEW_ICON) x += v->icon->width + 3;
 
-                    subSharedTextDraw(subtle->dpy, subtle->gcs.draw,
+                    subSharedDrawString(subtle->dpy, subtle->gcs.draw,
                       s.font, drawable, vx + x, s.font->y +
                       STYLE_TOP((s)), s.fg, s.bg, v->name, strlen(v->name));
                   }
@@ -747,7 +747,7 @@ subPanelKill(SubPanel *p)
                 printf("Unloaded sublet (%s)\n", p->sublet->name);
                 free(p->sublet->name);
               }
-            if(p->sublet->text) subSharedTextFree(p->sublet->text);
+            if(p->sublet->text) subTextKill(p->sublet->text);
 
             free(p->sublet);
           }

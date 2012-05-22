@@ -60,7 +60,7 @@ StyleInherit(SubStyle *s1,
       /* Update separator width after font */
       if(s1->separator)
         {
-          s1->separator->width = subSharedTextWidth(subtle->dpy,
+          s1->separator->width = subSharedStringWidth(subtle->dpy,
             s1->font, s1->separator->string,
             strlen(s1->separator->string), NULL, NULL, True);
 

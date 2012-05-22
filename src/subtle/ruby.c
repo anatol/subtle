@@ -3019,9 +3019,9 @@ RubySubletDataWriter(VALUE self,
           if(s->styles && (style = subArrayGet(s->styles, p->sublet->styleid)))
               s = style;
 
-          p->sublet->width = subSharedTextParse(subtle->dpy,
-            subtle->styles.sublets.font, p->sublet->text,
-            RSTRING_PTR(value)) + STYLE_WIDTH((*s));
+          p->sublet->width = subTextParse(p->sublet->text,
+            subtle->styles.sublets.font, RSTRING_PTR(value)) +
+            STYLE_WIDTH((*s));
         }
       else rb_raise(rb_eArgError, "Unknown value type");
     }
@@ -3123,9 +3123,9 @@ RubySubletStyleWriter(VALUE self,
               p->sublet->styleid = FIX2INT(value);
             }
 
-          p->sublet->width = subSharedTextParse(subtle->dpy,
-            subtle->styles.sublets.font, p->sublet->text,
-            RSTRING_PTR(value)) + STYLE_WIDTH((*s));
+          p->sublet->width = subTextParse(p->sublet->text,
+            subtle->styles.sublets.font, RSTRING_PTR(value)) +
+            STYLE_WIDTH((*s));
         }
       else rb_raise(rb_eArgError, "Unknown value type");
     }

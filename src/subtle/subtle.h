@@ -360,6 +360,11 @@
 #define SUB_TRAY_CLOSE                (1L << 12)                  ///< Send close message
 #define SUB_TRAY_UNMAP                (1L << 11)                  ///< Ignore unmaps
 
+/* Text flags */
+#define SUB_TEXT_EMPTY                (1L << 0)                   ///< Empty text
+#define SUB_TEXT_BITMAP               (1L << 1)                   ///< Text bitmap
+#define SUB_TEXT_PIXMAP               (1L << 2)                   ///< Text pixmap
+
 /* View flags */
 #define SUB_VIEW_ICON                 (1L << 10)                  ///< View icon
 #define SUB_VIEW_ICON_ONLY            (1L << 11)                  ///< Icon only
@@ -727,6 +732,20 @@ typedef struct subtag_t /* {{{ */
   struct subarray_t *matcher;                                     ///< Tag matcher
 } SubTag; /* }}} */
 
+typedef struct subtextitem_t /* {{{ */
+{
+  int             flags, width, height;                           ///< Text flags, width, height
+  long            color;                                          ///< Text color
+
+  union subdata_t data;                                           ///< Text data
+} SubTextItem; /* }}} */
+
+typedef struct subtext_t /* {{{ */
+{
+  struct subtextitem_t **items;                                   ///< Item text items
+  int                  flags, nitems, width;                      ///< Item flags, count, width
+} SubText; /* }}} */
+
 typedef struct subtray_t /* {{{ */
 {
   FLAGS  flags;                                                   ///< Tray flags
@@ -920,6 +939,14 @@ void subTagMatcherAdd(SubTag *t, int type,
 int subTagMatcherCheck(SubTag *t, SubClient *c);                  ///< Check for match
 void subTagPublish(void);                                         ///< Publish tags
 void subTagKill(SubTag *t);                                       ///< Delete tag
+/* }}} */
+
+/* text.c {{{ */
+SubText *subTextNew(void);                                         ///< Create text
+int subTextParse(SubText *t, SubFont *f, char *text);             ///< Parse string
+void subTextRender(SubText *t, SubFont *f, GC gc, Window win,
+  int x, int y, long fg, long icon, long bg);                     ///< Render text
+void subTextKill(SubText *t);                                     ///< Delete text
 /* }}} */
 
 /* tray.c {{{ */
