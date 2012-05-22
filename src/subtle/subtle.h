@@ -346,6 +346,7 @@
 #define SUB_TAG_GRAVITY               (1L << 10)                  ///< Gravity property
 #define SUB_TAG_GEOMETRY              (1L << 11)                  ///< Geometry property
 #define SUB_TAG_POSITION              (1L << 12)                  ///< Position property
+#define SUB_TAG_PROC                  (1L << 13)                  ///< Tagging proc (must be <16)
 
 /* Tag matcher */
 #define SUB_TAG_MATCH_NAME            (1L << 10)                  ///< Match WM_NAME
@@ -353,7 +354,7 @@
 #define SUB_TAG_MATCH_CLASS           (1L << 12)                  ///< Match class of WM_CLASS
 #define SUB_TAG_MATCH_ROLE            (1L << 13)                  ///< Match role of window
 #define SUB_TAG_MATCH_TYPE            (1L << 14)                  ///< Match type of window
-#define SUB_TAG_MATCH_AND             (1L << 15)                  ///< Match logical AND
+#define SUB_TAG_MATCH_AND             (1L << 15)                  ///< Match logical AND (must be <26)
 
 /* Tray flags */
 #define SUB_TRAY_DEAD                 (1L << 10)                  ///< Dead window
@@ -726,7 +727,7 @@ typedef struct subtag_t /* {{{ */
 {
   FLAGS             flags;                                        ///< Tag flags
   char              *name;                                        ///< Tag name
-  unsigned long     gravityid;                                    ///< Tag gravity
+  unsigned long     gravityid, proc;                              ///< Tag gravity, proc
   int               screenid;                                     ///< Tag screen
   XRectangle        geom;                                         ///< Tag geometry
   struct subarray_t *matcher;                                     ///< Tag matcher
