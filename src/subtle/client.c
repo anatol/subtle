@@ -898,6 +898,10 @@ subClientTag(SubClient *c,
           if(v->tags & (1L << (tag + 1)) || t->flags & SUB_CLIENT_MODE_STICK)
             if(t->flags & SUB_TAG_GRAVITY) c->gravities[i] = t->gravityid;
         }
+
+      /* Call proc if any */
+      if(t->flags & SUB_TAG_PROC)
+        subRubyCall(SUB_CALL_HOOKS, t->proc, (void *)c);
     }
 } /* }}} */
 

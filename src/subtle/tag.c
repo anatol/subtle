@@ -241,6 +241,10 @@ subTagKill(SubTag *t)
       subArrayKill(t->matcher, False);
     }
 
+  /* Remove proc */
+  if(t->flags & SUB_TAG_PROC)
+    subRubyRelease(t->proc);
+
   free(t->name);
   free(t);
 
