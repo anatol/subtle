@@ -1805,6 +1805,40 @@ RubyOptionsStyle(VALUE self,
   return Qnil;
 } /* }}} */
 
+/* RubyOptionsOnMatch {{{ */
+/*
+ * call-seq: on_match(, blk) -> nil
+ *
+ * Add a tag on match proc
+ *
+ *  tag "test" do
+ *    match "foobar"
+ *
+ *    on_match do |c|
+ *      c.gravity = :foobar
+ *    end
+ *  end
+ */
+
+static VALUE
+RubyOptionsOnMatch(int argc,
+  VALUE *argv,
+  VALUE self)
+{
+  VALUE value = Qnil;
+
+  rb_scan_args(argc, argv, "01", &value);
+
+  if(subtle->flags & SUB_SUBTLE_CHECK) return Qnil; ///< Skip on check
+
+  if(rb_block_given_p()) value = rb_block_proc(); ///< Get proc
+
+  rb_hash_aset(rb_iv_get(self, "@params"),
+    CHAR2SYM("on_match"), value);
+
+  return Qnil;
+} /* }}} */
+
 /* Config */
 
 /* RubyConfigMissing {{{ */
@@ -2059,7 +2093,7 @@ RubyConfigTag(int argc,
   int flags = 0, screenid = -1;
   unsigned long gravityid = 0;
   XRectangle geom = { 0 };
-  VALUE name = Qnil, match = Qnil, params = Qnil, value = Qnil;
+  VALUE name = Qnil, match = Qnil, params = Qnil, value = Qnil, proc = Qnil;
 
   rb_scan_args(argc, argv, "11", &name, &match);
 
@@ -2153,6 +2187,15 @@ RubyConfigTag(int argc,
             }
           else if(Qtrue == value) flags |= SUB_CLIENT_MODE_STICK;
         }
+
+      /* Set match proc */
+      if(RTEST(value = rb_hash_lookup(params, CHAR2SYM("on_match"))))
+        {
+          proc   = value;
+          flags |= SUB_TAG_PROC;
+
+          rb_ary_push(shelter, proc); ///< Protect from GC
+        }
     }
 
   /* Check value type */
@@ -2176,6 +2219,7 @@ RubyConfigTag(int argc,
               t->gravityid = gravityid;
               t->screenid  = screenid;
               t->geom      = geom;
+              t->proc      = proc;
 
               /* Add matcher */
               rargs[0] = (VALUE)t;
@@ -3452,6 +3496,7 @@ subRubyInit(void)
   rb_define_method(options, "match",          RubyOptionsMatch,       1);
   rb_define_method(options, "gravity",        RubyOptionsGravity,     1);
   rb_define_method(options, "style",          RubyOptionsStyle,       1);
+  rb_define_method(options, "on_match",       RubyOptionsOnMatch,    -1);
   rb_define_method(options, "method_missing", RubyOptionsDispatcher, -1);
 
   /*
