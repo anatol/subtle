@@ -259,46 +259,6 @@ SubtlextTagFind(VALUE value)
   return tags;
 } /* }}} */
 
-/* SubtlextTagGet {{{ */
-static int
-SubtlextTagGet(VALUE self)
-{
-  int tags = 0;
-  unsigned long *value_tags = NULL;
-  VALUE id = Qnil;
-
-  /* Check type */
-  if(rb_obj_is_instance_of(self, rb_const_get(mod, rb_intern("Client")))) ///< Client
-    {
-      VALUE win = Qnil;
-
-      if(RTEST((win = rb_iv_get(self, "@win")) && 0 != NUM2LONG(win)))
-        {
-          if((value_tags = (unsigned long *)subSharedPropertyGet(
-              display, NUM2LONG(win), XA_CARDINAL, XInternAtom(display,
-              "SUBTLE_CLIENT_TAGS", False), NULL)))
-            {
-              tags = *value_tags;
-
-              free(value_tags);
-            }
-        }
-    }
-  else if(FIXNUM_P(id = rb_iv_get(self, "@id"))) ///< View
-    {
-      if((value_tags = (unsigned long *)subSharedPropertyGet(display,
-          ROOT, XA_CARDINAL, XInternAtom(display,
-          "SUBTLE_VIEW_TAGS", False), NULL)))
-        {
-          tags = value_tags[FIX2INT(id)];
-
-          free(value_tags);
-        }
-    }
-
-  return tags;
-} /* }}} */
-
 /* SubtlextTag {{{ */
 static VALUE
 SubtlextTag(VALUE self,
@@ -337,11 +297,11 @@ SubtlextTag(VALUE self,
   /* Get and update tag mask */
   if(0 != action)
     {
-      int tags = SubtlextTagGet(self);
+      int tags = FIX2INT(rb_iv_get(self, "@tags"));
 
       /* Update masks */
-      if(1 == action)       data.l[1] = tags | data.l[1];
-      else if(-1 == action) data.l[1] = tags & ~data.l[1];
+      if(1 == action)       data.l[1] = tags |  data.l[1];
+     else if(-1 == action) data.l[1] = tags & ~data.l[1];
     }
 
   /* Send message based on object type */
@@ -413,7 +373,7 @@ SubtlextTagReader(VALUE self)
   /* Fetch data */
   method     = rb_intern("new");
   klass      = rb_const_get(mod, rb_intern("Tag"));
-  value_tags = SubtlextTagGet(self);
+  value_tags = FIX2INT(rb_iv_get(self, "@tags"));
 
   /* Check results */
   if((tags = subSharedPropertyGetStrings(display, ROOT,
@@ -507,10 +467,13 @@ SubtlextTagAsk(VALUE self,
   /* Find tag */
   if(RTEST(tag = subTagSingFirst(Qnil, sym)))
     {
-      VALUE id = rb_iv_get(tag, "@id");
-      int tags = SubtlextTagGet(self);
+      VALUE id = Qnil, tags = Qnil;
 
-      if(tags & (1L << (FIX2INT(id) + 1))) ret = Qtrue;
+      /* Get properties */
+      id   = rb_iv_get(tag,  "@id");
+      tags = rb_iv_get(self, "@tags");
+
+      if(FIX2INT(tags) & (1L << (FIX2INT(id) + 1))) ret = Qtrue;
     }
 
   return ret;
@@ -1829,7 +1792,7 @@ Init_subtlext(void)
   VALUE icon = Qnil, screen = Qnil, subtle = Qnil, sublet = Qnil;
   VALUE tag = Qnil, tray = Qnil, view = Qnil, window = Qnil;
 
-  /*
+ /*
    * Document-class: Subtlext
    *
    * Subtlext is the toplevel module
