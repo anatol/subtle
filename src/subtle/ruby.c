@@ -157,6 +157,7 @@ RubySubtleToSubtlext(void *data)
           /* Set properties */
           rb_iv_set(object, "@win",      LONG2NUM(c->win));
           rb_iv_set(object, "@flags",    INT2FIX(flags));
+          rb_iv_set(object, "@tags",     INT2FIX(c->tags));
           rb_iv_set(object, "@name",     rb_str_new2(c->name));
           rb_iv_set(object, "@instance", rb_str_new2(c->instance));
           rb_iv_set(object, "@klass",    rb_str_new2(c->klass));
@@ -205,7 +206,8 @@ RubySubtleToSubtlext(void *data)
           object = rb_funcall(klass, rb_intern("new"), 1, rb_str_new2(v->name));
 
           /* Set properties */
-          rb_iv_set(object, "@id",  INT2FIX(id));
+          rb_iv_set(object, "@id",   INT2FIX(id));
+          rb_iv_set(object, "@tags", INT2FIX(v->tags));
         } /* }}} */
     }
 
