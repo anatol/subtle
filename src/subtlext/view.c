@@ -332,6 +332,7 @@ subViewInit(VALUE self,
   /* Init object */
   rb_iv_set(self, "@id",   Qnil);
   rb_iv_set(self, "@name", name);
+  rb_iv_set(self, "@tags", Qnil);
 
   subSubtlextConnect(NULL); ///< Implicit open connection
 
@@ -351,7 +352,7 @@ subViewInit(VALUE self,
 VALUE
 subViewUpdate(VALUE self)
 {
-  int id = -1;
+  int id = -1, *tags = NULL, ntags = 0;
   VALUE name = Qnil;
 
   /* Check ruby object */
@@ -389,7 +390,17 @@ subViewUpdate(VALUE self)
       if(names) XFreeStringList(names);
     }
 
+  /* Set properties */
   rb_iv_set(self, "@id", INT2FIX(id));
+
+  /* Fetch tags */
+  if((tags = (int *)subSharedPropertyGet(display, ROOT, XA_CARDINAL,
+      XInternAtom(display, "SUBTLE_VIEW_TAGS", False), (unsigned long *)&ntags)))
+    {
+      rb_iv_set(self, "@tags", INT2FIX(id < ntags ? tags[id] : 0));
+
+      free(tags);
+    }
 
   return self;
 } /* }}} */

@@ -533,6 +533,7 @@ subClientInit(VALUE self,
   rb_iv_set(self, "@gravity",  Qnil);
   rb_iv_set(self, "@screen",   Qnil);
   rb_iv_set(self, "@flags",    Qnil);
+  rb_iv_set(self, "@tags",     Qnil);
 
   subSubtlextConnect(NULL); ///< Implicit open connection
 
@@ -563,20 +564,23 @@ subClientUpdate(VALUE self)
   /* Check values */
   if(0 <= win)
     {
-      int *flags = NULL;
+      int *tags = NULL, *flags = NULL;
       char *wmname = NULL, *wminstance = NULL, *wmclass = NULL, *role = NULL;
 
       /* Fetch name, instance and class */
       subSharedPropertyClass(display, win, &wminstance, &wmclass);
       subSharedPropertyName(display, win, &wmname, wmclass);
 
-      /* Fetch window flags and role */
+      /* Fetch tags, flags and role */
+      tags  = (int *)subSharedPropertyGet(display, win, XA_CARDINAL,
+        XInternAtom(display, "SUBTLE_CLIENT_TAGS", False), NULL);
       flags = (int *)subSharedPropertyGet(display, win, XA_CARDINAL,
         XInternAtom(display, "SUBTLE_CLIENT_FLAGS", False), NULL);
-      role = subSharedPropertyGet(display, win, XA_STRING,
+      role  = subSharedPropertyGet(display, win, XA_STRING,
         XInternAtom(display, "WM_WINDOW_ROLE", False), NULL);
 
       /* Set properties */
+      rb_iv_set(self, "@tags",     tags  ? INT2FIX(*tags)  : INT2FIX(0));
       rb_iv_set(self, "@flags",    flags ? INT2FIX(*flags) : INT2FIX(0));
       rb_iv_set(self, "@name",     rb_str_new2(wmname));
       rb_iv_set(self, "@instance", rb_str_new2(wminstance));
@@ -587,8 +591,9 @@ subClientUpdate(VALUE self)
       rb_iv_set(self, "@geometry", Qnil);
       rb_iv_set(self, "@gravity",  Qnil);
 
+      if(tags)  free(tags);
       if(flags) free(flags);
-      if(role) free(role);
+      if(role)  free(role);
       free(wmname);
       free(wminstance);
       free(wmclass);
