@@ -171,3 +171,5 @@ subGravityPublish(void)
 
   subSubtleLogDebugSubtle("Publish: gravities=%d\n", subtle->gravities->ndata);
 } /* }}} */
+
+// vim:ts=2:bs=2:sw=2:et:fdm=marker
