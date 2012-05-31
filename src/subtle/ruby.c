@@ -19,6 +19,7 @@
 #include <ctype.h>
 #include <ruby.h>
 #include <ruby/encoding.h>
+#include <X11/Xresource.h>
 #include "subtle.h"
 
 #ifdef HAVE_WORDEXP_H
@@ -145,6 +146,7 @@ RubySubtleToSubtlext(void *data)
       if(c->flags & SUB_TYPE_CLIENT) /* {{{ */
         {
           int flags = 0;
+          VALUE value = Qnil;
 
           /* Create client instance */
           id     = subArrayIndex(subtle->clients, (void *)c);
@@ -161,11 +163,34 @@ RubySubtleToSubtlext(void *data)
           rb_iv_set(object, "@name",     rb_str_new2(c->name));
           rb_iv_set(object, "@instance", rb_str_new2(c->instance));
           rb_iv_set(object, "@klass",    rb_str_new2(c->klass));
-          rb_iv_set(object, "@role",     c->role ? rb_str_new2(c->role) : Qnil);
+          rb_iv_set(object, "@role",     c->role ? rb_str_new2(c->role) :
+            Qnil);
 
-          /* Set to nil for on demand loading */
-          rb_iv_set(object, "@geometry", Qnil);
-          rb_iv_set(object, "@gravity",  Qnil);
+          /* Create and set geometry */
+          klass = rb_const_get(subtlext, rb_intern("Geometry"));
+          value = rb_funcall(klass, rb_intern("new"), 4, INT2FIX(c->geom.x),
+            INT2FIX(c->geom.y), INT2FIX(c->geom.width),
+            INT2FIX(c->geom.height));
+
+          rb_iv_set(object, "@geometry", value);
+
+          /* Create and set gravity if any */
+          if(-1 != c->gravityid)
+            {
+              SubGravity *g = GRAVITY(subArrayGet(subtle->gravities,
+                c->gravityid));
+
+              klass = rb_const_get(mod, rb_intern("Gravity"));
+              value = rb_funcall(klass, rb_intern("new"), 1,
+                rb_str_new2(XrmQuarkToString(g->quark)));
+
+              rb_funcall(value, rb_intern("geometry="), 4, INT2FIX(g->geom.x),
+                INT2FIX(g->geom.y), INT2FIX(g->geom.width),
+                INT2FIX(g->geom.height));
+            }
+          else value = Qnil;
+
+          rb_iv_set(object, "@gravity", value);
         } /* }}} */
       else if(c->flags & SUB_TYPE_SCREEN) /* {{{ */
         {
