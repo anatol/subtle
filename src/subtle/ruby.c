@@ -180,7 +180,7 @@ RubySubtleToSubtlext(void *data)
               SubGravity *g = GRAVITY(subArrayGet(subtle->gravities,
                 c->gravityid));
 
-              klass = rb_const_get(mod, rb_intern("Gravity"));
+              klass = rb_const_get(subtlext, rb_intern("Gravity"));
               value = rb_funcall(klass, rb_intern("new"), 1,
                 rb_str_new2(XrmQuarkToString(g->quark)));
 
