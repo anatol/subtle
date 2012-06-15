@@ -205,7 +205,7 @@ subViewSingCurrent(VALUE self)
 VALUE
 subViewSingVisible(VALUE self)
 {
-  int i, nnames = 0;
+  int i, nnames = 0, *tags = NULL;
   char **names = NULL;
   unsigned long *visible = NULL;
   VALUE meth = Qnil, klass = Qnil, array = Qnil, v = Qnil;
@@ -221,9 +221,11 @@ subViewSingVisible(VALUE self)
   visible = (unsigned long *)subSharedPropertyGet(display,
     DefaultRootWindow(display), XA_CARDINAL, XInternAtom(display,
     "SUBTLE_VISIBLE_VIEWS", False), NULL);
+  tags  = (int *)subSharedPropertyGet(display, ROOT, XA_CARDINAL,
+      XInternAtom(display, "SUBTLE_VIEW_TAGS", False), NULL);
 
   /* Check results */
-  if(names && visible)
+  if(names && visible && tags)
     {
       for(i = 0; i < nnames; i++)
         {
@@ -231,14 +233,17 @@ subViewSingVisible(VALUE self)
           if(*visible & (1L << (i + 1)) &&
               !NIL_P(v = rb_funcall(klass, meth, 1, rb_str_new2(names[i]))))
             {
-              rb_iv_set(v, "@id", INT2FIX(i));
+              rb_iv_set(v, "@id",   INT2FIX(i));
+              rb_iv_set(v, "@tags", INT2FIX(tags[i]));
+
               rb_ary_push(array, v);
             }
         }
-
-      XFreeStringList(names);
-      free(visible);
     }
+
+  if(names)   XFreeStringList(names);
+  if(visible) free(visible);
+  if(tags)    free(tags);
 
   return array;
 } /* }}} */
@@ -261,6 +266,7 @@ VALUE
 subViewSingList(VALUE self)
 {
   int i, nnames = 0;
+  long *tags = NULL;
   char **names = NULL;
   VALUE meth = Qnil, klass = Qnil, array = Qnil, v = Qnil;
 
@@ -270,22 +276,28 @@ subViewSingList(VALUE self)
   klass = rb_const_get(mod, rb_intern("View"));
   meth  = rb_intern("new");
   array = rb_ary_new();
+  names = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
+      XInternAtom(display, "_NET_DESKTOP_NAMES", False), &nnames);
+  tags  = (long *)subSharedPropertyGet(display, ROOT, XA_CARDINAL,
+      XInternAtom(display, "SUBTLE_VIEW_TAGS", False), NULL);
 
   /* Check results */
-  if((names = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
-      XInternAtom(display, "_NET_DESKTOP_NAMES", False), &nnames)))
+  if(names && tags)
     {
       for(i = 0; i < nnames; i++)
         {
           if(!NIL_P(v = rb_funcall(klass, meth, 1, rb_str_new2(names[i]))))
             {
-              rb_iv_set(v, "@id",  INT2FIX(i));
+              rb_iv_set(v, "@id",   INT2FIX(i));
+              rb_iv_set(v, "@tags", LONG2NUM(tags[i]));
+
               rb_ary_push(array, v);
             }
         }
-
-      XFreeStringList(names);
     }
+
+  if(names) XFreeStringList(names);
+  if(tags)  free(tags);
 
   return array;
 } /* }}} */
@@ -341,7 +353,7 @@ subViewInit(VALUE self,
 
 /* subViewUpdate {{{ */
 /*
- * call-seq: Update -> Subtlext::View
+ * call-seq: update -> Subtlext::View
  *
  * Update View properties based on <b>required</b> View index.
  *
@@ -352,7 +364,43 @@ subViewInit(VALUE self,
 VALUE
 subViewUpdate(VALUE self)
 {
-  int id = -1, *tags = NULL, ntags = 0;
+  long *tags = NULL, ntags = 0;
+  VALUE id = Qnil;
+
+  /* Check ruby object */
+  rb_check_frozen(self);
+  GET_ATTR(self, "@id", id);
+
+  subSubtlextConnect(NULL); ///< Implicit open connection
+
+  /* Fetch tags */
+  if((tags = (long *)subSharedPropertyGet(display, ROOT, XA_CARDINAL,
+      XInternAtom(display, "SUBTLE_VIEW_TAGS", False), (unsigned long *)&ntags)))
+    {
+      int idx = FIX2INT(id);
+
+      rb_iv_set(self, "@tags", LONG2NUM(idx < ntags ? tags[idx] : 0));
+
+      free(tags);
+    }
+
+  return self;
+} /* }}} */
+
+/* subViewSave {{{ */
+/*
+ * call-seq: save -> Subtlext::View
+ *
+ * Save new View object.
+ *
+ *  view.save
+ *  => #<Subtlext::View:xxx>
+ */
+
+VALUE
+subViewSave(VALUE self)
+{
+  int id = -1;
   VALUE name = Qnil;
 
   /* Check ruby object */
@@ -382,25 +430,17 @@ subViewUpdate(VALUE self)
       char **names = NULL;
 
       /* Get names of views */
-      names = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
-        XInternAtom(display, "_NET_DESKTOP_NAMES", False), &nnames);
+      if((names = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
+          XInternAtom(display, "_NET_DESKTOP_NAMES", False), &nnames)))
+        {
+          id = nnames; ///< New id should be last
 
-      id = nnames; ///< New id should be last
-
-      if(names) XFreeStringList(names);
+          if(names) XFreeStringList(names);
+        }
     }
 
   /* Set properties */
   rb_iv_set(self, "@id", INT2FIX(id));
-
-  /* Fetch tags */
-  if((tags = (int *)subSharedPropertyGet(display, ROOT, XA_CARDINAL,
-      XInternAtom(display, "SUBTLE_VIEW_TAGS", False), (unsigned long *)&ntags)))
-    {
-      rb_iv_set(self, "@tags", INT2FIX(id < ntags ? tags[id] : 0));
-
-      free(tags);
-    }
 
   return self;
 } /* }}} */

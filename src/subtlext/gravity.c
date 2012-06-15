@@ -251,18 +251,18 @@ subGravityInit(int argc,
   return self;
 } /* }}} */
 
-/* subGravityUpdate {{{ */
+/* subGravitySave {{{ */
 /*
- * call-seq: update -> Subtlext::Gravity
+ * call-seq: save -> Subtlext::Gravity
  *
- * Update Gravity properties based on <b>required</b> Gravity index.
+ * Save new Gravity object.
  *
- *  gravity.update
+ *  gravity.save
  *  => nil
  */
 
 VALUE
-subGravityUpdate(VALUE self)
+subGravitySave(VALUE self)
 {
   int id = -1;
   XRectangle geom = { 0 };
@@ -319,6 +319,7 @@ subGravityUpdate(VALUE self)
       XFreeStringList(gravities);
     }
 
+  /* Set properties */
   rb_iv_set(self, "@id", INT2FIX(id));
 
   return self;

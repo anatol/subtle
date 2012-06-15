@@ -1571,15 +1571,16 @@ subSubtlextFindObjects(char *prop_name,
       XInternAtom(display, prop_name, False), &nstrings)))
     {
       int selid = -1;
-      VALUE meth = Qnil, klass = Qnil, obj = Qnil;
+      VALUE meth_new = Qnil, meth_update = Qnil, klass = Qnil, obj = Qnil;
       regex_t *preg = subSharedRegexNew(source);
 
       /* Special values */
       if(isdigit(source[0])) selid = atoi(source);
 
       /* Fetch data */
-      meth  = rb_intern("new");
-      klass = rb_const_get(mod, rb_intern(class_name));
+      meth_new    = rb_intern("new");
+      meth_update = rb_intern("update");
+      klass       = rb_const_get(mod, rb_intern(class_name));
 
       /* Check each string */
       for(i = 0; i < nstrings; i++)
@@ -1591,10 +1592,14 @@ subSubtlextFindObjects(char *prop_name,
                 subSharedRegexMatch(preg, strings[i])))))
             {
               /* Create new object */
-              if(RTEST((obj = rb_funcall(klass, meth, 1,
+              if(RTEST((obj = rb_funcall(klass, meth_new, 1,
                   rb_str_new2(strings[i])))))
                 {
                   rb_iv_set(obj, "@id", INT2FIX(i));
+
+                  /* Call update method of object */
+                  if(rb_respond_to(obj, meth_update))
+                    rb_funcall(obj, meth_update, 0, Qnil);
 
                   /* Select first or many */
                   if(first)
@@ -2005,7 +2010,7 @@ Init_subtlext(void)
 
   /* Class methods */
   rb_define_method(gravity, "initialize",   subGravityInit,           -1);
-  rb_define_method(gravity, "update",       subGravityUpdate,          0);
+  rb_define_method(gravity, "save",         subGravitySave,            0);
   rb_define_method(gravity, "clients",      subGravityClients,         0);
   rb_define_method(gravity, "geometry_for", subGravityGeometryFor,     1);
   rb_define_method(gravity, "geometry",     subGravityGeometryReader,  0);
@@ -2020,7 +2025,6 @@ Init_subtlext(void)
   rb_define_alias(rb_singleton_class(gravity), "all", "list");
 
   /* Aliases */
-  rb_define_alias(gravity, "save", "update");
   rb_define_alias(gravity, "to_s", "to_str");
 
   /*
@@ -2204,7 +2208,7 @@ Init_subtlext(void)
 
   /* Class methods */
   rb_define_method(tag, "initialize", subTagInit,     1);
-  rb_define_method(tag, "update",     subTagUpdate,   0);
+  rb_define_method(tag, "save",       subTagSave,     0);
   rb_define_method(tag, "clients",    subTagClients,  0);
   rb_define_method(tag, "views",      subTagViews,    0);
   rb_define_method(tag, "to_str",     subTagToString, 0);
@@ -2215,7 +2219,6 @@ Init_subtlext(void)
   rb_define_alias(rb_singleton_class(tag), "all", "list");
 
   /* Aliases */
-  rb_define_alias(tag, "save", "update");
   rb_define_alias(tag, "to_s", "to_str");
 
   /*
@@ -2308,6 +2311,7 @@ Init_subtlext(void)
   /* Class methods */
   rb_define_method(view, "initialize", subViewInit,          1);
   rb_define_method(view, "update",     subViewUpdate,        0);
+  rb_define_method(view, "save",       subViewSave,          0);
   rb_define_method(view, "clients",    subViewClients,       0);
   rb_define_method(view, "jump",       subViewJump,          0);
   rb_define_method(view, "next",       subViewSelectNext,    0);
@@ -2325,7 +2329,6 @@ Init_subtlext(void)
   rb_define_alias(view, "+",     "tag");
   rb_define_alias(view, "-",     "untag");
   rb_define_alias(view, "click", "jump");
-  rb_define_alias(view, "save",  "update");
   rb_define_alias(view, "to_s",  "to_str");
 
   /*

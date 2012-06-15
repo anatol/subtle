@@ -251,18 +251,18 @@ subTagInit(VALUE self,
   return self;
 } /* }}} */
 
-/* subTagUpdate {{{ */
+/* subTagSave {{{ */
 /*
- * call-seq: update -> Subtlext::Tag
+ * call-seq: save -> Subtlext::Tag
  *
- * Update Tag properties based on Tag index.
+ * Save new Tag object.
  *
  *  tag.update
  *  => #<Subtlext::Tag:xxx>
  */
 
 VALUE
-subTagUpdate(VALUE self)
+subTagSave(VALUE self)
 {
   int id = -1;
   VALUE name = Qnil;
@@ -294,14 +294,17 @@ subTagUpdate(VALUE self)
       char **tags = NULL;
 
       /* Get names of tags */
-      tags = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
-        XInternAtom(display, "SUBTLE_TAG_LIST", False), &ntags);
+      if((tags = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
+          XInternAtom(display, "SUBTLE_TAG_LIST", False), &ntags)))
+        {
 
-      id = ntags; ///< New id should be last
+          id = ntags; ///< New id should be last
 
-      if(tags) XFreeStringList(tags);
+          XFreeStringList(tags);
+        }
     }
 
+  /* Set properties */
   rb_iv_set(self, "@id", INT2FIX(id));
 
   return self;

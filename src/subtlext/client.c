@@ -558,11 +558,8 @@ subClientUpdate(VALUE self)
   rb_check_frozen(self);
   subSubtlextConnect(NULL); ///< Implicit open connection
 
-  /* Get client values */
-  win = NUM2LONG(rb_iv_get(self, "@win"));
-
   /* Check values */
-  if(0 <= win)
+  if(0 <= (win = NUM2LONG(rb_iv_get(self, "@win"))))
     {
       int *tags = NULL, *flags = NULL;
       char *wmname = NULL, *wminstance = NULL, *wmclass = NULL, *role = NULL;
@@ -1100,7 +1097,7 @@ subClientGravityReader(VALUE self)
           snprintf(buf, sizeof(buf), "%d", *id);
           gravity = subGravityInstantiate(buf);
 
-          subGravityUpdate(gravity);
+          subGravitySave(gravity);
 
           rb_iv_set(self, "@gravity", gravity);
 

@@ -128,7 +128,7 @@ VALUE subGravitySingList(VALUE self);                             ///< Get all g
 /* Class */
 VALUE subGravityInstantiate(char *name);                          ///< Instantiate gravity
 VALUE subGravityInit(int argc, VALUE *argv, VALUE self);          ///< Create new gravity
-VALUE subGravityUpdate(VALUE self);                               ///< Update gravity
+VALUE subGravitySave(VALUE self);                                 ///< Save gravity
 VALUE subGravityClients(VALUE self);                              ///< List clients with gravity
 VALUE subGravityGeometryFor(VALUE self, VALUE value);             ///< Get geometry gravity for screen
 VALUE subGravityGeometryReader(VALUE self);                       ///< Get geometry gravity
@@ -233,7 +233,7 @@ VALUE subTagSingList(VALUE self);                                 ///< Get all t
 /* Class */
 VALUE subTagInstantiate(char *name);                              ///< Instantiate tag
 VALUE subTagInit(VALUE self, VALUE name);                         ///< Create tag
-VALUE subTagUpdate(VALUE self);                                   ///< Update tag
+VALUE subTagSave(VALUE self);                                     ///< Save tag
 VALUE subTagClients(VALUE self);                                  ///< Get clients with tag
 VALUE subTagViews(VALUE self);                                    ///< Get views with tag
 VALUE subTagToString(VALUE self);                                 ///< Tag to string
@@ -266,6 +266,7 @@ VALUE subViewSingList(VALUE self);                                ///< Get all v
 VALUE subViewInstantiate(char *name);                             ///< Instantiate view
 VALUE subViewInit(VALUE self, VALUE name);                        ///< Create view
 VALUE subViewUpdate(VALUE self);                                  ///< Update view
+VALUE subViewSave(VALUE self);                                    ///< Save view
 VALUE subViewClients(VALUE self);                                 ///< Get clients of view
 VALUE subViewJump(VALUE self);                                    ///< Jump to view
 VALUE subViewSelectNext(VALUE self);                              ///< Select next view
