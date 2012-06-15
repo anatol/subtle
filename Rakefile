@@ -62,7 +62,7 @@ end
   "builddir"   => "build",
   "hdrdir"     => "",
   "archdir"    => "",
-  "revision"   => "3008", #< Latest stable
+  "revision"   => "3216", #< Latest stable
   "cflags"     => "-Wall -Werror -Wpointer-arith -Wstrict-prototypes -Wunused -Wshadow -std=gnu99",
   "cpppath"    => "-I. -I$(builddir) -Isrc -Isrc/shared -Isrc/subtle -idirafter$(hdrdir) -idirafter$(archdir)",
   "ldflags"    => "-L$(libdir) $(rpath) $(LIBS) -l$(RUBY_SO_NAME)",
@@ -73,7 +73,7 @@ end
 
 @defines = {
   "PKG_NAME"      => "subtle",
-  "PKG_VERSION"   => "0.10.$(revision)",
+  "PKG_VERSION"   => "0.11.$(revision)",
   "PKG_BUGREPORT" => "http://subforge.org/projects/subtle/issues",
   "PKG_CONFIG"    => "subtle.rb",
   "RUBY_VERSION"  => "$(MAJOR).$(MINOR).$(TEENY)"
