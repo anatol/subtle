@@ -62,7 +62,7 @@ end
   "builddir"   => "build",
   "hdrdir"     => "",
   "archdir"    => "",
-  "revision"   => "3216", #< Latest stable
+  "revision"   => "3224", #< Latest stable
   "cflags"     => "-Wall -Werror -Wpointer-arith -Wstrict-prototypes -Wunused -Wshadow -std=gnu99",
   "cpppath"    => "-I. -I$(builddir) -Isrc -Isrc/shared -Isrc/subtle -idirafter$(hdrdir) -idirafter$(archdir)",
   "ldflags"    => "-L$(libdir) $(rpath) $(LIBS) -l$(RUBY_SO_NAME)",
