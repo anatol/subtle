@@ -624,7 +624,7 @@ subPanelGeometry(SubPanel *p,
   /* Calculate panel geometry without style values */
   geom->x      = p->x + STYLE_LEFT((*s));
   geom->y      = p->flags & SUB_PANEL_BOTTOM ?
-    p->screen->geom.y + p->screen->geom.height - subtle->ph : subtle->ph;
+    p->screen->geom.y + p->screen->geom.height - subtle->ph : STYLE_TOP((*s));
   geom->width  = 0 == p->width ? 1 : p->width - STYLE_WIDTH((*s));
   geom->height = subtle->ph - STYLE_HEIGHT((*s));
 } /* }}} */
