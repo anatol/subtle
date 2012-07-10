@@ -250,7 +250,20 @@ SubtlextTagFind(VALUE value)
               tags |= (1L << (FIX2INT(id) + 1));
           }
         break;
-      default: break;
+      case T_ARRAY:
+          {
+            int i;
+            VALUE entry = Qnil;
+
+            /* Collect tags and raise if a tag wasn't found. Empty
+             * arrays reset tags and never enter this loop */
+            for(i = 0; Qnil != (entry = rb_ary_entry(value, i)); ++i)
+              tags |= SubtlextTagFind(entry);
+          }
+        break;
+      default:
+        rb_raise(rb_eArgError, "Unexpected value-type `%s'",
+          rb_obj_classname(value));
     }
 
   /* Check if tags were found */
@@ -270,29 +283,8 @@ SubtlextTag(VALUE self,
   /* Check ruby object */
   rb_check_frozen(self);
 
-  /* Check object type */
-  switch(rb_type(value))
-    {
-      case T_SYMBOL:
-      case T_STRING:
-      case T_OBJECT:
-        data.l[1] |= SubtlextTagFind(value);
-        break;
-      case T_ARRAY:
-          {
-            int i;
-            VALUE entry = Qnil;
-
-            /* Collect tags and raise if a tag wasn't found. Empty
-             * arrays reset tags and never enter this loop */
-            for(i = 0; Qnil != (entry = rb_ary_entry(value, i)); ++i)
-              data.l[1] |= SubtlextTagFind(entry);
-          }
-        break;
-      default:
-        rb_raise(rb_eArgError, "Unexpected value-type `%s'",
-          rb_obj_classname(value));
-    }
+  /* Convert tags to bitmask */
+  data.l[1] |= SubtlextTagFind(value);
 
   /* Get and update tag mask */
   if(0 != action)
