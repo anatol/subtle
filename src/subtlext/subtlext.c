@@ -266,9 +266,6 @@ SubtlextTagFind(VALUE value)
           rb_obj_classname(value));
     }
 
-  /* Check if tags were found */
-  if(0 == tags) rb_raise(rb_eStandardError, "Invalid tag");
-
   return tags;
 } /* }}} */
 
