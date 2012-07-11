@@ -325,7 +325,8 @@ module Subtle # {{{
       end # }}}
 
       def usage(group) # {{{
-        puts 'Usage: subtler [GENERIC|MODIFIER] GROUP ACTION [ARG1] [ARG2]\n\n'
+        puts 'Usage: subtler [GENERIC|MODIFIER] GROUP ACTION [ARG1] [ARG2]'
+        puts
 
         if group.nil?
           puts <<-EOF
@@ -333,6 +334,8 @@ module Subtle # {{{
     -d, --display=DISPLAY  Connect to DISPLAY (default: #{ENV['DISPLAY']})
     -h, --help             Show this help and exit
     -V, --version          Show version info and exit
+    -p, --proc             Create a ruby proc from given argument and yield the result
+                           of the group to it as parameter 'param'
 
   Modifier:
     -r, --reload           Reload config and sublets
