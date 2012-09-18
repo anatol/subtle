@@ -89,7 +89,7 @@ WindowExpose(SubtlextWindow *w)
 
           /* Carefully call listen proc */
           rb_protect(WindowCall, (VALUE)&rargs, &state);
-          if(state) subSubtlextBacktrace();
+          if(state) subextSubtlextBacktrace();
         }
 
      XSync(display, False); ///< Sync with X
@@ -191,7 +191,7 @@ WindowGrab(SubtlextWindow *w)
 
             /* Carefully call listen proc */
             result = rb_protect(WindowCall, (VALUE)&rargs, &state);
-            if(state) subSubtlextBacktrace();
+            if(state) subextSubtlextBacktrace();
 
             /* End event loop? */
             if(Qtrue != result || state) loop = False;
@@ -206,7 +206,7 @@ WindowGrab(SubtlextWindow *w)
 
             /* Carefully call listen proc */
             result = rb_protect(WindowCall, (VALUE)&rargs, &state);
-            if(state) subSubtlextBacktrace();
+            if(state) subextSubtlextBacktrace();
 
             /* End event loop? */
             if(Qtrue != result || state) loop = False;
@@ -238,7 +238,7 @@ WindowGrab(SubtlextWindow *w)
 
 /* Singleton */
 
-/* subWindowSingOnce {{{ */
+/* subextWindowSingOnce {{{ */
 /*
  * call-seq: once(geometry) -> Value
  *
@@ -251,7 +251,7 @@ WindowGrab(SubtlextWindow *w)
  **/
 
 VALUE
-subWindowSingOnce(VALUE self,
+subextWindowSingOnce(VALUE self,
   VALUE geometry)
 {
   VALUE win = Qnil, ret = Qnil;
@@ -259,21 +259,21 @@ subWindowSingOnce(VALUE self,
   rb_need_block();
 
   /* Create new window */
-  win = subWindowInstantiate(geometry);
+  win = subextWindowInstantiate(geometry);
 
   /* Yield block */
   ret = rb_yield_values(1, win);
 
-  subWindowKill(win);
+  subextWindowKill(win);
 
   return ret;
 } /* }}} */
 
 /* Helper */
 
-/* subWindowInstantiate {{{ */
+/* subextWindowInstantiate {{{ */
 VALUE
-subWindowInstantiate(VALUE geometry)
+subextWindowInstantiate(VALUE geometry)
 {
   VALUE klass = Qnil, win = Qnil;
 
@@ -286,7 +286,7 @@ subWindowInstantiate(VALUE geometry)
 
 /* Class */
 
-/* subWindowAlloc {{{ */
+/* subextWindowAlloc {{{ */
 /*
  * call-seq: new(geometry) -> Subtlext::Window
  *
@@ -294,7 +294,7 @@ subWindowInstantiate(VALUE geometry)
  **/
 
 VALUE
-subWindowAlloc(VALUE self)
+subextWindowAlloc(VALUE self)
 {
   SubtlextWindow *w = NULL;
 
@@ -306,7 +306,7 @@ subWindowAlloc(VALUE self)
   return w->instance;
 } /* }}} */
 
-/* subWindowInit {{{
+/* subextWindowInit {{{
  *
  * call-seq: new(geometry, &block) -> Subtlext::Window
  *
@@ -318,7 +318,7 @@ subWindowAlloc(VALUE self)
  */
 
 VALUE
-subWindowInit(VALUE self,
+subextWindowInit(VALUE self,
   VALUE value)
 {
   SubtlextWindow *w = NULL;
@@ -328,7 +328,7 @@ subWindowInit(VALUE self,
     {
       VALUE geometry = Qnil;
 
-      subSubtlextConnect(NULL); ///< Implicit open connection
+      subextSubtlextConnect(NULL); ///< Implicit open connection
 
       /* Check object type */
       switch(rb_type(value))
@@ -340,10 +340,10 @@ subWindowInit(VALUE self,
                 XRectangle r = { 0 };
 
                 /* Create geometry */
-                geometry = subGeometryInstantiate(0, 0, 1, 1);
-                geometry = subGeometryInit(1, &value, geometry);
+                geometry = subextGeometryInstantiate(0, 0, 1, 1);
+                geometry = subextGeometryInit(1, &value, geometry);
 
-                subGeometryToRect(geometry, &r);
+                subextGeometryToRect(geometry, &r);
 
                 /* Create window */
                 sattrs.override_redirect = True;
@@ -367,7 +367,7 @@ subWindowInit(VALUE self,
                 /* Get window geometry */
                 if(XGetGeometry(display, w->win, &root,
                     &x, &y, &width, &height, &bw, &depth))
-                  geometry = subGeometryInstantiate(x, y, width, height);
+                  geometry = subextGeometryInstantiate(x, y, width, height);
                 else rb_raise(rb_eArgError, "Invalid window `%#lx'", w->win);
               }
             break;
@@ -394,7 +394,7 @@ subWindowInit(VALUE self,
   return Qnil;
 } /* }}} */
 
-/* subWindowSubwindow {{{
+/* subextWindowSubwindow {{{
  *
  * call-seq: subwindow(geometry, &block) -> Subtlext::Window or nil
  *
@@ -406,7 +406,7 @@ subWindowInit(VALUE self,
  */
 
 VALUE
-subWindowSubwindow(VALUE self,
+subextWindowSubwindow(VALUE self,
   VALUE geometry)
 {
   VALUE ret = Qnil;
@@ -417,9 +417,9 @@ subWindowSubwindow(VALUE self,
     {
       SubtlextWindow *w2 = NULL;
 
-      subSubtlextConnect(NULL); ///< Implicit open connection
+      subextSubtlextConnect(NULL); ///< Implicit open connection
 
-      ret = subWindowInstantiate(geometry);
+      ret = subextWindowInstantiate(geometry);
 
       Data_Get_Struct(ret, SubtlextWindow, w2);
       if(w2)
@@ -435,7 +435,7 @@ subWindowSubwindow(VALUE self,
   return ret;
 } /* }}} */
 
-/* subWindowNameWriter {{{ */
+/* subextWindowNameWriter {{{ */
 /*
  * call-seq: name=(str) -> String
  *
@@ -446,7 +446,7 @@ subWindowSubwindow(VALUE self,
  */
 
 VALUE
-subWindowNameWriter(VALUE self,
+subextWindowNameWriter(VALUE self,
   VALUE value)
 {
   SubtlextWindow *w = NULL;
@@ -485,7 +485,7 @@ subWindowNameWriter(VALUE self,
   return value;
 } /* }}} */
 
-/* subWindowFontWriter {{{ */
+/* subextWindowFontWriter {{{ */
 /*
  * call-seq: font=(string) -> String
  *
@@ -496,7 +496,7 @@ subWindowNameWriter(VALUE self,
  */
 
 VALUE
-subWindowFontWriter(VALUE self,
+subextWindowFontWriter(VALUE self,
   VALUE value)
 {
   SubtlextWindow *w = NULL;
@@ -530,7 +530,7 @@ subWindowFontWriter(VALUE self,
   return value;
 } /* }}} */
 
-/* subWindowFontYReader {{{ */
+/* subextWindowFontYReader {{{ */
 /*
  * call-seq: font_y -> Fixnum
  *
@@ -541,7 +541,7 @@ subWindowFontWriter(VALUE self,
  */
 
 VALUE
-subWindowFontYReader(VALUE self)
+subextWindowFontYReader(VALUE self)
 {
   VALUE ret = INT2FIX(0);
   SubtlextWindow *w = NULL;
@@ -555,7 +555,7 @@ subWindowFontYReader(VALUE self)
   return ret;
 } /* }}} */
 
-/* subWindowFontHeightReader {{{ */
+/* subextWindowFontHeightReader {{{ */
 /*
  * call-seq: font_height -> Fixnum
  *
@@ -566,7 +566,7 @@ subWindowFontYReader(VALUE self)
  */
 
 VALUE
-subWindowFontHeightReader(VALUE self)
+subextWindowFontHeightReader(VALUE self)
 {
   VALUE ret = INT2FIX(0);
   SubtlextWindow *w = NULL;
@@ -580,7 +580,7 @@ subWindowFontHeightReader(VALUE self)
   return ret;
 } /* }}} */
 
-/* subWindowFontWidth {{{ */
+/* subextWindowFontWidth {{{ */
 /*
  * call-seq: font_width(string) -> Fixnum
  *
@@ -591,7 +591,7 @@ subWindowFontHeightReader(VALUE self)
  */
 
 VALUE
-subWindowFontWidth(VALUE self,
+subextWindowFontWidth(VALUE self,
   VALUE string)
 {
   VALUE ret = INT2FIX(0);
@@ -608,7 +608,7 @@ subWindowFontWidth(VALUE self,
   return ret;
 } /* }}} */
 
-/* subWindowForegroundWriter {{{ */
+/* subextWindowForegroundWriter {{{ */
 /*
  * call-seq: foreground=(string) -> String
  *           foreground=(array)  -> Array
@@ -630,7 +630,7 @@ subWindowFontWidth(VALUE self,
  */
 
 VALUE
-subWindowForegroundWriter(VALUE self,
+subextWindowForegroundWriter(VALUE self,
   VALUE value)
 {
   SubtlextWindow *w = NULL;
@@ -639,12 +639,12 @@ subWindowForegroundWriter(VALUE self,
   rb_check_frozen(self);
 
   Data_Get_Struct(self, SubtlextWindow, w);
-  if(w) w->fg = subColorPixel(value, Qnil, Qnil, NULL);
+  if(w) w->fg = subextColorPixel(value, Qnil, Qnil, NULL);
 
   return value;
 } /* }}} */
 
-/* subWindowBackgroundWriter {{{ */
+/* subextWindowBackgroundWriter {{{ */
 /*
  * call-seq: background=(string) -> String
  *           background=(array)  -> Array
@@ -666,7 +666,7 @@ subWindowForegroundWriter(VALUE self,
  */
 
 VALUE
-subWindowBackgroundWriter(VALUE self,
+subextWindowBackgroundWriter(VALUE self,
   VALUE value)
 {
   SubtlextWindow *w = NULL;
@@ -677,7 +677,7 @@ subWindowBackgroundWriter(VALUE self,
   Data_Get_Struct(self, SubtlextWindow, w);
   if(w)
     {
-      w->bg = subColorPixel(value, Qnil, Qnil, NULL);
+      w->bg = subextColorPixel(value, Qnil, Qnil, NULL);
 
       XSetWindowBackground(display, w->win, w->bg);
     }
@@ -685,7 +685,7 @@ subWindowBackgroundWriter(VALUE self,
   return value;
 } /* }}} */
 
-/* subWindowBorderColorWriter {{{ */
+/* subextWindowBorderColorWriter {{{ */
 /*
  * call-seq: border=(string) -> String
  *           border=(array)  -> Array
@@ -707,7 +707,7 @@ subWindowBackgroundWriter(VALUE self,
  */
 
 VALUE
-subWindowBorderColorWriter(VALUE self,
+subextWindowBorderColorWriter(VALUE self,
   VALUE value)
 {
   SubtlextWindow *w = NULL;
@@ -719,14 +719,14 @@ subWindowBorderColorWriter(VALUE self,
   if(w)
     {
       XSetWindowBorder(display, w->win,
-        subColorPixel(value, Qnil, Qnil, NULL));
+        subextColorPixel(value, Qnil, Qnil, NULL));
       XFlush(display);
     }
 
   return Qnil;
 } /* }}} */
 
-/* subWindowBorderSizeWriter {{{ */
+/* subextWindowBorderSizeWriter {{{ */
 /*
  * call-seq: border_size=(fixnum) -> Fixnum
  *
@@ -737,7 +737,7 @@ subWindowBorderColorWriter(VALUE self,
  */
 
 VALUE
-subWindowBorderSizeWriter(VALUE self,
+subextWindowBorderSizeWriter(VALUE self,
   VALUE value)
 {
   SubtlextWindow *w = NULL;
@@ -765,7 +765,7 @@ subWindowBorderSizeWriter(VALUE self,
   return value;
 } /* }}} */
 
-/* subWindowGeometryReader {{{ */
+/* subextWindowGeometryReader {{{ */
 /*
  * call-seq: geometry -> Subtlext::Geometry
  *
@@ -776,7 +776,7 @@ subWindowBorderSizeWriter(VALUE self,
  */
 
 VALUE
-subWindowGeometryReader(VALUE self)
+subextWindowGeometryReader(VALUE self)
 {
   VALUE geom = Qnil;
 
@@ -787,7 +787,7 @@ subWindowGeometryReader(VALUE self)
   return geom;
 } /* }}} */
 
-/* subWindowGeometryWriter {{{ */
+/* subextWindowGeometryWriter {{{ */
 /*
  * call-seq: geometry=(array)  -> Array
  *           geometry=(hash)   -> Hash
@@ -805,7 +805,7 @@ subWindowGeometryReader(VALUE self)
  */
 
 VALUE
-subWindowGeometryWriter(VALUE self,
+subextWindowGeometryWriter(VALUE self,
   VALUE value)
 {
   SubtlextWindow *w = NULL;
@@ -820,18 +820,18 @@ subWindowGeometryWriter(VALUE self,
       VALUE geom = Qnil;
 
       /* Create geometry */
-      geom = subGeometryInstantiate(0, 0, 1, 1);
-      geom = subGeometryInit(1, &value, geom);
+      geom = subextGeometryInstantiate(0, 0, 1, 1);
+      geom = subextGeometryInit(1, &value, geom);
 
       rb_iv_set(self, "@geometry", geom);
-      subGeometryToRect(geom, &r);
+      subextGeometryToRect(geom, &r);
       XMoveResizeWindow(display, w->win, r.x, r.y, r.width, r.height);
     }
 
   return value;
 } /* }}} */
 
-/* subWindowOn {{{ */
+/* subextWindowOn {{{ */
 /*
  * call-seq: on(event, &block) -> Subtlext::Window
  *
@@ -845,7 +845,7 @@ subWindowGeometryWriter(VALUE self,
  */
 
 VALUE
-subWindowOn(int argc,
+subextWindowOn(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -882,7 +882,7 @@ subWindowOn(int argc,
   return self;
 } /* }}} */
 
-/* subWindowDrawPoint {{{ */
+/* subextWindowDrawPoint {{{ */
 /*
  * call-seq: draw_point(x, y, color) -> Subtlext::Window
  *
@@ -896,7 +896,7 @@ subWindowOn(int argc,
  */
 
 VALUE
-subWindowDrawPoint(int argc,
+subextWindowDrawPoint(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -923,7 +923,7 @@ subWindowDrawPoint(int argc,
           gvals.background = w->bg;
 
           if(!NIL_P(color))
-            gvals.foreground = subColorPixel(color, Qnil, Qnil, NULL);
+            gvals.foreground = subextColorPixel(color, Qnil, Qnil, NULL);
 
           XChangeGC(display, w->gc, GCForeground|GCBackground, &gvals);
 
@@ -937,7 +937,7 @@ subWindowDrawPoint(int argc,
   return self;
 } /* }}} */
 
-/* subWindowDrawLine {{{ */
+/* subextWindowDrawLine {{{ */
 /*
  * call-seq: draw_line(x1, y1, x2, y2, color) -> Subtlext::Window
  *
@@ -951,7 +951,7 @@ subWindowDrawPoint(int argc,
  */
 
 VALUE
-subWindowDrawLine(int argc,
+subextWindowDrawLine(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -979,7 +979,7 @@ subWindowDrawLine(int argc,
           gvals.background = w->bg;
 
           if(!NIL_P(color))
-            gvals.foreground = subColorPixel(color, Qnil, Qnil, NULL);
+            gvals.foreground = subextColorPixel(color, Qnil, Qnil, NULL);
 
           XChangeGC(display, w->gc, GCForeground|GCBackground, &gvals);
 
@@ -994,7 +994,7 @@ subWindowDrawLine(int argc,
   return self;
 } /* }}} */
 
-/* subWindowDrawRect {{{ */
+/* subextWindowDrawRect {{{ */
 /*
  * call-seq: draw_rect(x, y, width, height, color, fill) -> Subtlext::Window
  *
@@ -1009,7 +1009,7 @@ subWindowDrawLine(int argc,
  */
 
 VALUE
-subWindowDrawRect(int argc,
+subextWindowDrawRect(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -1037,7 +1037,7 @@ subWindowDrawRect(int argc,
           gvals.background = w->bg;
 
           if(!NIL_P(color))
-            gvals.foreground = subColorPixel(color, Qnil, Qnil, NULL);
+            gvals.foreground = subextColorPixel(color, Qnil, Qnil, NULL);
 
           XChangeGC(display, w->gc, GCForeground|GCBackground, &gvals);
 
@@ -1058,7 +1058,7 @@ subWindowDrawRect(int argc,
   return self;
 } /* }}} */
 
-/* subWindowDrawText {{{ */
+/* subextWindowDrawText {{{ */
 /*
  * call-seq: draw_text(x, y, string, color) -> Subtlext::Window
  *
@@ -1070,7 +1070,7 @@ subWindowDrawRect(int argc,
  */
 
 VALUE
-subWindowDrawText(int argc,
+subextWindowDrawText(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -1092,7 +1092,7 @@ subWindowDrawText(int argc,
         w->gc = XCreateGC(display, w->win, 0, NULL);
 
       /* Parse colors */
-      if(!NIL_P(color)) lcolor = subColorPixel(color, Qnil, Qnil, NULL);
+      if(!NIL_P(color)) lcolor = subextColorPixel(color, Qnil, Qnil, NULL);
 
       subSharedDrawString(display, w->gc, w->font, w->win, FIX2INT(x),
         FIX2INT(y), lcolor, w->bg, RSTRING_PTR(text), RSTRING_LEN(text));
@@ -1101,7 +1101,7 @@ subWindowDrawText(int argc,
   return self;
 } /* }}} */
 
-/* subWindowDrawIcon {{{ */
+/* subextWindowDrawIcon {{{ */
 /*
  * call-seq: draw_icon(x, y, icon, fg, bg) -> Subtlext::Window
  *
@@ -1113,7 +1113,7 @@ subWindowDrawText(int argc,
  */
 
 VALUE
-subWindowDrawIcon(int argc,
+subextWindowDrawIcon(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -1138,14 +1138,14 @@ subWindowDrawIcon(int argc,
         w->gc = XCreateGC(display, w->win, 0, NULL);
 
       /* Parse colors */
-      if(!NIL_P(fg)) lfg = subColorPixel(fg, Qnil, Qnil, NULL);
-      if(!NIL_P(bg)) lbg = subColorPixel(bg, Qnil, Qnil, NULL);
+      if(!NIL_P(fg)) lfg = subextColorPixel(fg, Qnil, Qnil, NULL);
+      if(!NIL_P(bg)) lbg = subextColorPixel(bg, Qnil, Qnil, NULL);
 
       /* Fetch icon values */
       width  = rb_iv_get(icon, "@width");
       height = rb_iv_get(icon, "@height");
       pixmap = rb_iv_get(icon, "@pixmap");
-      bitmap = Qtrue == subIconAskBitmap(icon) ? True : False;
+      bitmap = Qtrue == subextIconAskBitmap(icon) ? True : False;
 
       subSharedDrawIcon(display, w->gc, w->win, FIX2INT(x),
         FIX2INT(y), FIX2INT(width), FIX2INT(height), lfg, lbg,
@@ -1155,7 +1155,7 @@ subWindowDrawIcon(int argc,
   return self;
 } /* }}} */
 
-/* subWindowClear {{{ */
+/* subextWindowClear {{{ */
 /*
  * call-seq: clear -> Subtlext::Window
  *
@@ -1166,7 +1166,7 @@ subWindowDrawIcon(int argc,
  */
 
 VALUE
-subWindowClear(int argc,
+subextWindowClear(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -1194,7 +1194,7 @@ subWindowClear(int argc,
   return self;
 } /* }}} */
 
-/* subWindowRedraw {{{ */
+/* subextWindowRedraw {{{ */
 /*
  * call-seq: redraw -> Subtlext::Window
  *
@@ -1205,7 +1205,7 @@ subWindowClear(int argc,
  */
 
 VALUE
-subWindowRedraw(VALUE self)
+subextWindowRedraw(VALUE self)
 {
   SubtlextWindow *w = NULL;
 
@@ -1218,7 +1218,7 @@ subWindowRedraw(VALUE self)
   return self;
 } /* }}} */
 
-/* subWindowRaise {{{ */
+/* subextWindowRaise {{{ */
 /*
  * call-seq: raise -> Subtlext::Window
  *
@@ -1230,7 +1230,7 @@ subWindowRedraw(VALUE self)
  */
 
 VALUE
-subWindowRaise(VALUE self)
+subextWindowRaise(VALUE self)
 {
   SubtlextWindow *w = NULL;
 
@@ -1247,7 +1247,7 @@ subWindowRaise(VALUE self)
   return self;
 } /* }}} */
 
-/* subWindowLower {{{ */
+/* subextWindowLower {{{ */
 /*
  * call-seq: lower -> Subtlext::Window
  *
@@ -1259,7 +1259,7 @@ subWindowRaise(VALUE self)
  */
 
 VALUE
-subWindowLower(VALUE self)
+subextWindowLower(VALUE self)
 {
   SubtlextWindow *w = NULL;
 
@@ -1276,7 +1276,7 @@ subWindowLower(VALUE self)
   return self;
 } /* }}} */
 
-/* subWindowShow {{{ */
+/* subextWindowShow {{{ */
 /*
  * call-seq: show() -> Subtlext::Window
  *
@@ -1287,7 +1287,7 @@ subWindowLower(VALUE self)
  */
 
 VALUE
-subWindowShow(VALUE self)
+subextWindowShow(VALUE self)
 {
   SubtlextWindow *w = NULL;
 
@@ -1310,7 +1310,7 @@ subWindowShow(VALUE self)
   return self;
 } /* }}} */
 
-/* subWindowHide {{{ */
+/* subextWindowHide {{{ */
 /*
  * call-seq: hide() -> Subtlext::Window
  *
@@ -1321,7 +1321,7 @@ subWindowShow(VALUE self)
  */
 
 VALUE
-subWindowHide(VALUE self)
+subextWindowHide(VALUE self)
 {
   VALUE win = Qnil;
 
@@ -1340,7 +1340,7 @@ subWindowHide(VALUE self)
   return self;
 } /* }}} */
 
-/* subWindowAskHidden {{{ */
+/* subextWindowAskHidden {{{ */
 /*
  * call-seq: hidden -> true or false
  *
@@ -1351,7 +1351,7 @@ subWindowHide(VALUE self)
  */
 
 VALUE
-subWindowAskHidden(VALUE self)
+subextWindowAskHidden(VALUE self)
 {
   VALUE hidden  = Qnil;
 
@@ -1362,7 +1362,7 @@ subWindowAskHidden(VALUE self)
   return hidden;
 } /* }}} */
 
-/* subWindowKill {{{ */
+/* subextWindowKill {{{ */
 /*
  * call-seq: kill() -> nil
  *
@@ -1373,7 +1373,7 @@ subWindowAskHidden(VALUE self)
  */
 
 VALUE
-subWindowKill(VALUE self)
+subextWindowKill(VALUE self)
 {
   SubtlextWindow *w = NULL;
 

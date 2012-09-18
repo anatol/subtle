@@ -20,28 +20,28 @@ TrayFind(VALUE value,
   VALUE parsed = Qnil;
   char buf[50] = { 0 };
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Check object type */
-  switch(rb_type(parsed = subSubtlextParse(
+  switch(rb_type(parsed = subextSubtlextParse(
       value, buf, sizeof(buf), &flags)))
     {
       case T_SYMBOL:
         if(CHAR2SYM("all") == parsed)
-          return subTraySingList(Qnil);
+          return subextTraySingList(Qnil);
         break;
       case T_OBJECT:
         if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("Tray"))))
           return parsed;
     }
 
-  return subSubtlextFindWindows("SUBTLE_TRAY_LIST", "Tray",
+  return subextSubtlextFindWindows("SUBTLE_TRAY_LIST", "Tray",
     buf, flags, first);
 } /* }}} */
 
 /* Singleton */
 
-/* subTraySingFind {{{ */
+/* subextTraySingFind {{{ */
 /*
  * call-seq: find(value) -> Array
  *           [value]     -> Array
@@ -79,13 +79,13 @@ TrayFind(VALUE value,
  */
 
 VALUE
-subTraySingFind(VALUE self,
+subextTraySingFind(VALUE self,
   VALUE value)
 {
   return TrayFind(value, False);
 } /* }}} */
 
-/* subTraySingFirst {{{ */
+/* subextTraySingFirst {{{ */
 /*
  * call-seq: find(value) -> Subtlext::Tray or nil
  *
@@ -110,13 +110,13 @@ subTraySingFind(VALUE self,
  */
 
 VALUE
-subTraySingFirst(VALUE self,
+subextTraySingFirst(VALUE self,
   VALUE value)
 {
   return TrayFind(value, True);
 } /* }}} */
 
-/* subTraySingList {{{ */
+/* subextTraySingList {{{ */
 /*
  * call-seq: list -> Array
  *
@@ -131,13 +131,13 @@ subTraySingFirst(VALUE self,
  */
 
 VALUE
-subTraySingList(VALUE self)
+subextTraySingList(VALUE self)
 {
   int i, ntrays = 0;
   Window *trays = NULL;
   VALUE meth = Qnil, klass = Qnil, array = Qnil;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   meth  = rb_intern("new");
@@ -145,13 +145,13 @@ subTraySingList(VALUE self)
   array = rb_ary_new();
 
   /* Check results */
-  if((trays = subSubtlextWindowList("SUBTLE_TRAY_LIST", &ntrays)))
+  if((trays = subextSubtlextWindowList("SUBTLE_TRAY_LIST", &ntrays)))
     {
       for(i = 0; i < ntrays; i++)
         {
           VALUE t = rb_funcall(klass, meth, 1, LONG2NUM(trays[i]));
 
-          if(!NIL_P(t)) subTrayUpdate(t);
+          if(!NIL_P(t)) subextTrayUpdate(t);
 
           rb_ary_push(array, t);
         }
@@ -164,9 +164,9 @@ subTraySingList(VALUE self)
 
 /* Helper */
 
-/* subTrayInstantiate {{{ */
+/* subextTrayInstantiate {{{ */
 VALUE
-subTrayInstantiate(Window win)
+subextTrayInstantiate(Window win)
 {
   VALUE klass = Qnil, tray = Qnil;
 
@@ -179,7 +179,7 @@ subTrayInstantiate(Window win)
 
 /* Class */
 
-/* subTrayInit {{{ */
+/* subextTrayInit {{{ */
 /*
  * call-seq: new(name) -> Subtlext::Tray
  *
@@ -192,7 +192,7 @@ subTrayInstantiate(Window win)
  */
 
 VALUE
-subTrayInit(VALUE self,
+subextTrayInit(VALUE self,
   VALUE win)
 {
   if(!FIXNUM_P(win) && T_BIGNUM != rb_type(win))
@@ -205,12 +205,12 @@ subTrayInit(VALUE self,
   rb_iv_set(self, "@klass", Qnil);
   rb_iv_set(self, "@title", Qnil);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   return self;
 } /* }}} */
 
-/* subTrayUpdate {{{ */
+/* subextTrayUpdate {{{ */
 /*
  * call-seq: update -> Subtlext::Tray
  *
@@ -221,13 +221,13 @@ subTrayInit(VALUE self,
  */
 
 VALUE
-subTrayUpdate(VALUE self)
+subextTrayUpdate(VALUE self)
 {
   Window win = None;
 
   /* Check ruby object */
   rb_check_frozen(self);
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Get tray values */
   win = NUM2LONG(rb_iv_get(self, "@win"));
@@ -255,7 +255,7 @@ subTrayUpdate(VALUE self)
   return self;
 } /* }}} */
 
-/* subTrayToString {{{ */
+/* subextTrayToString {{{ */
 /*
  * call-seq: to_str -> String
  *
@@ -266,7 +266,7 @@ subTrayUpdate(VALUE self)
  */
 
 VALUE
-subTrayToString(VALUE self)
+subextTrayToString(VALUE self)
 {
   VALUE name = Qnil;
 
@@ -276,7 +276,7 @@ subTrayToString(VALUE self)
   return name;
 } /* }}} */
 
-/* subTrayKill {{{ */
+/* subextTrayKill {{{ */
 /*
  * call-seq: kill -> nil
  *
@@ -287,7 +287,7 @@ subTrayToString(VALUE self)
  */
 
 VALUE
-subTrayKill(VALUE self)
+subextTrayKill(VALUE self)
 {
   VALUE win = Qnil;
   SubMessageData data = { { 0, 0, 0, 0, 0 } };
@@ -296,7 +296,7 @@ subTrayKill(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@win", win);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Send message */
   data.l[0] = CurrentTime;

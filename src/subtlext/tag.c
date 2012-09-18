@@ -20,29 +20,29 @@ TagFind(VALUE value,
   VALUE parsed = Qnil;
   char buf[50] = { 0 };
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Check object type */
-  switch(rb_type(parsed = subSubtlextParse(
+  switch(rb_type(parsed = subextSubtlextParse(
       value, buf, sizeof(buf), &flags)))
     {
       case T_SYMBOL:
         if(CHAR2SYM("visible") == parsed)
-          return subTagSingVisible(Qnil);
+          return subextTagSingVisible(Qnil);
         else if(CHAR2SYM("all") == parsed)
-          return subTagSingList(Qnil);
+          return subextTagSingList(Qnil);
         break;
       case T_OBJECT:
         if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("Tag"))))
           return parsed;
     }
 
-  return subSubtlextFindObjects("SUBTLE_TAG_LIST", "Tag", buf, flags, first);
+  return subextSubtlextFindObjects("SUBTLE_TAG_LIST", "Tag", buf, flags, first);
 } /* }}} */
 
 /* Singleton */
 
-/* subTagSingFind {{{ */
+/* subextTagSingFind {{{ */
 /*
  * call-seq: find(value) -> Array
  *           [value]     -> Array
@@ -72,13 +72,13 @@ TagFind(VALUE value,
  */
 
 VALUE
-subTagSingFind(VALUE self,
+subextTagSingFind(VALUE self,
   VALUE value)
 {
   return TagFind(value, False);
 } /* }}} */
 
-/* subTagSingFirst {{{ */
+/* subextTagSingFirst {{{ */
 /*
  * call-seq: first(value) -> Subtlext::Tag or nil
  *
@@ -98,13 +98,13 @@ subTagSingFind(VALUE self,
  */
 
 VALUE
-subTagSingFirst(VALUE self,
+subextTagSingFirst(VALUE self,
   VALUE value)
 {
   return TagFind(value, True);
 } /* }}} */
 
-/* subTagSingVisible {{{ */
+/* subextTagSingVisible {{{ */
 /*
  * call-seq: visible -> Array
  *
@@ -118,14 +118,14 @@ subTagSingFirst(VALUE self,
  */
 
 VALUE
-subTagSingVisible(VALUE self)
+subextTagSingVisible(VALUE self)
 {
   int i, ntags = 0;
   char **tags = NULL;
   unsigned long *visible = NULL;
   VALUE meth = Qnil, klass = Qnil, array = Qnil, t = Qnil;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   meth    = rb_intern("new");
@@ -159,7 +159,7 @@ subTagSingVisible(VALUE self)
   return array;
 } /* }}} */
 
-/* subTagSingList {{{ */
+/* subextTagSingList {{{ */
 /*
  * call-seq: list -> Array
  *
@@ -174,13 +174,13 @@ subTagSingVisible(VALUE self)
  */
 
 VALUE
-subTagSingList(VALUE self)
+subextTagSingList(VALUE self)
 {
   int i, ntags = 0;
   char **tags = NULL;
   VALUE meth = Qnil, klass = Qnil, array = Qnil;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   meth  = rb_intern("new");
@@ -207,9 +207,9 @@ subTagSingList(VALUE self)
 
 /* Helper */
 
-/* subTagInstantiate {{{ */
+/* subextTagInstantiate {{{ */
 VALUE
-subTagInstantiate(char *name)
+subextTagInstantiate(char *name)
 {
   VALUE klass = Qnil, tag = Qnil;
 
@@ -222,7 +222,7 @@ subTagInstantiate(char *name)
 
 /* Class */
 
-/* subTagInit {{{ */
+/* subextTagInit {{{ */
 /*
  * call-seq: new(name) -> Subtlext::Tag
  *
@@ -235,7 +235,7 @@ subTagInstantiate(char *name)
  */
 
 VALUE
-subTagInit(VALUE self,
+subextTagInit(VALUE self,
   VALUE name)
 {
   if(T_STRING != rb_type(name))
@@ -246,12 +246,12 @@ subTagInit(VALUE self,
   rb_iv_set(self, "@id",   Qnil);
   rb_iv_set(self, "@name", name);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   return self;
 } /* }}} */
 
-/* subTagSave {{{ */
+/* subextTagSave {{{ */
 /*
  * call-seq: save -> Subtlext::Tag
  *
@@ -262,7 +262,7 @@ subTagInit(VALUE self,
  */
 
 VALUE
-subTagSave(VALUE self)
+subextTagSave(VALUE self)
 {
   int id = -1;
   VALUE name = Qnil;
@@ -271,10 +271,10 @@ subTagSave(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@name", name);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Create tag if needed */
-  if(-1 == (id = subSubtlextFindString("SUBTLE_TAG_LIST",
+  if(-1 == (id = subextSubtlextFindString("SUBTLE_TAG_LIST",
       RSTRING_PTR(name), NULL, SUB_MATCH_EXACT)))
     {
       SubMessageData data = { { 0, 0, 0, 0, 0 } };
@@ -283,7 +283,7 @@ subTagSave(VALUE self)
       subSharedMessage(display, DefaultRootWindow(display),
         "SUBTLE_TAG_NEW", data, 8, True);
 
-      id = subSubtlextFindString("SUBTLE_TAG_LIST",
+      id = subextSubtlextFindString("SUBTLE_TAG_LIST",
         RSTRING_PTR(name), NULL, SUB_MATCH_EXACT);
     }
 
@@ -310,7 +310,7 @@ subTagSave(VALUE self)
   return self;
 } /* }}} */
 
-/* subTagClients {{{ */
+/* subextTagClients {{{ */
 /*
  * call-seq: clients -> Array
  *
@@ -324,7 +324,7 @@ subTagSave(VALUE self)
  */
 
 VALUE
-subTagClients(VALUE self)
+subextTagClients(VALUE self)
 {
   int i, nclients = 0;
   Window *clients = NULL;
@@ -339,7 +339,7 @@ subTagClients(VALUE self)
   klass   = rb_const_get(mod, rb_intern("Client"));
   meth    = rb_intern("new");
   array   = rb_ary_new();
-  clients = subSubtlextWindowList("_NET_CLIENT_LIST", &nclients);
+  clients = subextSubtlextWindowList("_NET_CLIENT_LIST", &nclients);
 
   /* Check results */
   if(clients)
@@ -357,7 +357,7 @@ subTagClients(VALUE self)
                   if(!NIL_P(c = rb_funcall(klass, meth, 1,
                       LONG2NUM(clients[i]))))
                     {
-                      subClientUpdate(c);
+                      subextClientUpdate(c);
 
                       rb_ary_push(array, c);
                     }
@@ -371,7 +371,7 @@ subTagClients(VALUE self)
   return array;
 } /* }}} */
 
-/* subTagViews {{{ */
+/* subextTagViews {{{ */
 /*
  * call-seq: views -> Array
  *
@@ -385,7 +385,7 @@ subTagClients(VALUE self)
  */
 
 VALUE
-subTagViews(VALUE self)
+subextTagViews(VALUE self)
 {
   int i, nnames = 0;
   char **names = NULL;
@@ -396,7 +396,7 @@ subTagViews(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@id", id);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   klass  = rb_const_get(mod, rb_intern("View"));
@@ -432,7 +432,7 @@ subTagViews(VALUE self)
   return array;
 } /* }}} */
 
-/* subTagToString {{{ */
+/* subextTagToString {{{ */
 /*
  * call-seq: to_str -> String
  *
@@ -443,7 +443,7 @@ subTagViews(VALUE self)
  */
 
 VALUE
-subTagToString(VALUE self)
+subextTagToString(VALUE self)
 {
   VALUE name = Qnil;
 
@@ -453,7 +453,7 @@ subTagToString(VALUE self)
   return name;
 } /* }}} */
 
-/* subTagKill {{{ */
+/* subextTagKill {{{ */
 /*
  * call-seq: kill -> nil
  *
@@ -464,7 +464,7 @@ subTagToString(VALUE self)
  */
 
 VALUE
-subTagKill(VALUE self)
+subextTagKill(VALUE self)
 {
   VALUE id = Qnil;
   SubMessageData data = { { 0, 0, 0, 0, 0 } };
@@ -473,7 +473,7 @@ subTagKill(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@id", id);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Send message */
   data.l[0] = FIX2INT(id);

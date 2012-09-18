@@ -17,7 +17,7 @@ SubtleSend(char *message)
 {
   SubMessageData data = { { 0, 0, 0, 0, 0 } };
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   subSharedMessage(display, DefaultRootWindow(display),
     message, data, 32, True);
@@ -27,7 +27,7 @@ SubtleSend(char *message)
 
 /* Singleton */
 
-/* subSubtleSingDisplayReader {{{ */
+/* subextSubtleSingDisplayReader {{{ */
 /*
  * call-seq: display -> String
  *
@@ -38,14 +38,14 @@ SubtleSend(char *message)
  */
 
 VALUE
-subSubtleSingDisplayReader(VALUE self)
+subextSubtleSingDisplayReader(VALUE self)
 {
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   return rb_str_new2(DisplayString(display));
 } /* }}} */
 
-/* subSubtleSingDisplayWriter {{{ */
+/* subextSubtleSingDisplayWriter {{{ */
 /*
  * call-seq: display=(string) -> nil
  *
@@ -56,17 +56,17 @@ subSubtleSingDisplayReader(VALUE self)
  */
 
 VALUE
-subSubtleSingDisplayWriter(VALUE self,
+subextSubtleSingDisplayWriter(VALUE self,
   VALUE display_string)
 {
   /* Explicit open connection */
-  subSubtlextConnect(T_STRING == rb_type(display_string) ?
+  subextSubtlextConnect(T_STRING == rb_type(display_string) ?
     RSTRING_PTR(display_string) : NULL);
 
   return Qnil;
 } /* }}} */
 
-/* subSubtleSingAskRunning {{{ */
+/* subextSubtleSingAskRunning {{{ */
 /*
  * call-seq: running? -> true or false
  *
@@ -80,13 +80,13 @@ subSubtleSingDisplayWriter(VALUE self,
  */
 
 VALUE
-subSubtleSingAskRunning(VALUE self)
+subextSubtleSingAskRunning(VALUE self)
 {
   char *version = NULL;
   Window *support = NULL;
   VALUE running = Qfalse;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Get supporting window */
   if((support = (Window *)subSharedPropertyGet(display,
@@ -109,7 +109,7 @@ subSubtleSingAskRunning(VALUE self)
   return running;
 } /* }}} */
 
-/* subSubtleSingSelect {{{ */
+/* subextSubtleSingSelect {{{ */
 /*
  * call-seq: select_window -> Fixnum
  *
@@ -120,7 +120,7 @@ subSubtleSingAskRunning(VALUE self)
  */
 
 VALUE
-subSubtleSingSelect(VALUE self)
+subextSubtleSingSelect(VALUE self)
 {
   int i, format = 0, buttons = 0;
   unsigned int nwins = 0;
@@ -132,7 +132,7 @@ subSubtleSingSelect(VALUE self)
   Window wroot = None, parent = None, root = None, *wins = NULL;
   Cursor cursor = None;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   root   = DefaultRootWindow(display);
   cursor = XCreateFontCursor(display, XC_cross);
@@ -198,7 +198,7 @@ subSubtleSingSelect(VALUE self)
   return None != win ? LONG2NUM(win) : Qnil;
 } /* }}} */
 
-/* subSubtleSingRender {{{ */
+/* subextSubtleSingRender {{{ */
 /*
  * call-seq: render -> nil
  *
@@ -209,12 +209,12 @@ subSubtleSingSelect(VALUE self)
  */
 
 VALUE
-subSubtleSingRender(VALUE self)
+subextSubtleSingRender(VALUE self)
 {
   return SubtleSend("SUBTLE_RENDER");
 } /* }}} */
 
-/* subSubtleSingReload {{{ */
+/* subextSubtleSingReload {{{ */
 /*
  * call-seq: reload -> nil
  *
@@ -225,12 +225,12 @@ subSubtleSingRender(VALUE self)
  */
 
 VALUE
-subSubtleSingReload(VALUE self)
+subextSubtleSingReload(VALUE self)
 {
   return SubtleSend("SUBTLE_RELOAD");
 } /* }}} */
 
-/* subSubtleSingRestart {{{ */
+/* subextSubtleSingRestart {{{ */
 /*
  * call-seq: restart -> nil
  *
@@ -241,12 +241,12 @@ subSubtleSingReload(VALUE self)
  */
 
 VALUE
-subSubtleSingRestart(VALUE self)
+subextSubtleSingRestart(VALUE self)
 {
   return SubtleSend("SUBTLE_RESTART");
 } /* }}} */
 
-/* subSubtleSingQuit {{{ */
+/* subextSubtleSingQuit {{{ */
 /*
  * call-seq: quit -> nil
  *
@@ -257,12 +257,12 @@ subSubtleSingRestart(VALUE self)
  */
 
 VALUE
-subSubtleSingQuit(VALUE self)
+subextSubtleSingQuit(VALUE self)
 {
   return SubtleSend("SUBTLE_QUIT");
 } /* }}} */
 
-/* subSubtleSingColors {{{ */
+/* subextSubtleSingColors {{{ */
 /*
  * call-seq: colors -> Hash
  *
@@ -273,7 +273,7 @@ subSubtleSingQuit(VALUE self)
  */
 
 VALUE
-subSubtleSingColors(VALUE self)
+subextSubtleSingColors(VALUE self)
 {
   int i;
   unsigned long ncolors = 0, *colors = NULL;
@@ -298,7 +298,7 @@ subSubtleSingColors(VALUE self)
     "stipple",            "background"
   };
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   meth  = rb_intern("new");
@@ -323,7 +323,7 @@ subSubtleSingColors(VALUE self)
   return hash;
 } /* }}} */
 
-/* subSubtleSingFont {{{ */
+/* subextSubtleSingFont {{{ */
 /*
  * call-seq: Font -> String or nil
  *
@@ -334,12 +334,12 @@ subSubtleSingColors(VALUE self)
  */
 
 VALUE
-subSubtleSingFont(VALUE self)
+subextSubtleSingFont(VALUE self)
 {
   char *prop = NULL;
   VALUE font = Qnil;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Get results */
   if((prop = subSharedPropertyGet(display, DefaultRootWindow(display),
@@ -355,7 +355,7 @@ subSubtleSingFont(VALUE self)
   return font;
 } /* }}} */
 
-/* subSubtleSingSpawn {{{ */
+/* subextSubtleSingSpawn {{{ */
 /*
  * call-seq: spawn(cmd) -> Subtlext::Client
  *
@@ -366,7 +366,7 @@ subSubtleSingFont(VALUE self)
  */
 
 VALUE
-subSubtleSingSpawn(VALUE self,
+subextSubtleSingSpawn(VALUE self,
   VALUE cmd)
 {
   VALUE ret = Qnil;
@@ -376,13 +376,13 @@ subSubtleSingSpawn(VALUE self,
     {
       pid_t pid = 0;
 
-      subSubtlextConnect(NULL); ///< Implicit open connection
+      subextSubtlextConnect(NULL); ///< Implicit open connection
 
       /* Create client with empty window id since we cannot
        * know the real window id at this point (race) */
       if(0 < (pid = subSharedSpawn(RSTRING_PTR(cmd))))
         {
-          ret = subClientInstantiate((int)pid);
+          ret = subextClientInstantiate((int)pid);
           rb_iv_set(ret, "@pid", INT2FIX((int)pid));
         }
     }

@@ -19,7 +19,7 @@ ScreenList(void)
   VALUE method = Qnil, klass = Qnil, array = Qnil, screen = Qnil, geom = Qnil;
   long *workareas = NULL;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   method = rb_intern("new");
@@ -37,7 +37,7 @@ ScreenList(void)
         {
           /* Create new screen */
           screen = rb_funcall(klass, method, 1, INT2FIX(i));
-          geom   = subGeometryInstantiate(workareas[i * 4 + 0],
+          geom   = subextGeometryInstantiate(workareas[i * 4 + 0],
             workareas[i * 4 + 1], workareas[i * 4 + 2], workareas[i * 4 + 3]);
 
           rb_iv_set(screen, "@geometry", geom);
@@ -52,7 +52,7 @@ ScreenList(void)
 
 /* Singleton */
 
-/* subScreenSingFind {{{ */
+/* subextScreenSingFind {{{ */
 /*
  * call-seq: find(value) -> Subtlext::Screen or nil
  *           [value]     -> Subtlext::Screen or nil
@@ -73,7 +73,7 @@ ScreenList(void)
  */
 
 VALUE
-subScreenSingFind(VALUE self,
+subextScreenSingFind(VALUE self,
   VALUE value)
 {
   VALUE screen = Qnil;
@@ -98,7 +98,7 @@ subScreenSingFind(VALUE self,
                 unsigned long nworkareas = 0;
                 long *workareas = NULL;
 
-                subSubtlextConnect(NULL); ///< Implicit open connection
+                subextSubtlextConnect(NULL); ///< Implicit open connection
 
                 /* Get workarea list */
                 if((workareas = (long *)subSharedPropertyGet(display,
@@ -109,7 +109,7 @@ subScreenSingFind(VALUE self,
                     int i;
                     XRectangle geom = { 0 };
 
-                    subGeometryToRect(value, &geom);
+                    subextGeometryToRect(value, &geom);
 
                     for(i = 0; i < nworkareas / 4; i++)
                       {
@@ -122,8 +122,8 @@ subScreenSingFind(VALUE self,
                             VALUE geometry = Qnil;
 
                             /* Create new screen */
-                            screen   = subScreenInstantiate(i);
-                            geometry = subGeometryInstantiate(
+                            screen   = subextScreenInstantiate(i);
+                            geometry = subextGeometryInstantiate(
                               workareas[i * 4 + 0], workareas[i * 4 + 1],
                               workareas[i * 4 + 2], workareas[i * 4 + 3]);
 
@@ -145,7 +145,7 @@ subScreenSingFind(VALUE self,
   return screen;
 } /* }}} */
 
-/* subScreenSingList {{{ */
+/* subextScreenSingList {{{ */
 /*
  * call-seq: list -> Array
  *
@@ -159,12 +159,12 @@ subScreenSingFind(VALUE self,
  */
 
 VALUE
-subScreenSingList(VALUE self)
+subextScreenSingList(VALUE self)
 {
   return ScreenList();
 } /* }}} */
 
-/* subScreenSingCurrent {{{ */
+/* subextScreenSingCurrent {{{ */
 /*
  * call-seq: current -> Subtlext::Screen
  *
@@ -175,7 +175,7 @@ subScreenSingList(VALUE self)
  */
 
 VALUE
-subScreenSingCurrent(VALUE self)
+subextScreenSingCurrent(VALUE self)
 {
   int rx = 0, ry = 0, x = 0, y = 0;
   unsigned int mask = 0;
@@ -184,7 +184,7 @@ subScreenSingCurrent(VALUE self)
   VALUE screen = Qnil;
   Window root = None, win = None;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Get current screen */
   XQueryPointer(display, DefaultRootWindow(display), &root,
@@ -214,8 +214,8 @@ subScreenSingCurrent(VALUE self)
               VALUE geometry = Qnil;
 
               /* Create new screen */
-              screen   = subScreenInstantiate(i);
-              geometry = subGeometryInstantiate(workareas[i * 4 + 0],
+              screen   = subextScreenInstantiate(i);
+              geometry = subextGeometryInstantiate(workareas[i * 4 + 0],
                 workareas[i * 4 + 1], workareas[i * 4 + 2],
                 workareas[i * 4 + 3]);
 
@@ -232,9 +232,9 @@ subScreenSingCurrent(VALUE self)
 
 /* Helper */
 
-/* subScreenInstantiate {{{ */
+/* subextScreenInstantiate {{{ */
 VALUE
-subScreenInstantiate(int id)
+subextScreenInstantiate(int id)
 {
   VALUE klass = Qnil, screen = Qnil;
 
@@ -247,7 +247,7 @@ subScreenInstantiate(int id)
 
 /* Class */
 
-/* subScreenInit {{{ */
+/* subextScreenInit {{{ */
 /*
  * call-seq: new(id) -> Subtlext::Screen
  *
@@ -258,7 +258,7 @@ subScreenInstantiate(int id)
  */
 
 VALUE
-subScreenInit(VALUE self,
+subextScreenInit(VALUE self,
   VALUE id)
 {
   if(!FIXNUM_P(id) || 0 > FIX2INT(id))
@@ -269,12 +269,12 @@ subScreenInit(VALUE self,
   rb_iv_set(self, "@id",       id);
   rb_iv_set(self, "@geometry", Qnil);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   return self;
 } /* }}} */
 
-/* subScreenUpdate {{{ */
+/* subextScreenUpdate {{{ */
 /*
  * call-seq: update -> Subtlext::Screen
  *
@@ -285,7 +285,7 @@ subScreenInit(VALUE self,
  */
 
 VALUE
-subScreenUpdate(VALUE self)
+subextScreenUpdate(VALUE self)
 {
   VALUE id = Qnil, screens = Qnil, screen = Qnil;
 
@@ -306,7 +306,7 @@ subScreenUpdate(VALUE self)
   return self;
 } /* }}} */
 
-/* subScreenJump {{{ */
+/* subextScreenJump {{{ */
 /*
  * call-seq: screen -> Subtlext::Screen
  *
@@ -317,7 +317,7 @@ subScreenUpdate(VALUE self)
  */
 
 VALUE
-subScreenJump(VALUE self)
+subextScreenJump(VALUE self)
 {
   VALUE id = Qnil;
   SubMessageData data = { { 0, 0, 0, 0, 0 } };
@@ -326,7 +326,7 @@ subScreenJump(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@id", id);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Send message */
   data.l[0] = FIX2INT(id);
@@ -337,7 +337,7 @@ subScreenJump(VALUE self)
   return self;
 } /* }}} */
 
-/* subScreenViewReader {{{ */
+/* subextScreenViewReader {{{ */
 /*
  * call-seq: view -> Subtlext::View
  *
@@ -348,14 +348,14 @@ subScreenJump(VALUE self)
  */
 
 VALUE
-subScreenViewReader(VALUE self)
+subextScreenViewReader(VALUE self)
 {
   VALUE ret = Qnil;
   int nnames = 0;
   char **names = NULL;
   unsigned long *screens = NULL;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   names   = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
@@ -373,7 +373,7 @@ subScreenViewReader(VALUE self)
         {
           if(0 <= (vid = screens[id]) && vid < nnames)
             {
-              ret = subViewInstantiate(names[vid]);
+              ret = subextViewInstantiate(names[vid]);
 
               if(!NIL_P(ret)) rb_iv_set(ret, "@id", INT2FIX(vid));
             }
@@ -386,7 +386,7 @@ subScreenViewReader(VALUE self)
   return ret;
 } /* }}} */
 
-/* subScreenViewWriter {{{ */
+/* subextScreenViewWriter {{{ */
 /*
  * call-seq: view=(fixnum) -> Fixnum
  *           view=(symbol) -> Symbol
@@ -402,7 +402,7 @@ subScreenViewReader(VALUE self)
  */
 
 VALUE
-subScreenViewWriter(VALUE self,
+subextScreenViewWriter(VALUE self,
   VALUE value)
 {
   VALUE vid = Qnil, view = Qnil, sid = Qnil;
@@ -411,12 +411,12 @@ subScreenViewWriter(VALUE self,
  /* Check ruby object */
   GET_ATTR(self, "@id", sid);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Check instance type */
   if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("View"))))
     view = value;
-  else view = subViewSingFirst(Qnil, value);
+  else view = subextViewSingFirst(Qnil, value);
 
   GET_ATTR(view, "@id", vid);
 
@@ -431,7 +431,7 @@ subScreenViewWriter(VALUE self,
   return value;
 } /* }}} */
 
-/* subScreenAskCurrent {{{ */
+/* subextScreenAskCurrent {{{ */
 /*
  * call-seq: screen? -> true or false
  *
@@ -445,15 +445,15 @@ subScreenViewWriter(VALUE self,
  */
 
 VALUE
-subScreenAskCurrent(VALUE self)
+subextScreenAskCurrent(VALUE self)
 {
   /* Check ruby object */
   rb_check_frozen(self);
 
-  return rb_equal(self, subScreenSingCurrent(Qnil));
+  return rb_equal(self, subextScreenSingCurrent(Qnil));
 } /* }}} */
 
-/* subScreenToString {{{ */
+/* subextScreenToString {{{ */
 /*
  * call-seq: to_str -> String
  *
@@ -464,14 +464,14 @@ subScreenAskCurrent(VALUE self)
  */
 
 VALUE
-subScreenToString(VALUE self)
+subextScreenToString(VALUE self)
 {
   VALUE geom = Qnil;
 
   /* Check ruby object */
   GET_ATTR(self, "@geometry", geom);
 
-  return subGeometryToString(geom);
+  return subextGeometryToString(geom);
 } /* }}} */
 
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

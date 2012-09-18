@@ -24,7 +24,7 @@ ViewSelect(VALUE self,
   rb_check_frozen(self);
   GET_ATTR(self, "@id", id);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   if((names = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
@@ -43,8 +43,8 @@ ViewSelect(VALUE self,
         }
 
       /* Create view */
-      ret = subViewInstantiate(names[vid]);
-      subViewUpdate(ret);
+      ret = subextViewInstantiate(names[vid]);
+      subextViewUpdate(ret);
 
       XFreeStringList(names);
     }
@@ -61,32 +61,32 @@ ViewFind(VALUE value,
   VALUE parsed = Qnil;
   char buf[50] = { 0 };
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Check object type */
-  switch(rb_type(parsed = subSubtlextParse(
+  switch(rb_type(parsed = subextSubtlextParse(
       value, buf, sizeof(buf), &flags)))
     {
       case T_SYMBOL:
         if(CHAR2SYM("visible") == parsed)
-          return subViewSingVisible(Qnil);
+          return subextViewSingVisible(Qnil);
         else if(CHAR2SYM("all") == parsed)
-          return subViewSingList(Qnil);
+          return subextViewSingList(Qnil);
         else if(CHAR2SYM("current") == parsed)
-          return subViewSingCurrent(Qnil);
+          return subextViewSingCurrent(Qnil);
         break;
       case T_OBJECT:
         if(rb_obj_is_instance_of(value, rb_const_get(mod, rb_intern("View"))))
           return parsed;
     }
 
-  return subSubtlextFindObjects("_NET_DESKTOP_NAMES", "View",
+  return subextSubtlextFindObjects("_NET_DESKTOP_NAMES", "View",
     buf, flags, first);
 } /* }}} */
 
 /* Singleton */
 
-/* subViewSingFind {{{ */
+/* subextViewSingFind {{{ */
 /*
  * call-seq: find(value) -> Array
  *           [value]     -> Array
@@ -116,13 +116,13 @@ ViewFind(VALUE value,
  */
 
 VALUE
-subViewSingFind(VALUE self,
+subextViewSingFind(VALUE self,
   VALUE value)
 {
   return ViewFind(value, False);
 } /* }}} */
 
-/* subViewSingFirst {{{ */
+/* subextViewSingFirst {{{ */
 /*
  * call-seq: first(value) -> Subtlext::View or nil
  *
@@ -142,13 +142,13 @@ subViewSingFind(VALUE self,
  */
 
 VALUE
-subViewSingFirst(VALUE self,
+subextViewSingFirst(VALUE self,
   VALUE value)
 {
   return ViewFind(value, True);
 } /* }}} */
 
-/* subViewSingCurrent {{{ */
+/* subextViewSingCurrent {{{ */
 /*
  * call-seq: current -> Subtlext::View
  *
@@ -159,14 +159,14 @@ subViewSingFirst(VALUE self,
  */
 
 VALUE
-subViewSingCurrent(VALUE self)
+subextViewSingCurrent(VALUE self)
 {
   int nnames = 0;
   char **names = NULL;
   unsigned long *cur_view = NULL;
   VALUE view = Qnil;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   names    = subSharedPropertyGetStrings(display, DefaultRootWindow(display),
@@ -179,7 +179,7 @@ subViewSingCurrent(VALUE self)
   if(names && cur_view)
     {
       /* Create instance */
-      view = subViewInstantiate(names[*cur_view]);
+      view = subextViewInstantiate(names[*cur_view]);
       rb_iv_set(view, "@id",  INT2FIX(*cur_view));
     }
 
@@ -189,7 +189,7 @@ subViewSingCurrent(VALUE self)
   return view;
 } /* }}} */
 
-/* subViewSingVisible {{{ */
+/* subextViewSingVisible {{{ */
 /*
  * call-seq: visible -> Array
  *
@@ -203,14 +203,14 @@ subViewSingCurrent(VALUE self)
  */
 
 VALUE
-subViewSingVisible(VALUE self)
+subextViewSingVisible(VALUE self)
 {
   int i, nnames = 0, *tags = NULL;
   char **names = NULL;
   unsigned long *visible = NULL;
   VALUE meth = Qnil, klass = Qnil, array = Qnil, v = Qnil;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   meth  = rb_intern("new");
@@ -248,7 +248,7 @@ subViewSingVisible(VALUE self)
   return array;
 } /* }}} */
 
-/* subViewSingList {{{ */
+/* subextViewSingList {{{ */
 /*
  * call-seq: list -> Array
  *
@@ -263,14 +263,14 @@ subViewSingVisible(VALUE self)
  */
 
 VALUE
-subViewSingList(VALUE self)
+subextViewSingList(VALUE self)
 {
   int i, nnames = 0;
   long *tags = NULL;
   char **names = NULL;
   VALUE meth = Qnil, klass = Qnil, array = Qnil, v = Qnil;
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   klass = rb_const_get(mod, rb_intern("View"));
@@ -304,9 +304,9 @@ subViewSingList(VALUE self)
 
 /* Helper */
 
-/* subViewInstantiate {{{ */
+/* subextViewInstantiate {{{ */
 VALUE
-subViewInstantiate(char *name)
+subextViewInstantiate(char *name)
 {
   VALUE klass = Qnil, view = Qnil;
 
@@ -321,7 +321,7 @@ subViewInstantiate(char *name)
 
 /* Class */
 
-/* subViewInit {{{ */
+/* subextViewInit {{{ */
 /*
  * call-seq: new(name) -> Subtlext::View
  *
@@ -334,7 +334,7 @@ subViewInstantiate(char *name)
  */
 
 VALUE
-subViewInit(VALUE self,
+subextViewInit(VALUE self,
   VALUE name)
 {
   if(T_STRING != rb_type(name))
@@ -346,12 +346,12 @@ subViewInit(VALUE self,
   rb_iv_set(self, "@name", name);
   rb_iv_set(self, "@tags", Qnil);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   return self;
 } /* }}} */
 
-/* subViewUpdate {{{ */
+/* subextViewUpdate {{{ */
 /*
  * call-seq: update -> Subtlext::View
  *
@@ -362,7 +362,7 @@ subViewInit(VALUE self,
  */
 
 VALUE
-subViewUpdate(VALUE self)
+subextViewUpdate(VALUE self)
 {
   long *tags = NULL, ntags = 0;
   VALUE id = Qnil;
@@ -371,7 +371,7 @@ subViewUpdate(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@id", id);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch tags */
   if((tags = (long *)subSharedPropertyGet(display, ROOT, XA_CARDINAL,
@@ -387,7 +387,7 @@ subViewUpdate(VALUE self)
   return self;
 } /* }}} */
 
-/* subViewSave {{{ */
+/* subextViewSave {{{ */
 /*
  * call-seq: save -> Subtlext::View
  *
@@ -398,7 +398,7 @@ subViewUpdate(VALUE self)
  */
 
 VALUE
-subViewSave(VALUE self)
+subextViewSave(VALUE self)
 {
   int id = -1;
   VALUE name = Qnil;
@@ -407,10 +407,10 @@ subViewSave(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@name", name);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Create view if needed */
-  if(-1 == (id = subSubtlextFindString("_NET_DESKTOP_NAMES",
+  if(-1 == (id = subextSubtlextFindString("_NET_DESKTOP_NAMES",
       RSTRING_PTR(name), NULL, SUB_MATCH_EXACT)))
     {
       SubMessageData data = { { 0, 0, 0, 0, 0 } };
@@ -419,7 +419,7 @@ subViewSave(VALUE self)
       subSharedMessage(display, DefaultRootWindow(display),
         "SUBTLE_VIEW_NEW", data, 8, True);
 
-      id = subSubtlextFindString("_NET_DESKTOP_NAMES",
+      id = subextSubtlextFindString("_NET_DESKTOP_NAMES",
         RSTRING_PTR(name), NULL, SUB_MATCH_EXACT);
     }
 
@@ -445,7 +445,7 @@ subViewSave(VALUE self)
   return self;
 } /* }}} */
 
-/* subViewClients {{{ */
+/* subextViewClients {{{ */
 /*
  * call-seq: clients -> Array
  *
@@ -459,7 +459,7 @@ subViewSave(VALUE self)
  */
 
 VALUE
-subViewClients(VALUE self)
+subextViewClients(VALUE self)
 {
   int i, nclients = 0;
   Window *clients = NULL;
@@ -470,13 +470,13 @@ subViewClients(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@id", id);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Fetch data */
   klass     = rb_const_get(mod, rb_intern("Client"));
   meth      = rb_intern("new");
   array     = rb_ary_new();
-  clients   = subSubtlextWindowList("_NET_CLIENT_LIST", &nclients);
+  clients   = subextSubtlextWindowList("_NET_CLIENT_LIST", &nclients);
   view_tags = (unsigned long *)subSharedPropertyGet(display,
     DefaultRootWindow(display), XA_CARDINAL,
     XInternAtom(display, "SUBTLE_VIEW_TAGS", False), NULL);
@@ -503,7 +503,7 @@ subViewClients(VALUE self)
               if(RTEST(client = rb_funcall(klass, meth,
                   1, LONG2NUM(clients[i]))))
                 {
-                  subClientUpdate(client);
+                  subextClientUpdate(client);
 
                   rb_ary_push(array, client);
                 }
@@ -520,7 +520,7 @@ subViewClients(VALUE self)
   return array;
 } /* }}} */
 
-/* subViewJump {{{ */
+/* subextViewJump {{{ */
 /*
  * call-seq: jump -> Subtlext::View
  *
@@ -531,7 +531,7 @@ subViewClients(VALUE self)
  */
 
 VALUE
-subViewJump(VALUE self)
+subextViewJump(VALUE self)
 {
   VALUE id = Qnil;
   SubMessageData data = { { 0, 0, 0, 0, 0 } };
@@ -540,7 +540,7 @@ subViewJump(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@id", id);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Send message */
   data.l[0] = FIX2INT(id);
@@ -552,7 +552,7 @@ subViewJump(VALUE self)
   return self;
 } /* }}} */
 
-/* subViewSelectNext {{{ */
+/* subextViewSelectNext {{{ */
 /*
  * call-seq: next -> Subtlext::View or nil
  *
@@ -563,12 +563,12 @@ subViewJump(VALUE self)
  */
 
 VALUE
-subViewSelectNext(VALUE self)
+subextViewSelectNext(VALUE self)
 {
   return ViewSelect(self, SUB_VIEW_NEXT);
 } /* }}} */
 
-/* subViewSelectPrev {{{ */
+/* subextViewSelectPrev {{{ */
 /*
  * call-seq: prev -> Subtlext::View or nil
  *
@@ -579,12 +579,12 @@ subViewSelectNext(VALUE self)
  */
 
 VALUE
-subViewSelectPrev(VALUE self)
+subextViewSelectPrev(VALUE self)
 {
   return ViewSelect(self, SUB_VIEW_PREV);
 } /* }}} */
 
-/* subViewAskCurrent {{{ */
+/* subextViewAskCurrent {{{ */
 /*
  * call-seq: current? -> true or false
  *
@@ -598,7 +598,7 @@ subViewSelectPrev(VALUE self)
  */
 
 VALUE
-subViewAskCurrent(VALUE self)
+subextViewAskCurrent(VALUE self)
 {
   VALUE id = Qnil, ret = Qfalse;;
   unsigned long *cur_view = NULL;
@@ -620,7 +620,7 @@ subViewAskCurrent(VALUE self)
   return ret;
 } /* }}} */
 
-/* subViewIcon {{{ */
+/* subextViewIcon {{{ */
 /*
  * call-seq: icon -> Subtlext::Icon or nil
  *
@@ -631,7 +631,7 @@ subViewAskCurrent(VALUE self)
  */
 
 VALUE
-subViewIcon(VALUE self)
+subextViewIcon(VALUE self)
 {
   unsigned long nicons = 0;
   VALUE id = Qnil, ret = Qnil;
@@ -641,7 +641,7 @@ subViewIcon(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@id", id);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Check results */
   if((icons = (unsigned long *)subSharedPropertyGet(display,
@@ -664,7 +664,7 @@ subViewIcon(VALUE self)
   return ret;
 } /* }}} */
 
-/* subViewToString {{{ */
+/* subextViewToString {{{ */
 /*
  * call-seq: to_str -> String
  *
@@ -675,7 +675,7 @@ subViewIcon(VALUE self)
  */
 
 VALUE
-subViewToString(VALUE self)
+subextViewToString(VALUE self)
 {
   VALUE name = Qnil;
 
@@ -685,7 +685,7 @@ subViewToString(VALUE self)
   return name;
 } /* }}} */
 
-/* subViewKill {{{ */
+/* subextViewKill {{{ */
 /*
  * call-seq: kill -> nil
  *
@@ -696,7 +696,7 @@ subViewToString(VALUE self)
  */
 
 VALUE
-subViewKill(VALUE self)
+subextViewKill(VALUE self)
 {
   VALUE id = Qnil;
   SubMessageData data = { { 0, 0, 0, 0, 0 } };
@@ -705,7 +705,7 @@ subViewKill(VALUE self)
   rb_check_frozen(self);
   GET_ATTR(self, "@id", id);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Send message */
   data.l[0] = FIX2INT(id);

@@ -84,7 +84,7 @@ IconEqual(VALUE self,
 
 /* Class */
 
-/* subIconAlloc {{{ */
+/* subextIconAlloc {{{ */
 /*
  * call-seq: new(path)          -> Subtlext::Icon
  *           new(width, height) -> Subtlext::Icon
@@ -93,7 +93,7 @@ IconEqual(VALUE self,
  */
 
 VALUE
-subIconAlloc(VALUE self)
+subextIconAlloc(VALUE self)
 {
   SubtlextIcon *i = NULL;
 
@@ -104,7 +104,7 @@ subIconAlloc(VALUE self)
   return i->instance;
 } /* }}} */
 
-/* subIconInit {{{ */
+/* subextIconInit {{{ */
 /*
  * call-seq: initialize(path)                  -> Subtlext::Icon
  *           initialize(width, height, bitmap) -> Subtlext::Icon
@@ -119,7 +119,7 @@ subIconAlloc(VALUE self)
  */
 
 VALUE
-subIconInit(int argc,
+subextIconInit(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -132,7 +132,7 @@ subIconInit(int argc,
 
       rb_scan_args(argc, argv, "12", &data[0], &data[1], &data[2]);
 
-      subSubtlextConnect(NULL); ///< Implicit open connection
+      subextSubtlextConnect(NULL); ///< Implicit open connection
 
       /* Find or create icon */
       if(T_STRING == rb_type(data[0])) ///< Icon path
@@ -255,7 +255,7 @@ subIconInit(int argc,
   return Qnil;
 } /* }}} */
 
-/* subIconDrawPoint {{{ */
+/* subextIconDrawPoint {{{ */
 /*
  * call-seq: draw_point(x, y, fg, bg) -> Subtlext::Icon
  *
@@ -269,7 +269,7 @@ subIconInit(int argc,
  */
 
 VALUE
-subIconDrawPoint(int argc,
+subextIconDrawPoint(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -298,9 +298,9 @@ subIconDrawPoint(int argc,
           if(i->flags & ICON_PIXMAP)
             {
               if(!NIL_P(data[2]))
-                gvals.foreground = subColorPixel(data[2], Qnil, Qnil, NULL);
+                gvals.foreground = subextColorPixel(data[2], Qnil, Qnil, NULL);
               if(!NIL_P(data[3]))
-                gvals.background = subColorPixel(data[3], Qnil, Qnil, NULL);
+                gvals.background = subextColorPixel(data[3], Qnil, Qnil, NULL);
             }
 
           XChangeGC(display, i->gc, GCForeground|GCBackground, &gvals);
@@ -316,7 +316,7 @@ subIconDrawPoint(int argc,
   return self;
 } /* }}} */
 
-/* subIconDrawLine {{{ */
+/* subextIconDrawLine {{{ */
 /*
  * call-seq: draw_line(x1, y1, x2, y2, fg, bg) -> Subtlext::Icon
  *
@@ -330,7 +330,7 @@ subIconDrawPoint(int argc,
  */
 
 VALUE
-subIconDrawLine(int argc,
+subextIconDrawLine(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -361,9 +361,9 @@ subIconDrawLine(int argc,
           if(i->flags & ICON_PIXMAP)
             {
               if(!NIL_P(data[4]))
-                gvals.foreground = subColorPixel(data[4], Qnil, Qnil, NULL);
+                gvals.foreground = subextColorPixel(data[4], Qnil, Qnil, NULL);
               if(!NIL_P(data[5]))
-                gvals.background = subColorPixel(data[5], Qnil, Qnil, NULL);
+                gvals.background = subextColorPixel(data[5], Qnil, Qnil, NULL);
             }
 
           XChangeGC(display, i->gc, GCForeground|GCBackground, &gvals);
@@ -379,7 +379,7 @@ subIconDrawLine(int argc,
   return self;
 } /* }}} */
 
-/* subIconDrawRect {{{ */
+/* subextIconDrawRect {{{ */
 /*
  * call-seq: draw_rect(x, y, width, height, fill, fg, bg) -> Subtlext::Icon
  *
@@ -394,7 +394,7 @@ subIconDrawLine(int argc,
  */
 
 VALUE
-subIconDrawRect(int argc,
+subextIconDrawRect(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -425,9 +425,9 @@ subIconDrawRect(int argc,
           if(i->flags & ICON_PIXMAP)
             {
               if(!NIL_P(data[5]))
-                gvals.foreground = subColorPixel(data[5], Qnil, Qnil, NULL);
+                gvals.foreground = subextColorPixel(data[5], Qnil, Qnil, NULL);
               if(!NIL_P(data[6]))
-                gvals.background = subColorPixel(data[6], Qnil, Qnil, NULL);
+                gvals.background = subextColorPixel(data[6], Qnil, Qnil, NULL);
             }
 
           XChangeGC(display, i->gc, GCForeground|GCBackground, &gvals);
@@ -449,7 +449,7 @@ subIconDrawRect(int argc,
   return self;
 } /* }}} */
 
-/* subIconCopyArea {{{ */
+/* subextIconCopyArea {{{ */
 /*
  * call-seq: copy_area(icon2, src_x, src_y, width, height, dest_x, dest_y) -> Subtlext::Icon
  *
@@ -460,7 +460,7 @@ subIconDrawRect(int argc,
  */
 
 VALUE
-subIconCopyArea(int argc,
+subextIconCopyArea(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -532,7 +532,7 @@ subIconCopyArea(int argc,
   return self;
 } /* }}} */
 
-/* subIconClear {{{ */
+/* subextIconClear {{{ */
 /*
  * call-seq: clear         -> Subtlext::Icon
  *           clear(fg, bg) -> Subtlext::Icon
@@ -547,7 +547,7 @@ subIconCopyArea(int argc,
  */
 
 VALUE
-subIconClear(int argc,
+subextIconClear(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -572,9 +572,9 @@ subIconClear(int argc,
           rb_scan_args(argc, argv, "02", &colors[0], &colors[1]);
 
           if(!NIL_P(colors[0]))
-            gvals.foreground = subColorPixel(colors[0], Qnil, Qnil, NULL);
+            gvals.foreground = subextColorPixel(colors[0], Qnil, Qnil, NULL);
           if(!NIL_P(colors[1]))
-            gvals.background = subColorPixel(colors[1], Qnil, Qnil, NULL);
+            gvals.background = subextColorPixel(colors[1], Qnil, Qnil, NULL);
         }
 
       XChangeGC(display, i->gc, GCForeground|GCBackground, &gvals);
@@ -587,7 +587,7 @@ subIconClear(int argc,
   return self;
 } /* }}} */
 
-/* subIconAskBitmap {{{ */
+/* subextIconAskBitmap {{{ */
 /*
  * call-seq: bitmap? -> true or false
  *
@@ -601,7 +601,7 @@ subIconClear(int argc,
  */
 
 VALUE
-subIconAskBitmap(VALUE self)
+subextIconAskBitmap(VALUE self)
 {
   VALUE ret = Qfalse;
   SubtlextIcon *i = NULL;
@@ -612,7 +612,7 @@ subIconAskBitmap(VALUE self)
   return ret;
 } /* }}} */
 
-/* subIconToString {{{ */
+/* subextIconToString {{{ */
 /*
  * call-seq: to_str -> String
  *
@@ -623,7 +623,7 @@ subIconAskBitmap(VALUE self)
  */
 
 VALUE
-subIconToString(VALUE self)
+subextIconToString(VALUE self)
 {
   VALUE ret = Qnil;
   SubtlextIcon *i = NULL;
@@ -641,7 +641,7 @@ subIconToString(VALUE self)
   return ret;
 } /* }}} */
 
-/* subIconOperatorPlus {{{ */
+/* subextIconOperatorPlus {{{ */
 /*
 * call-seq: +(string) -> String
 *
@@ -652,13 +652,13 @@ subIconToString(VALUE self)
 */
 
 VALUE
-subIconOperatorPlus(VALUE self,
+subextIconOperatorPlus(VALUE self,
   VALUE value)
 {
-  return subSubtlextConcat(subIconToString(self), value);
+  return subextSubtlextConcat(subextIconToString(self), value);
 } /* }}} */
 
-/* subIconOperatorMult {{{ */
+/* subextIconOperatorMult {{{ */
 /*
 * call-seq: *(value) -> String
 *
@@ -669,7 +669,7 @@ subIconOperatorPlus(VALUE self,
 */
 
 VALUE
-subIconOperatorMult(VALUE self,
+subextIconOperatorMult(VALUE self,
   VALUE value)
 {
   VALUE ret = Qnil;
@@ -678,7 +678,7 @@ subIconOperatorMult(VALUE self,
   if(FIXNUM_P(value))
     {
       /* Passthru to string class */
-      ret = rb_funcall(subIconToString(self), rb_intern("*"), 1, value);
+      ret = rb_funcall(subextIconToString(self), rb_intern("*"), 1, value);
     }
   else rb_raise(rb_eArgError, "Unexpected value-type `%s'",
     rb_obj_classname(value));
@@ -686,7 +686,7 @@ subIconOperatorMult(VALUE self,
   return ret;
 } /* }}} */
 
-/* subIconEqual {{{ */
+/* subextIconEqual {{{ */
 /*
  * call-seq: ==(other) -> True or False
  *
@@ -697,13 +697,13 @@ subIconOperatorMult(VALUE self,
  */
 
 VALUE
-subIconEqual(VALUE self,
+subextIconEqual(VALUE self,
   VALUE other)
 {
   return IconEqual(self, other);
 } /* }}} */
 
-/* subIconEqualTyped {{{ */
+/* subextIconEqualTyped {{{ */
 /*
  * call-seq: eql?(other) -> True or False
  *
@@ -714,7 +714,7 @@ subIconEqual(VALUE self,
  */
 
 VALUE
-subIconEqualTyped(VALUE self,
+subextIconEqualTyped(VALUE self,
   VALUE other)
 {
   return IconEqual(self, other);

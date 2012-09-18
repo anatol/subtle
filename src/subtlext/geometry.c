@@ -24,8 +24,8 @@ GeometryEqual(VALUE self,
       XRectangle r1 = { 0 }, r2 = { 0 };
 
       /* Get rectangles */
-      subGeometryToRect(self,  &r1);
-      subGeometryToRect(other, &r2);
+      subextGeometryToRect(self,  &r1);
+      subextGeometryToRect(other, &r2);
 
       ret = (r1.x == r2.x && r1.y == r2.y &&
         r1.width == r2.width && r1.height == r2.height);
@@ -36,9 +36,9 @@ GeometryEqual(VALUE self,
 
 /* Helper */
 
-/* subGeometryInstantiate {{{ */
+/* subextGeometryInstantiate {{{ */
 VALUE
-subGeometryInstantiate(int x,
+subextGeometryInstantiate(int x,
   int y,
   int width,
   int height)
@@ -53,9 +53,9 @@ subGeometryInstantiate(int x,
   return geometry;
 } /* }}} */
 
-/* subGeometryToRect {{{ */
+/* subextGeometryToRect {{{ */
 void
-subGeometryToRect(VALUE self,
+subextGeometryToRect(VALUE self,
   XRectangle *r)
 {
   /* Set values */
@@ -67,7 +67,7 @@ subGeometryToRect(VALUE self,
 
 /* Class */
 
-/* subGeometryInit {{{ */
+/* subextGeometryInit {{{ */
 /*
  * call-seq: new(x, y, width, height) -> Subtlext::Geometry
  *           new(array)               -> Subtlext::Geometry
@@ -105,7 +105,7 @@ subGeometryToRect(VALUE self,
  */
 
 VALUE
-subGeometryInit(int argc,
+subextGeometryInit(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -182,7 +182,7 @@ subGeometryInit(int argc,
   return self;
 } /* }}} */
 
-/* subGeometryToArray {{{ */
+/* subextGeometryToArray {{{ */
 /*
  * call-seq: to_a -> Array
  *
@@ -194,7 +194,7 @@ subGeometryInit(int argc,
  */
 
 VALUE
-subGeometryToArray(VALUE self)
+subextGeometryToArray(VALUE self)
 {
   VALUE ary = Qnil, x = Qnil, y = Qnil, width = Qnil, height = Qnil;
 
@@ -216,7 +216,7 @@ subGeometryToArray(VALUE self)
   return ary;
 } /* }}} */
 
-/* subGeometryToHash {{{ */
+/* subextGeometryToHash {{{ */
 /*
  * call-seq: to_hash -> Hash
  *
@@ -228,7 +228,7 @@ subGeometryToArray(VALUE self)
  */
 
 VALUE
-subGeometryToHash(VALUE self)
+subextGeometryToHash(VALUE self)
 {
   VALUE klass = Qnil, hash = Qnil;
   VALUE x = Qnil, y = Qnil, width = Qnil, height = Qnil;
@@ -252,7 +252,7 @@ subGeometryToHash(VALUE self)
   return hash;
 } /* }}} */
 
-/* subGeometryToString {{{ */
+/* subextGeometryToString {{{ */
 /*
  * call-seq: to_str -> String
  *
@@ -263,7 +263,7 @@ subGeometryToHash(VALUE self)
  */
 
 VALUE
-subGeometryToString(VALUE self)
+subextGeometryToString(VALUE self)
 {
   char buf[256] = { 0 };
   VALUE x = Qnil, y = Qnil, width = Qnil, height = Qnil;
@@ -280,7 +280,7 @@ subGeometryToString(VALUE self)
   return rb_str_new2(buf);
 } /* }}} */
 
-/* subGeometryEqual {{{ */
+/* subextGeometryEqual {{{ */
 /*
  * call-seq: ==(other) -> True or False
  *
@@ -291,13 +291,13 @@ subGeometryToString(VALUE self)
  */
 
 VALUE
-subGeometryEqual(VALUE self,
+subextGeometryEqual(VALUE self,
   VALUE other)
 {
   return GeometryEqual(self, other);
 } /* }}} */
 
-/* subGeometryEqualTyped {{{ */
+/* subextGeometryEqualTyped {{{ */
 /*
  * call-seq: eql?(other) -> True or False
  *
@@ -308,7 +308,7 @@ subGeometryEqual(VALUE self,
  */
 
 VALUE
-subGeometryEqualTyped(VALUE self,
+subextGeometryEqualTyped(VALUE self,
   VALUE other)
 {
   return GeometryEqual(self, other);

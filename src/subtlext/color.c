@@ -69,9 +69,9 @@ ColorRGBToPixel(XColor *xcolor)
 
 /* Helper */
 
-/* subColorPixel {{{ */
+/* subextColorPixel {{{ */
 unsigned long
-subColorPixel(VALUE red,
+subextColorPixel(VALUE red,
   VALUE green,
   VALUE blue,
   XColor *xcolor)
@@ -153,9 +153,9 @@ subColorPixel(VALUE red,
   return xcol.pixel;
 } /* }}} */
 
-/* subColorInstantiate {{{ */
+/* subextColorInstantiate {{{ */
 VALUE
-subColorInstantiate(unsigned long pixel)
+subextColorInstantiate(unsigned long pixel)
 {
   VALUE klass = Qnil, color = Qnil;
 
@@ -168,7 +168,7 @@ subColorInstantiate(unsigned long pixel)
 
 /* Class */
 
-/* subColorInit {{{ */
+/* subextColorInit {{{ */
 /*
  * call-seq: new(red, green, blue) -> Subtlext::Color
  *           new(string)           -> Subtlext::Color
@@ -211,7 +211,7 @@ subColorInstantiate(unsigned long pixel)
  */
 
 VALUE
-subColorInit(int argc,
+subextColorInit(int argc,
   VALUE *argv,
   VALUE self)
 {
@@ -220,10 +220,10 @@ subColorInit(int argc,
 
   rb_scan_args(argc, argv, "12", &data[0], &data[1], &data[2]);
 
-  subSubtlextConnect(NULL); ///< Implicit open connection
+  subextSubtlextConnect(NULL); ///< Implicit open connection
 
   /* Get color values */
-  subColorPixel(data[0], data[1], data[2], &xcolor);
+  subextColorPixel(data[0], data[1], data[2], &xcolor);
 
   /* Set values */
   rb_iv_set(self, "@red",   INT2FIX(xcolor.red));
@@ -234,7 +234,7 @@ subColorInit(int argc,
   return self;
 } /* }}} */
 
-/* subColorToHex {{{ */
+/* subextColorToHex {{{ */
 /*
  * call-seq: to_hex -> String
  *
@@ -245,7 +245,7 @@ subColorInit(int argc,
  */
 
 VALUE
-subColorToHex(VALUE self)
+subextColorToHex(VALUE self)
 {
   char buf[8] = { 0 };
   VALUE red = Qnil, green = Qnil, blue = Qnil;
@@ -261,7 +261,7 @@ subColorToHex(VALUE self)
   return rb_str_new2(buf);
 } /* }}} */
 
-/* subColorToArray {{{ */
+/* subextColorToArray {{{ */
 /*
  * call-seq: to_a -> Array
  *
@@ -273,7 +273,7 @@ subColorToHex(VALUE self)
  */
 
 VALUE
-subColorToArray(VALUE self)
+subextColorToArray(VALUE self)
 {
   VALUE ary = Qnil, red = Qnil, green = Qnil, blue = Qnil;
 
@@ -293,7 +293,7 @@ subColorToArray(VALUE self)
   return ary;
 } /* }}} */
 
-/* subColorToHash {{{ */
+/* subextColorToHash {{{ */
 /*
  * call-seq: to_hash -> Hash
  *
@@ -305,7 +305,7 @@ subColorToArray(VALUE self)
  */
 
 VALUE
-subColorToHash(VALUE self)
+subextColorToHash(VALUE self)
 {
   VALUE klass = Qnil, hash = Qnil, red = Qnil, green = Qnil, blue = Qnil;
 
@@ -326,7 +326,7 @@ subColorToHash(VALUE self)
   return hash;
 } /* }}} */
 
-/* subColorToString {{{ */
+/* subextColorToString {{{ */
 /*
  * call-seq: to_str -> String
  *
@@ -337,7 +337,7 @@ subColorToHash(VALUE self)
  */
 
 VALUE
-subColorToString(VALUE self)
+subextColorToString(VALUE self)
 {
   char buf[20] = { 0 };
   VALUE pixel = Qnil;
@@ -351,7 +351,7 @@ subColorToString(VALUE self)
   return rb_str_new2(buf);
 } /* }}} */
 
-/* subColorOperatorPlus {{{ */
+/* subextColorOperatorPlus {{{ */
 /*
  * call-seq: +(string) -> String
  *
@@ -362,13 +362,13 @@ subColorToString(VALUE self)
  */
 
 VALUE
-subColorOperatorPlus(VALUE self,
+subextColorOperatorPlus(VALUE self,
   VALUE value)
 {
-  return subSubtlextConcat(subColorToString(self), value);
+  return subextSubtlextConcat(subextColorToString(self), value);
 } /* }}} */
 
-/* subColorEqual {{{ */
+/* subextColorEqual {{{ */
 /*
  * call-seq: ==(other) -> True or False
  *
@@ -379,13 +379,13 @@ subColorOperatorPlus(VALUE self,
  */
 
 VALUE
-subColorEqual(VALUE self,
+subextColorEqual(VALUE self,
   VALUE other)
 {
   return ColorEqual(self, other, False);
 } /* }}} */
 
-/* subColorEqualTyped {{{ */
+/* subextColorEqualTyped {{{ */
 /*
  * call-seq: eql?(other) -> True or False
  *
@@ -396,7 +396,7 @@ subColorEqual(VALUE self,
  */
 
 VALUE
-subColorEqualTyped(VALUE self,
+subextColorEqualTyped(VALUE self,
   VALUE other)
 {
   return ColorEqual(self, other, True);
