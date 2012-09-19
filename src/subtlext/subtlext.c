@@ -289,7 +289,7 @@ SubtlextTag(VALUE self,
       int tags = FIX2INT(rb_iv_get(self, "@tags"));
 
       /* Update masks */
-      if(1 == action)       data.l[1] = tags |  data.l[1];
+     if(1 == action)       data.l[1] = tags |  data.l[1];
      else if(-1 == action) data.l[1] = tags & ~data.l[1];
     }
 
