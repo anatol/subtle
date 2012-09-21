@@ -382,7 +382,7 @@ subextSubtleSingSpawn(VALUE self,
        * know the real window id at this point (race) */
       if(0 < (pid = subSharedSpawn(RSTRING_PTR(cmd))))
         {
-          ret = subextClientInstantiate((int)pid);
+          ret = subextClientInstantiate((Window)pid);
           rb_iv_set(ret, "@pid", INT2FIX((int)pid));
         }
     }
