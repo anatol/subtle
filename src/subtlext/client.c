@@ -533,7 +533,7 @@ subextClientInit(VALUE self,
   rb_iv_set(self, "@gravity",  Qnil);
   rb_iv_set(self, "@screen",   Qnil);
   rb_iv_set(self, "@flags",    Qnil);
-  rb_iv_set(self, "@tags",     FIX2INT(0));
+  rb_iv_set(self, "@tags",     INT2FIX(0));
 
   subextSubtlextConnect(NULL); ///< Implicit open connection
 

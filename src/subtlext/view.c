@@ -344,7 +344,7 @@ subextViewInit(VALUE self,
   /* Init object */
   rb_iv_set(self, "@id",   Qnil);
   rb_iv_set(self, "@name", name);
-  rb_iv_set(self, "@tags", FIX2INT(0));
+  rb_iv_set(self, "@tags", INT2FIX(0));
 
   subextSubtlextConnect(NULL); ///< Implicit open connection
 
