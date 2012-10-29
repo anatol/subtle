@@ -163,6 +163,7 @@ subextViewSingCurrent(VALUE self)
 {
   int nnames = 0;
   char **names = NULL;
+  long *tags = NULL;
   unsigned long *cur_view = NULL;
   VALUE view = Qnil;
 
@@ -174,17 +175,22 @@ subextViewSingCurrent(VALUE self)
   cur_view = (unsigned long *)subSharedPropertyGet(display,
     DefaultRootWindow(display), XA_CARDINAL,
     XInternAtom(display, "_NET_CURRENT_DESKTOP", False), NULL);
+  tags     = (long *)subSharedPropertyGet(display, ROOT, XA_CARDINAL,
+      XInternAtom(display, "SUBTLE_VIEW_TAGS", False), NULL);
 
   /* Check results */
-  if(names && cur_view)
+  if(names && cur_view && tags)
     {
       /* Create instance */
       view = subextViewInstantiate(names[*cur_view]);
-      rb_iv_set(view, "@id",  INT2FIX(*cur_view));
+
+      rb_iv_set(view, "@id",   INT2FIX(*cur_view));
+      rb_iv_set(view, "@tags", LONG2NUM(tags[*cur_view]));
     }
 
   if(names)    XFreeStringList(names);
   if(cur_view) free(cur_view);
+  if(tags)     free(tags);
 
   return view;
 } /* }}} */
