@@ -87,11 +87,11 @@ EventQueuePush(XClientMessageEvent *ev,
    * client messages when a client/view/tag isn't ready yet */
   queue = (XClientMessageEvent *)subSharedMemoryRealloc(queue,
     (nqueue + 1) * sizeof(XClientMessageEvent));
-  queue[nqueue] = *ev;
-  queue[nqueue].data.l[2] = type;
+  queue[nqueue]           = *ev;
+  queue[nqueue].data.l[4] = type; ///< Overwrite pointless timestamp
   nqueue++;
 
-  subSubtleLogDebugEvents("Queue push: id=%ld, tags=%ld, type=%ld\n",
+  subSubtleLogDebugEvents("Queue push: id=%ld, data=%ld, type=%ld\n",
     ev->data.l[0], ev->data.l[1], type);
 } /* }}} */
 
@@ -109,12 +109,12 @@ EventQueuePop(long value,
       for(i = 0; i < nqueue; i++)
         {
           /* Check event type matches */
-          if(queue[i].data.l[2] == type)
+          if(queue[i].data.l[4] == type)
             {
               int j;
 
-              subSubtleLogDebugEvents("Queue pop: id=%ld, tags=%ld, type=%ld\n",
-                queue[i].data.l[0], queue[i].data.l[1], queue[i].data.l[2]);
+              subSubtleLogDebugEvents("Queue pop: id=%ld, data=%ld, type=%ld\n",
+                queue[i].data.l[0], queue[i].data.l[1], queue[i].data.l[4]);
 
               /* Update window id or array index and put back */ 
               queue[i].data.l[0] = value;
@@ -944,6 +944,7 @@ EventMessage(XClientMessageEvent *ev)
 
           /* subtle */
           case SUB_EWMH_SUBTLE_CLIENT_TAGS: /* {{{ */
+            /* Check if client is ready yet otherwise queue it */
             if((c = CLIENT(subSubtleFind(ev->data.l[0], CLIENTID))))
               {
                 int i, flags = 0, tags = 0;
@@ -1002,18 +1003,35 @@ EventMessage(XClientMessageEvent *ev)
               }
             break; /* }}} */
           case SUB_EWMH_SUBTLE_CLIENT_GRAVITY: /* {{{ */
-            if((c = CLIENT(subSubtleFind(ev->data.l[0], CLIENTID))) &&
-                ((g = GRAVITY(subArrayGet(subtle->gravities,
-                (int)ev->data.l[1])))))
+            /* Check if client is ready yet otherwise queue it */
+            if((c = CLIENT(subSubtleFind(ev->data.l[0], CLIENTID))))
               {
-                /* Set gravity for specified view */
-                if((v = VIEW(subArrayGet(subtle->views, (int)ev->data.l[2]))))
+                if((g = GRAVITY(subArrayGet(subtle->gravities,
+                    (int)ev->data.l[1]))))
                   {
-                    c->gravities[(int)ev->data.l[2]] = (int)ev->data.l[1];
-
-                    if(subtle->visible_views & (1L << ((int)ev->data.l[2] + 1)))
+                    /* Set gravity for specified view */
+                    if((v = VIEW(subArrayGet(subtle->views, (int)ev->data.l[2]))))
                       {
-                        subClientArrange(c, c->gravities[(int)ev->data.l[2]], c->screenid);
+                        c->gravities[(int)ev->data.l[2]] = (int)ev->data.l[1];
+
+                        if(subtle->visible_views & (1L << ((int)ev->data.l[2] + 1)))
+                          {
+                          printf("DEBUG %s:%d\n", __FILE__, __LINE__);
+                            subClientArrange(c,
+                              c->gravities[(int)ev->data.l[2]], c->screenid);
+                            XRaiseWindow(subtle->dpy, c->win);
+
+                            /* Warp pointer */
+                            if(!(subtle->flags & SUB_SUBTLE_SKIP_WARP))
+                              subClientWarp(c);
+
+                            /* Hook: Tile */
+                            subHookCall(SUB_HOOK_TILE, NULL);
+                          }
+                      }
+                    else if(VISIBLE(c))
+                      {
+                        subClientArrange(c, (int)ev->data.l[1], c->screenid);
                         XRaiseWindow(subtle->dpy, c->win);
 
                         /* Warp pointer */
@@ -1024,21 +1042,11 @@ EventMessage(XClientMessageEvent *ev)
                         subHookCall(SUB_HOOK_TILE, NULL);
                       }
                   }
-                else if(VISIBLE(c))
-                  {
-                    subClientArrange(c, (int)ev->data.l[1], c->screenid);
-                    XRaiseWindow(subtle->dpy, c->win);
-
-                    /* Warp pointer */
-                    if(!(subtle->flags & SUB_SUBTLE_SKIP_WARP))
-                      subClientWarp(c);
-
-                    /* Hook: Tile */
-                    subHookCall(SUB_HOOK_TILE, NULL);
-                  }
               }
+            else EventQueuePush(ev, SUB_TYPE_CLIENT);
             break; /* }}} */
           case SUB_EWMH_SUBTLE_CLIENT_FLAGS: /* {{{ */
+            /* Check if client is ready yet otherwise queue it */
             if((c = CLIENT(subSubtleFind(ev->data.l[0], CLIENTID))))
               {
                 int flags = 0;
