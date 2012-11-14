@@ -56,6 +56,7 @@ VALUE subextClientSingCurrent(VALUE self);                           ///< Get cu
 VALUE subextClientSingVisible(VALUE self);                           ///< Get all visible clients
 VALUE subextClientSingList(VALUE self);                              ///< Get all clients
 VALUE subextClientSingRecent(VALUE self);                            ///< Get recent active clients
+VALUE subextClientSingSpawn(VALUE self, VALUE cmd);                  ///< Spawn command
 
 /* Class */
 VALUE subextClientInstantiate(Window win);                           ///< Instantiate client
@@ -201,7 +202,6 @@ VALUE subextSubtleSingRestart(VALUE self);                           ///< Restar
 VALUE subextSubtleSingQuit(VALUE self);                              ///< Quit subtle
 VALUE subextSubtleSingColors(VALUE self);                            ///< Get colors
 VALUE subextSubtleSingFont(VALUE self);                              ///< Get font
-VALUE subextSubtleSingSpawn(VALUE self, VALUE cmd);                  ///< Spawn command
 /* }}} */
 
 /* subtlext.c {{{ */

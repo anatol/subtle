@@ -355,41 +355,4 @@ subextSubtleSingFont(VALUE self)
   return font;
 } /* }}} */
 
-/* subextSubtleSingSpawn {{{ */
-/*
- * call-seq: spawn(cmd) -> Subtlext::Client
- *
- * Spawn a command and returns a Client object.
- *
- *  spawn("xterm")
- *  => #<Subtlext::Client:xxx>
- */
-
-VALUE
-subextSubtleSingSpawn(VALUE self,
-  VALUE cmd)
-{
-  VALUE ret = Qnil;
-
-  /* Check object type */
-  if(T_STRING == rb_type(cmd))
-    {
-      pid_t pid = 0;
-
-      subextSubtlextConnect(NULL); ///< Implicit open connection
-
-      /* Create client with empty window id since we cannot
-       * know the real window id at this point (race) */
-      if(0 < (pid = subSharedSpawn(RSTRING_PTR(cmd))))
-        {
-          ret = subextClientInstantiate((Window)pid);
-          rb_iv_set(ret, "@pid", INT2FIX((int)pid));
-        }
-    }
-  else rb_raise(rb_eArgError, "Unexpected value-type `%s'",
-    rb_obj_classname(cmd));
-
-  return ret;
-} /* }}} */
-
 // vim:ts=2:bs=2:sw=2:et:fdm=marker

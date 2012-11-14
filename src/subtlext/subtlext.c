@@ -1831,6 +1831,7 @@ Init_subtlext(void)
   rb_define_singleton_method(client, "visible", subextClientSingVisible, 0);
   rb_define_singleton_method(client, "list",    subextClientSingList,    0);
   rb_define_singleton_method(client, "recent",  subextClientSingRecent,  0);
+  rb_define_singleton_method(client, "spawn",   subextClientSingSpawn,   1);
 
   /* General methods */
   rb_define_method(client, "has_tag?",    SubtlextTagAsk,           1);
@@ -2119,7 +2120,6 @@ Init_subtlext(void)
   rb_define_singleton_method(subtle, "quit",          subextSubtleSingQuit,          0);
   rb_define_singleton_method(subtle, "colors",        subextSubtleSingColors,        0);
   rb_define_singleton_method(subtle, "font",          subextSubtleSingFont,          0);
-  rb_define_singleton_method(subtle, "spawn",         subextSubtleSingSpawn,         1);
 
   /* Aliases */
   rb_define_alias(rb_singleton_class(subtle), "reload_config", "reload");
