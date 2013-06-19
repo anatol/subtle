@@ -955,13 +955,13 @@ subextWindowDrawLine(int argc,
   VALUE *argv,
   VALUE self)
 {
-  VALUE x1 = Qnil, x2 = Qnil, y1 = Qnil, y2 = Qnil, color = Qnil;
+  VALUE lx1 = Qnil, lx2 = Qnil, ly1 = Qnil, ly2 = Qnil, color = Qnil;
 
-  rb_scan_args(argc, argv, "41", &x1, &y1, &x2, &y2, &color);
+  rb_scan_args(argc, argv, "41", &lx1, &ly1, &lx2, &ly2, &color);
 
   /* Check object types */
-  if(FIXNUM_P(x1) && FIXNUM_P(y1) &&
-      FIXNUM_P(x2) && FIXNUM_P(x2))
+  if(FIXNUM_P(lx1) && FIXNUM_P(ly1) &&
+      FIXNUM_P(lx2) && FIXNUM_P(lx2))
     {
       SubtlextWindow *w = NULL;
 
@@ -983,8 +983,8 @@ subextWindowDrawLine(int argc,
 
           XChangeGC(display, w->gc, GCForeground|GCBackground, &gvals);
 
-          XDrawLine(display, w->win, w->gc, FIX2INT(x1),
-            FIX2INT(y1), FIX2INT(x2), FIX2INT(y2));
+          XDrawLine(display, w->win, w->gc, FIX2INT(lx1),
+            FIX2INT(ly1), FIX2INT(lx2), FIX2INT(ly2));
 
           XFlush(display);
         }
