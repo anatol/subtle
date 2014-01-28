@@ -28,6 +28,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xmd.h>
 #include <X11/cursorfont.h>
+#include <ruby.h>
 #include <ruby/oniguruma.h>
 
 #include "config.h"
