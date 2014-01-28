@@ -63,9 +63,9 @@ end
   "hdrdir"     => "",
   "archdir"    => "",
   "revision"   => "3224", #< Latest stable
-  "cflags"     => "-Wall -Werror -Wpointer-arith -Wstrict-prototypes -Wunused -Wshadow -std=gnu99",
-  "cpppath"    => "-I. -I$(builddir) -Isrc -Isrc/shared -Isrc/subtle -idirafter$(hdrdir) -idirafter$(archdir)",
-  "ldflags"    => "$(rpath) -L$(libdir) $(LIBS) -l$(RUBY_SO_NAME)",
+  "cflags"     => "-Wall -Wpointer-arith -Wstrict-prototypes -Wunused -Wshadow -std=gnu99 " + (ENV["CFLAGS"] || ""),
+  "cpppath"    => "-I. -I$(builddir) -Isrc -Isrc/shared -Isrc/subtle -idirafter$(hdrdir) -idirafter$(archdir) " + (ENV["CPPFLAGS"] || ""),
+  "ldflags"    => "$(rpath) -L$(libdir) $(LIBS) -l$(RUBY_SO_NAME) " + (ENV["LDFLAGS"] || ""),
   "extflags"   => "$(LDFLAGS) $(rpath) $(LIBS) -l$(RUBY_SO_NAME)",
   "rpath"      => "-L$(libdir) -Wl,-rpath=$(libdir)",
   "checksums"  => []
