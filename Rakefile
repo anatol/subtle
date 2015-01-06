@@ -397,6 +397,12 @@ task(:config) do
         ret = false
 
         cflags, ldflags, libs = pkg_config("xft")
+
+        # Fix a bug in ruby 2.2.0 (https://bugs.ruby-lang.org/issues/10651)
+        if cflags.empty?
+          cflags << `#{$PKGCONFIG} --cflags xft`.chomp
+        end
+
         unless libs.nil?
           # Update flags
           @options["cpppath"] << " %s" % [ cflags ]
